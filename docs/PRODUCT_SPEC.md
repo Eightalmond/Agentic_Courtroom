@@ -12,7 +12,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 
 ## Main user flow
 
-1. Add product knowledge, initially for a controlled fictional SaaS product and later through documents and screenshots.
+1. Browse or select product knowledge, initially from the completed controlled FlowPilot knowledge base and later from bounded documents and screenshots.
 2. Define a single customer profile and a narrow, observable task.
 3. Start a simulation and watch the synthetic customer reason through the available information.
 4. Review the chronological actions, conclusions, and supporting evidence.
@@ -22,6 +22,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 ## Planned frontend screens
 
 - Dashboard and recent test runs
+- Controlled FlowPilot knowledge-base index and detail pages (available now)
 - Product knowledge setup
 - Test creation and task definition
 - Active run visualization
@@ -41,7 +42,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 
 ## MVP inclusions
 
-- A controlled fictional SaaS product as the initial test surface
+- A controlled fictional SaaS product, FlowPilot, as the initial test surface
 - Creation of one narrowly scoped customer task per run
 - Deterministic retrieval from curated product knowledge
 - A synthetic customer simulation divided into observable steps
@@ -63,3 +64,17 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Production-scale customer testing
 - Authentication and account management unless separately approved for a later scope
 - A general-purpose autonomous web agent
+- Arbitrary or unbounded document and screenshot uploads
+
+## Controlled product: FlowPilot
+
+FlowPilot is a fictional workflow automation platform for small teams. Its local knowledge base currently contains ten browsable pages covering the product overview, pricing, free trials and billing, cancellation, refunds, API access and limits, team permissions, data export, and security and privacy.
+
+The content is deliberately deterministic and internally consistent. Future simulations will be able to make repeatable decisions from the same evidence. Subtle friction comes from where information appears: for example, pricing mentions Pro API access without its numerical allowance, while the API rate-limit page states the allowance clearly. The knowledge base never connects to a real company or enables an external action.
+
+Available controlled-product routes:
+
+- `/product` lists all FlowPilot knowledge pages.
+- `/product/[slug]` renders one structured knowledge page and links to related content.
+
+Phase 2 provides product content and browsing only. It does not provide test creation, synthetic customers, retrieval, evidence collection, or courtroom agents. Arbitrary document uploads remain excluded.

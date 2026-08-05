@@ -1,4 +1,11 @@
-import { foundationChecks, getFoundationProgress, workflowSteps } from "@/lib/foundation";
+import Link from "next/link";
+
+import {
+  foundationChecks,
+  futureCapabilities,
+  getFoundationProgress,
+  workflowSteps,
+} from "@/lib/foundation";
 
 export default function Home() {
   const progress = getFoundationProgress(foundationChecks);
@@ -10,20 +17,8 @@ export default function Home() {
           aria-hidden="true"
           className="absolute inset-0 -z-10 opacity-80 [background-image:radial-gradient(circle_at_15%_20%,rgba(244,180,74,0.16),transparent_28%),radial-gradient(circle_at_85%_10%,rgba(56,189,248,0.10),transparent_25%)]"
         />
-        <div className="mx-auto max-w-7xl px-6 pb-20 pt-6 sm:px-8 sm:pb-24 lg:px-10">
-          <nav className="flex items-center justify-between" aria-label="Primary navigation">
-            <a className="flex items-center gap-3" href="#top" aria-label="Trial by User home">
-              <span className="grid size-9 place-items-center rounded-xl border border-amber-300/30 bg-amber-300/10 font-serif text-lg font-bold text-amber-300">
-                T
-              </span>
-              <span className="text-sm font-semibold tracking-[0.08em]">TRIAL BY USER</span>
-            </a>
-            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300">
-              Foundation release
-            </span>
-          </nav>
-
-          <div id="top" className="grid gap-14 pb-2 pt-20 lg:grid-cols-[1.08fr_0.92fr] lg:items-end lg:pt-28">
+        <div className="mx-auto max-w-7xl px-6 pb-20 pt-20 sm:px-8 sm:pb-24 lg:px-10 lg:pt-28">
+          <div id="top" className="grid gap-14 pb-2 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
             <div>
               <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">
                 <span className="h-px w-7 bg-amber-300" />
@@ -35,7 +30,7 @@ export default function Home() {
               <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl">
                 Synthetic customers test your product. AI agents argue whether the experience worked.
               </p>
-              <div className="mt-9 flex flex-wrap items-center gap-4">
+              <div className="mt-9 flex flex-wrap items-center gap-3">
                 <button
                   type="button"
                   disabled
@@ -44,7 +39,13 @@ export default function Home() {
                 >
                   Create test · Coming soon
                 </button>
-                <span id="create-test-note" className="text-sm text-slate-400">
+                <Link
+                  className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:border-white/35 hover:bg-white/10"
+                  href="/product"
+                >
+                  Browse FlowPilot demo
+                </Link>
+                <span id="create-test-note" className="w-full text-sm text-slate-400">
                   The testing workflow is the next build phase.
                 </span>
               </div>
@@ -53,13 +54,13 @@ export default function Home() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-7">
               <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Future test run</p>
-                  <p className="mt-2 font-semibold text-slate-100">Can a new user publish a report?</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Available now · Phase 2</p>
+                  <p className="mt-2 font-semibold text-slate-100">A controlled product environment</p>
                 </div>
                 <span className="size-2.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.8)]" />
               </div>
-              <ol className="mt-5 space-y-4" aria-label="Future simulation stages">
-                {["Customer attempts task", "Advocates examine evidence", "Judge delivers verdict"].map(
+              <ol className="mt-5 space-y-4" aria-label="Available FlowPilot knowledge">
+                {["10 fictional knowledge pages", "Deterministic product facts", "Browsable policies and limits"].map(
                   (stage, index) => (
                     <li className="flex items-center gap-4" key={stage}>
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/8 font-mono text-xs text-amber-200">
@@ -113,17 +114,17 @@ export default function Home() {
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-50 motion-reduce:animate-none" />
                 <span className="relative inline-flex size-3 rounded-full bg-emerald-500" />
               </span>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status · Phase 2</p>
             </div>
-            <h2 id="status-title" className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]">Project foundation ready</h2>
+            <h2 id="status-title" className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]">Controlled product ready</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              The application shell and local development workflow are ready for the first product feature.
+              FlowPilot is available to browse now. Synthetic customer testing and courtroom analysis remain intentionally inactive.
             </p>
           </div>
 
           <div>
             <div className="flex items-end justify-between gap-4">
-              <p className="text-sm font-semibold text-slate-700">Foundation checklist</p>
+              <p className="text-sm font-semibold text-slate-700">Available now</p>
               <p className="font-mono text-sm text-slate-500">
                 {progress.completed}/{progress.total} complete
               </p>
@@ -139,13 +140,24 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+            <div className="mt-7 border-t border-slate-200 pt-5">
+              <p className="text-sm font-semibold text-slate-700">Coming later</p>
+              <ul className="mt-3 grid gap-2 text-sm text-slate-500 sm:grid-cols-2">
+                {futureCapabilities.map((capability) => (
+                  <li className="flex items-center gap-2" key={capability}>
+                    <span aria-hidden="true" className="size-1.5 rounded-full bg-slate-300" />
+                    {capability}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       <footer className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
         <p>Trial by User · Evidence before opinion.</p>
-        <p>Foundation release · No live simulations yet</p>
+        <p>Phase 2 · Controlled product available · No live simulations</p>
       </footer>
     </main>
   );

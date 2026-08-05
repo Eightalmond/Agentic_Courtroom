@@ -31,7 +31,14 @@ export const foundationChecks: readonly FoundationCheck[] = [
   { label: "Local and Docker workflows", complete: true },
   { label: "Automated quality checks", complete: true },
   { label: "Vercel-compatible architecture", complete: true },
+  { label: "Controlled FlowPilot knowledge base", complete: true },
 ];
+
+export const futureCapabilities = [
+  "Define a synthetic customer task",
+  "Run and observe a customer simulation",
+  "Review arguments and a courtroom verdict",
+] as const;
 
 export function getFoundationProgress(checks: readonly FoundationCheck[]) {
   const completed = checks.filter((check) => check.complete).length;

@@ -12,15 +12,17 @@
 - Linting, type checking, unit tests, and a production build pass.
 - The architecture remains compatible with Vercel Hobby and the repository documentation guides future work.
 
-## Phase 2 — Controlled fictional SaaS product (planned)
+## Phase 2 — Controlled fictional SaaS product (completed)
 
 **Goal:** Create a safe, deterministic product experience that simulations can evaluate without accessing external websites.
 
 **Acceptance criteria:**
 
-- A fictional SaaS product and its bounded capabilities are documented.
-- Realistic product knowledge and task fixtures are versioned in the repository.
-- Users can browse the fictional product experience without external side effects.
+- FlowPilot and its bounded capabilities are documented across ten local knowledge pages.
+- Realistic, internally consistent product knowledge is typed and versioned in the repository.
+- Users can browse `/product` and `/product/[slug]` without external side effects.
+- Automated tests validate unique slugs, related links, page structure, required product facts, and slug lookup behavior.
+- The dashboard distinguishes the available controlled product from future test and courtroom features.
 
 ## Phase 3 — Test creation flow (planned)
 

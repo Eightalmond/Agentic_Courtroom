@@ -35,3 +35,8 @@ body {
   background: #fde68a;
   color: #0f172a;
 }
+
+:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}

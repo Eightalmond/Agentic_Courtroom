@@ -2,7 +2,15 @@
 
 Trial by User is an agentic product-testing application. The planned product will let a synthetic customer attempt a focused task, preserve the journey as evidence, and ask prosecutor, defense, and judge agents to assess whether the experience worked.
 
-This repository currently contains the application foundation only. It includes a responsive placeholder dashboard, a standard Next.js toolchain, local Docker support, and automated quality checks. It does not yet include simulations, AI, retrieval, uploads, authentication, or persistence.
+The application foundation and Phase 2 controlled product are complete. The repository includes a responsive dashboard, a local ten-page knowledge base for the fictional FlowPilot SaaS product, a standard Next.js toolchain, local Docker support, and automated quality checks. It does not yet include simulations, AI, retrieval, uploads, authentication, or persistence.
+
+## Available routes
+
+- `/` — Trial by User dashboard and current MVP status
+- `/product` — FlowPilot knowledge-base index
+- `/product/[slug]` — Individual FlowPilot knowledge pages
+
+FlowPilot content is local, fictional, and deterministic. This gives future synthetic-customer work stable facts and controlled information-design friction without relying on a real company, an external website, or a content service.
 
 ## Requirements
 
@@ -48,11 +56,11 @@ The application uses the standard Next.js runtime and does not depend on Docker 
 
 ## Current limitations
 
-- The dashboard is informational; **Create test** is intentionally disabled.
+- The dashboard links to the browsable FlowPilot demo, but **Create test** remains intentionally disabled.
 - There is no AI or agent behavior.
-- Product documents and screenshots cannot be uploaded.
+- Arbitrary product documents and screenshots cannot be uploaded.
 - No database, authentication, or backend integrations exist.
-- No real or fictional product simulation is implemented yet.
+- The FlowPilot knowledge base is not a simulation; no synthetic customer behavior is implemented yet.
 
 ## Documentation
 
