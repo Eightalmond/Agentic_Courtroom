@@ -3,6 +3,7 @@ import Link from "next/link";
 const navigation = [
   { href: "/", label: "Home" },
   { href: "/product", label: "Demo product" },
+  { href: "/tests/new", label: "Create test" },
 ] as const;
 
 export function SiteHeader() {
@@ -13,10 +14,10 @@ export function SiteHeader() {
           <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-amber-300/30 bg-amber-300/10 font-serif text-lg font-bold text-amber-300">
             T
           </span>
-          <span className="truncate text-sm font-semibold tracking-[0.08em]">TRIAL BY USER</span>
+          <span className="hidden text-sm font-semibold tracking-[0.08em] sm:inline">TRIAL BY USER</span>
         </Link>
         <nav aria-label="Primary navigation">
-          <ul className="flex items-center gap-1 text-sm text-slate-300 sm:gap-3">
+          <ul className="flex items-center gap-0 text-xs text-slate-300 sm:gap-2 sm:text-sm">
             {navigation.map((item) => (
               <li key={item.href}>
                 <Link className="block rounded-lg px-3 py-2 font-medium transition-colors hover:bg-white/10 hover:text-white" href={item.href}>

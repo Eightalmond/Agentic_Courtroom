@@ -32,11 +32,12 @@ export const foundationChecks: readonly FoundationCheck[] = [
   { label: "Automated quality checks", complete: true },
   { label: "Vercel-compatible architecture", complete: true },
   { label: "Controlled FlowPilot knowledge base", complete: true },
+  { label: "Browser-local test configuration", complete: true },
 ];
 
 export const futureCapabilities = [
-  "Define a synthetic customer task",
   "Run and observe a customer simulation",
+  "Collect evidence from customer actions",
   "Review arguments and a courtroom verdict",
 ] as const;
 

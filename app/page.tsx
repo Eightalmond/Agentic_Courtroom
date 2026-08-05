@@ -31,14 +31,12 @@ export default function Home() {
                 Synthetic customers test your product. AI agents argue whether the experience worked.
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  disabled
-                  aria-describedby="create-test-note"
-                  className="cursor-not-allowed rounded-xl bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 opacity-80 shadow-[0_12px_40px_rgba(244,180,74,0.16)]"
+                <Link
+                  className="rounded-xl bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 shadow-[0_12px_40px_rgba(244,180,74,0.16)] transition-colors hover:bg-amber-200"
+                  href="/tests/new"
                 >
-                  Create test · Coming soon
-                </button>
+                  Create a test
+                </Link>
                 <Link
                   className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:border-white/35 hover:bg-white/10"
                   href="/product"
@@ -46,7 +44,7 @@ export default function Home() {
                   Browse FlowPilot demo
                 </Link>
                 <span id="create-test-note" className="w-full text-sm text-slate-400">
-                  The testing workflow is the next build phase.
+                  Configuration is available now; AI simulation remains a future phase.
                 </span>
               </div>
             </div>
@@ -54,13 +52,13 @@ export default function Home() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-7">
               <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Available now · Phase 2</p>
-                  <p className="mt-2 font-semibold text-slate-100">A controlled product environment</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Available now · Phase 3</p>
+                  <p className="mt-2 font-semibold text-slate-100">Configure a local customer test</p>
                 </div>
                 <span className="size-2.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.8)]" />
               </div>
-              <ol className="mt-5 space-y-4" aria-label="Available FlowPilot knowledge">
-                {["10 fictional knowledge pages", "Deterministic product facts", "Browsable policies and limits"].map(
+              <ol className="mt-5 space-y-4" aria-label="Available test configuration features">
+                {["6 predefined customer tasks", "5 behavioral personas", "Browser-local ready runs"].map(
                   (stage, index) => (
                     <li className="flex items-center gap-4" key={stage}>
                       <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/8 font-mono text-xs text-amber-200">
@@ -114,11 +112,11 @@ export default function Home() {
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-50 motion-reduce:animate-none" />
                 <span className="relative inline-flex size-3 rounded-full bg-emerald-500" />
               </span>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status · Phase 2</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status · Phase 3</p>
             </div>
-            <h2 id="status-title" className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]">Controlled product ready</h2>
+            <h2 id="status-title" className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]">Test configuration ready</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              FlowPilot is available to browse now. Synthetic customer testing and courtroom analysis remain intentionally inactive.
+              FlowPilot can be browsed and configured into local test runs. Synthetic customer execution and courtroom analysis remain intentionally inactive.
             </p>
           </div>
 
@@ -157,7 +155,7 @@ export default function Home() {
 
       <footer className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
         <p>Trial by User · Evidence before opinion.</p>
-        <p>Phase 2 · Controlled product available · No live simulations</p>
+        <p>Phase 3 · Local test creation available · No AI simulations</p>
       </footer>
     </main>
   );

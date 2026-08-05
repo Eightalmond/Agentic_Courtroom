@@ -13,7 +13,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 ## Main user flow
 
 1. Browse or select product knowledge, initially from the completed controlled FlowPilot knowledge base and later from bounded documents and screenshots.
-2. Define a single customer profile and a narrow, observable task.
+2. Select a predefined customer task and behavioral persona, then configure a bounded action allowance (available now).
 3. Start a simulation and watch the synthetic customer reason through the available information.
 4. Review the chronological actions, conclusions, and supporting evidence.
 5. Compare the prosecutor and defense arguments.
@@ -24,7 +24,8 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Dashboard and recent test runs
 - Controlled FlowPilot knowledge-base index and detail pages (available now)
 - Product knowledge setup
-- Test creation and task definition
+- Test creation and task definition (available now)
+- Browser-local configured run detail (available now)
 - Active run visualization
 - Evidence timeline
 - Courtroom arguments
@@ -77,4 +78,12 @@ Available controlled-product routes:
 - `/product` lists all FlowPilot knowledge pages.
 - `/product/[slug]` renders one structured knowledge page and links to related content.
 
-Phase 2 provides product content and browsing only. It does not provide test creation, synthetic customers, retrieval, evidence collection, or courtroom agents. Arbitrary document uploads remain excluded.
+Phase 2 provides product content and browsing. Arbitrary document uploads remain excluded.
+
+## Local test creation
+
+Phase 3 adds a deterministic test-creation flow at `/tests/new`. Users choose from six predefined FlowPilot questions, five behavioral customer personas, and an action allowance from 3 to 10. The task library retains stable IDs, categories, difficulty labels, scenarios, and relevant FlowPilot page references. The persona library retains stable IDs, behavior traits, and bounded default action allowances.
+
+Creating a test produces a `ready` run with zero completed actions and opens `/runs/[id]`. The run page displays the selected task, persona, action allowance, and relevant product links for manual exploration. It never displays an expected final answer.
+
+Runs are stored in versioned browser localStorage. They are available only in the browser that created them and may be lost when browser data is cleared. No AI simulation executes in Phase 3; retrieval, customer actions, evidence collection, and courtroom agents remain planned work.

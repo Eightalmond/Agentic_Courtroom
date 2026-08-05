@@ -2,11 +2,17 @@
 
 ## Current architecture
 
-The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes are statically renderable and contain no server integrations. Small project configuration and product-content integrity are covered by Vitest, while ESLint and the TypeScript compiler provide automated checks.
+The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes are statically renderable and contain no server integrations. The test-creation and run-detail routes add bounded client-side interaction without an API. Project configuration, product-content integrity, and run business rules are covered by Vitest, while ESLint and the TypeScript compiler provide automated checks.
 
 FlowPilot product knowledge is stored as readonly, typed TypeScript data under `lib/product/`. A deterministic lookup utility resolves page slugs. `/product` renders the complete knowledge index, and `/product/[slug]` renders each page from the same local data source. Static parameters are generated for the known slugs, related-page links are validated in tests, and unknown slugs return a product-specific not-found state.
 
 Keeping this first product local and deterministic provides a stable fixture for later retrieval and synthetic-customer phases. It avoids external content drift, network dependencies, a CMS, and any interaction with a real product.
+
+Predefined tasks, personas, and run types are stored as readonly TypeScript data under `lib/test-runs/`. Run creation validates task IDs, persona IDs, and the action range before generating a URL-safe ID with the platform crypto API. The `/tests/new` client flow creates a `ready` run, and `/runs/[id]` resolves that run after browser hydration.
+
+Browser persistence is isolated in a dedicated module with a versioned storage key. Parsed records pass an explicit type guard before use, malformed records are ignored safely, and stored data is normalized so internal evaluation material is not persisted. Browser APIs are never accessed during server rendering.
+
+> localStorage provides zero-cost, Vercel-compatible persistence for the early MVP, but runs are not shared across devices and can be lost when browser data is cleared.
 
 The app runs directly with Node.js 22 and npm. Docker Compose provides a local development convenience only: it runs the Next.js development server, mounts the source directory for hot reloading, and preserves container dependencies in a named volume. Production deployment targets Vercel Hobby through the normal Next.js build flow.
 
@@ -18,6 +24,8 @@ There is currently:
 - no AI provider integration;
 - no retrieval layer; and
 - no custom API or Route Handler.
+
+There is no database or server-side run persistence. The only run persistence is browser-specific localStorage.
 
 There are also no arbitrary document or screenshot uploads. The controlled product is repository-owned content, not user-supplied content.
 

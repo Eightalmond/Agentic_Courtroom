@@ -2,15 +2,19 @@
 
 Trial by User is an agentic product-testing application. The planned product will let a synthetic customer attempt a focused task, preserve the journey as evidence, and ask prosecutor, defense, and judge agents to assess whether the experience worked.
 
-The application foundation and Phase 2 controlled product are complete. The repository includes a responsive dashboard, a local ten-page knowledge base for the fictional FlowPilot SaaS product, a standard Next.js toolchain, local Docker support, and automated quality checks. It does not yet include simulations, AI, retrieval, uploads, authentication, or persistence.
+The application foundation, controlled FlowPilot product, and Phase 3 test-creation flow are complete. Users can configure a predefined customer task and persona, choose an action limit, and create a ready run stored in their current browser. It does not yet execute simulations or include AI, retrieval, uploads, authentication, a database, or server persistence.
 
 ## Available routes
 
 - `/` — Trial by User dashboard and current MVP status
 - `/product` — FlowPilot knowledge-base index
 - `/product/[slug]` — Individual FlowPilot knowledge pages
+- `/tests/new` — Local test configuration flow
+- `/runs/[id]` — Browser-local run detail
 
 FlowPilot content is local, fictional, and deterministic. This gives future synthetic-customer work stable facts and controlled information-design friction without relying on a real company, an external website, or a content service.
+
+The test library contains six predefined FlowPilot questions and five behavioral personas. Ready runs use a versioned localStorage record and remain tied to the browser that created them.
 
 ## Requirements
 
@@ -56,11 +60,11 @@ The application uses the standard Next.js runtime and does not depend on Docker 
 
 ## Current limitations
 
-- The dashboard links to the browsable FlowPilot demo, but **Create test** remains intentionally disabled.
-- There is no AI or agent behavior.
+- Test configuration creates a ready local run, but **Start simulation** remains intentionally disabled.
+- There is no AI, synthetic-customer execution, or agent behavior.
 - Arbitrary product documents and screenshots cannot be uploaded.
 - No database, authentication, or backend integrations exist.
-- The FlowPilot knowledge base is not a simulation; no synthetic customer behavior is implemented yet.
+- Local runs are not shared between browsers or devices and are lost if their browser storage is cleared.
 
 ## Documentation
 

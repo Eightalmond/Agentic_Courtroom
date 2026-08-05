@@ -24,15 +24,19 @@
 - Automated tests validate unique slugs, related links, page structure, required product facts, and slug lookup behavior.
 - The dashboard distinguishes the available controlled product from future test and courtroom features.
 
-## Phase 3 — Test creation flow (planned)
+## Phase 3 — Test creation flow (completed)
 
 **Goal:** Let a user configure one focused customer test.
 
 **Acceptance criteria:**
 
-- A user can select product context, describe a customer, and define a narrow task.
-- Required fields and length limits are validated on the server.
-- The configuration can be reviewed before a run begins.
+- A user can select one of six predefined tasks and one of five behavioral personas for FlowPilot.
+- The user can choose a maximum action count from 3 to 10 and review a live configuration summary.
+- Client-side business rules validate task, persona, and action-limit selections without an API or server action.
+- Creating a test generates a URL-safe ID and persists a normalized `ready` run with zero actions in versioned localStorage.
+- `/runs/[id]` safely handles loading, found, refreshed, and missing browser-local runs.
+- Automated tests cover task and persona integrity, product-page references, run IDs, validation, and local persistence.
+- No AI simulation, retrieval, evidence collection, or courtroom behavior executes.
 
 ## Phase 4 — Deterministic retrieval (planned)
 
