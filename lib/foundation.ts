@@ -33,6 +33,7 @@ export const foundationChecks: readonly FoundationCheck[] = [
   { label: "Vercel-compatible architecture", complete: true },
   { label: "Controlled FlowPilot knowledge base", complete: true },
   { label: "Browser-local test configuration", complete: true },
+  { label: "Deterministic section retrieval", complete: true },
 ];
 
 export const futureCapabilities = [

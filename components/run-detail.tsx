@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 
-import { flowPilotProduct, getProductPage } from "@/lib/product";
+import { flowPilotProduct } from "@/lib/product";
+import { searchProductKnowledge } from "@/lib/retrieval";
 import { getCustomerPersona, getCustomerTask, readLocalRun } from "@/lib/test-runs";
 
 type RunDetailProps = {
@@ -56,7 +57,7 @@ export function RunDetail({ runId }: RunDetailProps) {
     );
   }
 
-  const relevantPages = task.expectedRelevantPageSlugs.map((slug) => getProductPage(slug)).filter(Boolean);
+  const retrievalSuggestions = searchProductKnowledge(task.question, { limit: 3 });
 
   return (
     <main className="min-h-screen bg-stone-50 text-slate-950">
@@ -115,18 +116,23 @@ export function RunDetail({ runId }: RunDetailProps) {
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="sources-title">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Manual exploration</p>
-            <h2 id="sources-title" className="mt-3 text-2xl font-bold tracking-[-0.02em]">Relevant product knowledge</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">These pages are useful starting points for exploring the customer question. No answer has been generated.</p>
-            <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-              {relevantPages.map((page) => page && (
-                <li key={page.slug}>
-                  <Link className="block rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-amber-300 hover:text-amber-800" href={`/product/${page.slug}`}>
-                    {page.title} <span aria-hidden="true">→</span>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Retrieval suggestions · Not customer actions</p>
+            <h2 id="sources-title" className="mt-3 text-2xl font-bold tracking-[-0.02em]">Explore relevant product knowledge</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Deterministic retrieval ranked these sections from the customer question. It has not started a simulation, changed run status, or used the action allowance.
+            </p>
+            <ol className="mt-6 space-y-3">
+              {retrievalSuggestions.map((result) => (
+                <li key={result.sectionId}>
+                  <Link className="group block rounded-xl border border-slate-200 p-4 transition-colors hover:border-amber-300" href={`/product/${result.pageSlug}`}>
+                    <span className="text-xs font-bold uppercase tracking-[0.12em] text-amber-700">Rank {result.rank} · Score {result.totalScore}</span>
+                    <span className="mt-1 block font-bold text-slate-900 group-hover:text-amber-800">{result.pageTitle}</span>
+                    <span className="mt-1 block text-sm font-semibold text-slate-500">{result.sectionTitle}</span>
+                    <span className="mt-2 block text-sm leading-6 text-slate-600">{result.excerpt}</span>
                   </Link>
                 </li>
               ))}
-            </ul>
+            </ol>
           </section>
         </div>
 

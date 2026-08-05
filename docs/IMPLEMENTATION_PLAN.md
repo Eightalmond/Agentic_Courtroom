@@ -38,15 +38,20 @@
 - Automated tests cover task and persona integrity, product-page references, run IDs, validation, and local persistence.
 - No AI simulation, retrieval, evidence collection, or courtroom behavior executes.
 
-## Phase 4 — Deterministic retrieval (planned)
+## Phase 4 — Deterministic retrieval (completed)
 
 **Goal:** Supply relevant product knowledge through a predictable, testable retrieval layer.
 
 **Acceptance criteria:**
 
-- Retrieval operates only on approved product fixtures.
-- Ranking and source references are deterministic for the same input.
-- Unit tests cover relevance, empty results, and boundary cases.
+- A section-level index is derived entirely from the approved local FlowPilot fixture.
+- Query normalization, stop-word removal, and bounded product synonyms are deterministic and dependency-free.
+- Explainable fixed weights rank exact phrases, direct field matches, lower-weight synonyms, and multi-term coverage.
+- Results include stable source IDs, bounded excerpts, match terms, locations, scores, and readable breakdowns.
+- `/retrieval` supports examples, category filtering, result limits, empty guidance, and no-results handling.
+- Configured run pages show three query-derived retrieval suggestions without changing status or action count.
+- Automated tests cover index integrity, normalization, scoring, ordering, filters, excerpts, target queries, and metadata isolation.
+- No embeddings, vector search, RAG pipeline, AI agent, API route, or database is present.
 
 ## Phase 5 — Synthetic customer agent (planned)
 

@@ -14,10 +14,11 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 
 1. Browse or select product knowledge, initially from the completed controlled FlowPilot knowledge base and later from bounded documents and screenshots.
 2. Select a predefined customer task and behavioral persona, then configure a bounded action allowance (available now).
-3. Start a simulation and watch the synthetic customer reason through the available information.
-4. Review the chronological actions, conclusions, and supporting evidence.
-5. Compare the prosecutor and defense arguments.
-6. Read the judge's verdict, confidence, rationale, and recommended product action.
+3. Inspect deterministic retrieval suggestions for the configured question (available now).
+4. Start a simulation and watch the synthetic customer reason through the available information.
+5. Review the chronological actions, conclusions, and supporting evidence.
+6. Compare the prosecutor and defense arguments.
+7. Read the judge's verdict, confidence, rationale, and recommended product action.
 
 ## Planned frontend screens
 
@@ -26,6 +27,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Product knowledge setup
 - Test creation and task definition (available now)
 - Browser-local configured run detail (available now)
+- Deterministic retrieval playground and run suggestions (available now)
 - Active run visualization
 - Evidence timeline
 - Courtroom arguments
@@ -84,6 +86,16 @@ Phase 2 provides product content and browsing. Arbitrary document uploads remain
 
 Phase 3 adds a deterministic test-creation flow at `/tests/new`. Users choose from six predefined FlowPilot questions, five behavioral customer personas, and an action allowance from 3 to 10. The task library retains stable IDs, categories, difficulty labels, scenarios, and relevant FlowPilot page references. The persona library retains stable IDs, behavior traits, and bounded default action allowances.
 
-Creating a test produces a `ready` run with zero completed actions and opens `/runs/[id]`. The run page displays the selected task, persona, action allowance, and relevant product links for manual exploration. It never displays an expected final answer.
+Creating a test produces a `ready` run with zero completed actions and opens `/runs/[id]`. The run page displays the selected task, persona, action allowance, and three deterministic retrieval suggestions. It never displays an expected final answer or the task's internal expected-page list.
 
-Runs are stored in versioned browser localStorage. They are available only in the browser that created them and may be lost when browser data is cleared. No AI simulation executes in Phase 3; retrieval, customer actions, evidence collection, and courtroom agents remain planned work.
+Runs are stored in versioned browser localStorage. They are available only in the browser that created them and may be lost when browser data is cleared. No AI simulation executes; customer actions, evidence collection, and courtroom agents remain planned work.
+
+## Deterministic retrieval
+
+Phase 4 adds `/retrieval`, a manual playground for section-level search over the local FlowPilot knowledge base. The index is derived from existing page sections, summaries, keywords, categories, and callouts rather than maintaining a second copy of product facts.
+
+Queries are lowercased, stripped of common punctuation, collapsed, tokenized, deduplicated, and filtered through a small stop-word list. Important policy terms such as `not`, `without`, `before`, and `after` remain searchable. A bounded FlowPilot synonym map expands only known concepts such as cancellation, billing, API limits, viewers, audit logs, HIPAA, and exports.
+
+Ranking uses fixed lexical weights for exact phrases and direct or synonym matches in section titles, bodies, page titles, keywords, summaries, and callouts. Results include short excerpts and a readable score breakdown. The same query and filters always produce the same order.
+
+Configured run pages use the customer question to display the top three retrieval suggestions. These suggestions do not represent customer actions, do not alter run state or action counts, and do not expose internal expected answers. Embeddings and semantic retrieval are deliberately deferred until deterministic behavior has been evaluated.

@@ -4,6 +4,7 @@ const navigation = [
   { href: "/", label: "Home" },
   { href: "/product", label: "Demo product" },
   { href: "/tests/new", label: "Create test" },
+  { href: "/retrieval", label: "Retrieval" },
 ] as const;
 
 export function SiteHeader() {

@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes are statically renderable and contain no server integrations. The test-creation and run-detail routes add bounded client-side interaction without an API. Project configuration, product-content integrity, and run business rules are covered by Vitest, while ESLint and the TypeScript compiler provide automated checks.
+The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes are statically renderable and contain no server integrations. Test creation, run detail, and the retrieval playground add bounded client-side interaction without an API. Project configuration, product-content integrity, run business rules, and retrieval behavior are covered by Vitest, while ESLint and the TypeScript compiler provide automated checks.
 
 FlowPilot product knowledge is stored as readonly, typed TypeScript data under `lib/product/`. A deterministic lookup utility resolves page slugs. `/product` renders the complete knowledge index, and `/product/[slug]` renders each page from the same local data source. Static parameters are generated for the known slugs, related-page links are validated in tests, and unknown slugs return a product-specific not-found state.
 
@@ -14,6 +14,14 @@ Browser persistence is isolated in a dedicated module with a versioned storage k
 
 > localStorage provides zero-cost, Vercel-compatible persistence for the early MVP, but runs are not shared across devices and can be lost when browser data is cleared.
 
+Deterministic retrieval is implemented as pure TypeScript under `lib/retrieval/`. The search index derives one stable record per FlowPilot section and includes its source page metadata, body, keywords, callouts, and related slugs. No facts are copied into a separate hand-maintained index. `/retrieval` imports the pure functions directly, and run pages query them with the selected customer question; no Route Handler or server action is involved.
+
+Normalization lowercases text, removes common punctuation, collapses whitespace, removes duplicate tokens, and excludes a small explicit stop-word set. Bounded synonym groups cover known FlowPilot terminology only. Fixed weights favor exact title phrases, then exact body phrases, direct title and metadata matches, direct body matches, and finally lower-scored synonym matches. A multi-term bonus rewards sections that cover several direct query terms. Equal scores are ordered by page slug and stable section ID.
+
+> Deterministic lexical retrieval is inexpensive, inspectable, and easy to test, but it handles paraphrases less effectively than embedding-based semantic retrieval. The MVP starts with deterministic retrieval so ranking behavior can be evaluated before adding model-dependent complexity.
+
+Embedding and vector search are deliberately deferred. There is no RAG pipeline or agent in the current architecture; Phase 4 provides only the local retrieval component a later agent may call.
+
 The app runs directly with Node.js 22 and npm. Docker Compose provides a local development convenience only: it runs the Next.js development server, mounts the source directory for hot reloading, and preserves container dependencies in a named volume. Production deployment targets Vercel Hobby through the normal Next.js build flow.
 
 There is currently:
@@ -22,7 +30,6 @@ There is currently:
 - no authentication;
 - no file storage or uploads;
 - no AI provider integration;
-- no retrieval layer; and
 - no custom API or Route Handler.
 
 There is no database or server-side run persistence. The only run persistence is browser-specific localStorage.
