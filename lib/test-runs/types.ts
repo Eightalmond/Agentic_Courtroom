@@ -1,3 +1,5 @@
+import type { SimulationActionEntry, SimulationState } from "@/lib/simulation/types";
+
 export const MIN_ACTIONS = 3;
 export const MAX_ACTIONS = 10;
 
@@ -30,19 +32,18 @@ export type CustomerPersona = {
   visualLabel?: string;
 };
 
-export const RUN_STATUSES = ["configured", "ready", "running", "completed", "failed"] as const;
+export const RUN_STATUSES = ["ready", "running", "completed", "failed"] as const;
 
 export type RunStatus = (typeof RUN_STATUSES)[number];
 
-export type TestRun = {
+export type TestRun = SimulationState & {
   id: string;
   taskId: string;
   personaId: string;
   maxActions: number;
   createdAt: string;
-  status: RunStatus;
   productId: string;
-  currentActionCount: number;
+  actions: readonly SimulationActionEntry[];
 };
 
 export type NewRunInput = {

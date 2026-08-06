@@ -53,15 +53,18 @@
 - Automated tests cover index integrity, normalization, scoring, ordering, filters, excerpts, target queries, and metadata isolation.
 - No embeddings, vector search, RAG pipeline, AI agent, API route, or database is present.
 
-## Phase 5 — Synthetic customer agent (planned)
+## Phase 5 — Synthetic customer agent (completed)
 
 **Goal:** Simulate a customer attempting the configured task through short, constrained steps.
 
 **Acceptance criteria:**
 
-- Each step receives bounded context and returns a validated structured result.
-- Runs enforce step and resource limits compatible with serverless execution.
-- The customer cannot control arbitrary live websites or perform external actions.
+- Each HTTP request makes at most one OpenAI Responses API call and receives one strict structured customer action.
+- The stateless Route Handler validates compact browser-supplied state, reconstructs trusted task and persona data, and executes only deterministic FlowPilot tools.
+- Browser-local runs preserve sequential actions, current content, outcomes, safe errors, and Phase 3 migration compatibility.
+- Manual and auto-run controls prevent parallel calls, stop on completion, and enforce a maximum of 10 configured model calls.
+- Tests cover schemas, boundaries, tools, prompts, provider errors, budget exhaustion, migration, reset, and no-call validation failures without consuming API credits.
+- The customer cannot control arbitrary live websites, access arbitrary URLs or files, or perform external actions.
 
 ## Phase 6 — Evidence collection (planned)
 

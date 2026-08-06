@@ -118,7 +118,7 @@ export function TestCreationForm() {
 
           <fieldset aria-describedby={errors.task ? "task-error" : undefined}>
             <legend className="text-2xl font-bold tracking-[-0.025em] text-slate-950">1. Select a customer task</legend>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Choose one narrow question for the future synthetic customer to investigate.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Choose one narrow question for the synthetic customer to investigate.</p>
             {errors.task && <p id="task-error" role="alert" className="mt-3 text-sm font-semibold text-red-700">{errors.task}</p>}
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {customerTasks.map((task) => {
@@ -158,7 +158,7 @@ export function TestCreationForm() {
 
           <fieldset aria-describedby={errors.persona ? "persona-error" : undefined}>
             <legend className="text-2xl font-bold tracking-[-0.025em] text-slate-950">2. Select a customer persona</legend>
-            <p className="mt-2 text-sm leading-6 text-slate-600">The persona describes how the future customer will approach the product knowledge.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">The persona describes how the customer will approach the product knowledge.</p>
             {errors.persona && <p id="persona-error" role="alert" className="mt-3 text-sm font-semibold text-red-700">{errors.persona}</p>}
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {customerPersonas.map((persona) => {
@@ -200,7 +200,7 @@ export function TestCreationForm() {
 
           <section aria-labelledby="action-heading">
             <h2 id="action-heading" className="text-2xl font-bold tracking-[-0.025em] text-slate-950">3. Set the action limit</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Set how many knowledge-page actions the future customer may take before stopping.</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">Set how many model-assisted product actions the customer may take before stopping.</p>
             <div className="mt-6 max-w-md rounded-2xl border border-slate-200 bg-white p-6">
               <label className="font-bold text-slate-900" htmlFor="max-actions">Maximum actions</label>
               <select
@@ -242,7 +242,7 @@ export function TestCreationForm() {
             </div>
           </dl>
           <div className="mt-6 rounded-xl bg-slate-100 p-4 text-xs leading-5 text-slate-600">
-            Creating this test saves a ready configuration in this browser. No AI actions or simulations execute in Phase 3.
+            Creating this test saves a ready configuration in this browser. The run begins only when you explicitly start the simulation.
           </div>
           {errors.storage && <p role="alert" className="mt-4 text-sm font-semibold leading-6 text-red-700">{errors.storage}</p>}
           <button className="mt-6 w-full rounded-xl bg-amber-300 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-sm transition-colors hover:bg-amber-200" type="submit">

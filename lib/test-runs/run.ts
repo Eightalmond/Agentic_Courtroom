@@ -22,14 +22,29 @@ export function createReadyRun(input: NewRunInput, options: CreateReadyRunOption
     throw new Error(`Maximum actions must be an integer between ${MIN_ACTIONS} and ${MAX_ACTIONS}.`);
   }
 
+  const createdAt = options.createdAt ?? new Date().toISOString();
+
   return {
     id: options.id ?? generateRunId(),
     taskId: input.taskId,
     personaId: input.personaId,
     maxActions: input.maxActions,
-    createdAt: options.createdAt ?? new Date().toISOString(),
+    createdAt,
     status: "ready",
     productId: flowPilotProduct.id,
     currentActionCount: 0,
+    modelCallCount: 0,
+    startedAt: null,
+    updatedAt: createdAt,
+    completedAt: null,
+    actions: [],
+    currentPageSlug: null,
+    currentSectionId: null,
+    latestSearchResults: [],
+    finalAnswer: null,
+    finalConfidence: null,
+    giveUpReason: null,
+    completionReason: null,
+    lastError: null,
   };
 }

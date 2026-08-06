@@ -1,11 +1,13 @@
 "use client";
 
 import { flowPilotProduct } from "@/lib/product";
+import { SimulationActionEntrySchema, SimulationStateSchema } from "@/lib/simulation/schemas";
 
 import { getCustomerPersona, getCustomerTask } from "./data";
 import { MAX_ACTIONS, MIN_ACTIONS, RUN_STATUSES, type RunStatus, type TestRun } from "./types";
 
-export const RUN_STORAGE_KEY = "trial-by-user:runs:v1";
+export const RUN_STORAGE_KEY = "trial-by-user:runs:v2";
+export const LEGACY_RUN_STORAGE_KEY = "trial-by-user:runs:v1";
 
 export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -22,7 +24,8 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     return undefined;
   }
 
-  const { id, taskId, personaId, maxActions, createdAt, status, productId, currentActionCount } = value;
+  const { id, taskId, personaId, maxActions, createdAt, productId } = value;
+  const status = value.status === "configured" ? "ready" : value.status;
   const validId = typeof id === "string" && /^run-[a-z0-9-]+$/.test(id);
   const validTask = typeof taskId === "string" && Boolean(getCustomerTask(taskId));
   const validPersona = typeof personaId === "string" && Boolean(getCustomerPersona(personaId));
@@ -32,22 +35,38 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     maxActions >= MIN_ACTIONS &&
     maxActions <= MAX_ACTIONS;
   const validCreatedAt = typeof createdAt === "string" && !Number.isNaN(Date.parse(createdAt));
-  const validCurrentCount =
-    typeof currentActionCount === "number" &&
-    Number.isInteger(currentActionCount) &&
-    currentActionCount >= 0 &&
-    typeof maxActions === "number" &&
-    currentActionCount <= maxActions;
+
+  if (!validId || !validTask || !validPersona || !validMaximum || !validCreatedAt || !isRunStatus(status) || productId !== flowPilotProduct.id) {
+    return undefined;
+  }
+
+  const actionsResult = SimulationActionEntrySchema.array().max(MAX_ACTIONS).safeParse(value.actions ?? []);
+  if (!actionsResult.success) {
+    return undefined;
+  }
+
+  const currentActionCount = value.currentActionCount ?? actionsResult.data.length;
+  const stateResult = SimulationStateSchema.safeParse({
+    status,
+    currentActionCount,
+    modelCallCount: value.modelCallCount ?? currentActionCount,
+    startedAt: value.startedAt ?? null,
+    updatedAt: value.updatedAt ?? createdAt,
+    completedAt: value.completedAt ?? null,
+    currentPageSlug: value.currentPageSlug ?? null,
+    currentSectionId: value.currentSectionId ?? null,
+    latestSearchResults: value.latestSearchResults ?? [],
+    finalAnswer: value.finalAnswer ?? null,
+    finalConfidence: value.finalConfidence ?? null,
+    giveUpReason: value.giveUpReason ?? null,
+    completionReason: value.completionReason ?? null,
+    lastError: value.lastError ?? null,
+  });
 
   if (
-    !validId ||
-    !validTask ||
-    !validPersona ||
-    !validMaximum ||
-    !validCreatedAt ||
-    !isRunStatus(status) ||
-    productId !== flowPilotProduct.id ||
-    !validCurrentCount
+    !stateResult.success ||
+    stateResult.data.currentActionCount !== actionsResult.data.length ||
+    stateResult.data.modelCallCount > maxActions
   ) {
     return undefined;
   }
@@ -58,9 +77,9 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     personaId,
     maxActions,
     createdAt,
-    status,
     productId,
-    currentActionCount,
+    actions: actionsResult.data,
+    ...stateResult.data,
   };
 }
 
@@ -68,11 +87,9 @@ function resolveStorage(storage?: StorageLike) {
   if (storage) {
     return storage;
   }
-
   if (typeof window === "undefined") {
     return undefined;
   }
-
   try {
     return window.localStorage;
   } catch {
@@ -80,37 +97,40 @@ function resolveStorage(storage?: StorageLike) {
   }
 }
 
-export function listLocalRuns(storage?: StorageLike): TestRun[] {
-  const target = resolveStorage(storage);
-
-  if (!target) {
-    return [];
-  }
-
+function readRunsAtKey(target: StorageLike, key: string) {
   try {
-    const rawValue = target.getItem(RUN_STORAGE_KEY);
+    const rawValue = target.getItem(key);
     if (!rawValue) {
       return [];
     }
-
     const parsed: unknown = JSON.parse(rawValue);
     if (!Array.isArray(parsed)) {
       return [];
     }
-
-    return parsed
-      .map(parseStoredRun)
-      .filter((run): run is TestRun => Boolean(run))
-      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    return parsed.map(parseStoredRun).filter((run): run is TestRun => Boolean(run));
   } catch {
     return [];
   }
 }
 
-export function createLocalRun(run: TestRun, storage?: StorageLike) {
+export function listLocalRuns(storage?: StorageLike): TestRun[] {
+  const target = resolveStorage(storage);
+  if (!target) {
+    return [];
+  }
+
+  const currentRuns = readRunsAtKey(target, RUN_STORAGE_KEY);
+  const legacyRuns = readRunsAtKey(target, LEGACY_RUN_STORAGE_KEY);
+  const runs = [...currentRuns, ...legacyRuns].filter(
+    (run, index, allRuns) => allRuns.findIndex((candidate) => candidate.id === run.id) === index,
+  );
+
+  return runs.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+}
+
+export function saveLocalRun(run: TestRun, storage?: StorageLike) {
   const target = resolveStorage(storage);
   const validatedRun = parseStoredRun(run);
-
   if (!target || !validatedRun) {
     return false;
   }
@@ -124,31 +144,30 @@ export function createLocalRun(run: TestRun, storage?: StorageLike) {
   }
 }
 
+export const createLocalRun = saveLocalRun;
+
 export function readLocalRun(id: string, storage?: StorageLike) {
   return listLocalRuns(storage).find((run) => run.id === id);
 }
 
 export function removeLocalRun(id: string, storage?: StorageLike) {
   const target = resolveStorage(storage);
-
   if (!target) {
     return false;
   }
 
   try {
     const runs = listLocalRuns(target);
-    const retainedRuns = runs.filter((run) => run.id !== id);
-
-    if (retainedRuns.length === runs.length) {
+    if (!runs.some((run) => run.id === id)) {
       return false;
     }
-
+    const retainedRuns = runs.filter((run) => run.id !== id);
     if (retainedRuns.length === 0) {
       target.removeItem(RUN_STORAGE_KEY);
     } else {
       target.setItem(RUN_STORAGE_KEY, JSON.stringify(retainedRuns));
     }
-
+    target.removeItem(LEGACY_RUN_STORAGE_KEY);
     return true;
   } catch {
     return false;

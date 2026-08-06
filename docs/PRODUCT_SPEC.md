@@ -15,8 +15,8 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 1. Browse or select product knowledge, initially from the completed controlled FlowPilot knowledge base and later from bounded documents and screenshots.
 2. Select a predefined customer task and behavioral persona, then configure a bounded action allowance (available now).
 3. Inspect deterministic retrieval suggestions for the configured question (available now).
-4. Start a simulation and watch the synthetic customer reason through the available information.
-5. Review the chronological actions, conclusions, and supporting evidence.
+4. Start the synthetic customer and watch one bounded action execute per request (available now).
+5. Review the chronological actions and customer conclusion (available now); formal evidence collection comes next.
 6. Compare the prosecutor and defense arguments.
 7. Read the judge's verdict, confidence, rationale, and recommended product action.
 
@@ -28,7 +28,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Test creation and task definition (available now)
 - Browser-local configured run detail (available now)
 - Deterministic retrieval playground and run suggestions (available now)
-- Active run visualization
+- Active synthetic-customer run visualization (available now)
 - Evidence timeline
 - Courtroom arguments
 - Verdict detail
@@ -48,7 +48,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - A controlled fictional SaaS product, FlowPilot, as the initial test surface
 - Creation of one narrowly scoped customer task per run
 - Deterministic retrieval from curated product knowledge
-- A synthetic customer simulation divided into observable steps
+- A synthetic customer simulation divided into observable steps (available now)
 - Evidence capture for customer actions and conclusions
 - Prosecutor and defense arguments grounded in recorded evidence
 - A judge verdict using the five defined categories
@@ -86,9 +86,9 @@ Phase 2 provides product content and browsing. Arbitrary document uploads remain
 
 Phase 3 adds a deterministic test-creation flow at `/tests/new`. Users choose from six predefined FlowPilot questions, five behavioral customer personas, and an action allowance from 3 to 10. The task library retains stable IDs, categories, difficulty labels, scenarios, and relevant FlowPilot page references. The persona library retains stable IDs, behavior traits, and bounded default action allowances.
 
-Creating a test produces a `ready` run with zero completed actions and opens `/runs/[id]`. The run page displays the selected task, persona, action allowance, and three deterministic retrieval suggestions. It never displays an expected final answer or the task's internal expected-page list.
+Creating a test produces a `ready` run with zero completed actions and opens `/runs/[id]`. Before execution, the run page displays the selected task, persona, action allowance, and three deterministic retrieval suggestions. It never displays an expected final answer or the task's internal expected-page list.
 
-Runs are stored in versioned browser localStorage. They are available only in the browser that created them and may be lost when browser data is cleared. No AI simulation executes; customer actions, evidence collection, and courtroom agents remain planned work.
+Runs are stored in versioned browser localStorage. They are available only in the browser that created them and may be lost when browser data is cleared. Existing Phase 3 records are migrated tolerantly when read.
 
 ## Deterministic retrieval
 
@@ -99,3 +99,15 @@ Queries are lowercased, stripped of common punctuation, collapsed, tokenized, de
 Ranking uses fixed lexical weights for exact phrases and direct or synonym matches in section titles, bodies, page titles, keywords, summaries, and callouts. Results include short excerpts and a readable score breakdown. The same query and filters always produce the same order.
 
 Configured run pages use the customer question to display the top three retrieval suggestions. These suggestions do not represent customer actions, do not alter run state or action counts, and do not expose internal expected answers. Embeddings and semantic retrieval are deliberately deferred until deterministic behavior has been evaluated.
+
+## Synthetic customer simulation
+
+Phase 5 adds a single synthetic customer. Starting or advancing a run sends one compact request to the server, receives one strict action (`SEARCH`, `OPEN_PAGE`, `INSPECT_SECTION`, `ANSWER`, or `GIVE_UP`), executes that action against the controlled FlowPilot fixture, and persists the result in the browser. Auto-run repeats the same short request sequentially; it is not one long autonomous server process.
+
+The timeline records public action explanations, sanitized inputs, deterministic observations, source identifiers, timestamps, success state, and safe errors. `ANSWER` and `GIVE_UP` complete the run. Reaching the configured limit completes it as budget exhausted without fabricating an answer. This phase records the customer's conclusion but does not judge whether it is correct.
+
+The agent receives the selected task, persona, remaining budget, compact prior history, current page or section, recent search results, and the public title/slug directory. It never receives internal expected-page metadata, expected answers, or future evaluation labels. This keeps later courtroom evaluation independent rather than leaking the test oracle into the customer.
+
+Product content is wrapped in an explicit untrusted-data boundary. The model is instructed to treat it as information rather than instructions, and the server validates every returned action and every page or section identifier before use. The model cannot reach arbitrary URLs, files, browser controls, or external tools.
+
+Only the synthetic customer exists in Phase 5. Evidence collection, prosecutor and defense arguments, judge verdicts, document and screenshot uploads, and live website testing remain unimplemented.

@@ -10,10 +10,12 @@ import {
   generateRunId,
   getCustomerPersona,
   getCustomerTask,
+  LEGACY_RUN_STORAGE_KEY,
   MAX_ACTIONS,
   MIN_ACTIONS,
   parseStoredRun,
   readLocalRun,
+  resetSimulationRun,
   RUN_STORAGE_KEY,
   type StorageLike,
 } from ".";
@@ -83,7 +85,7 @@ describe("test library", () => {
   });
 
   it("creates ready runs with zero actions", () => {
-    expect(validRun).toMatchObject({ status: "ready", currentActionCount: 0, productId: "flowpilot" });
+    expect(validRun).toMatchObject({ status: "ready", currentActionCount: 0, modelCallCount: 0, actions: [], productId: "flowpilot" });
   });
 
   it("looks up tasks and personas and handles unknown IDs", () => {
@@ -99,5 +101,57 @@ describe("test library", () => {
     expect(createLocalRun(validRun, storage)).toBe(true);
     expect(readLocalRun(validRun.id, storage)).toEqual(validRun);
     expect(storage.getItem(RUN_STORAGE_KEY)).not.toContain("expectedAnswer");
+  });
+
+  it("keeps Phase 3 v1 runs readable after storage migration", () => {
+    const storage = createMemoryStorage();
+    const phaseThreeRun = {
+      id: "run-phase-three",
+      taskId: "api-allowance",
+      personaId: "careful-researcher",
+      maxActions: 9,
+      createdAt: "2026-08-05T10:00:00.000Z",
+      status: "ready",
+      productId: "flowpilot",
+      currentActionCount: 0,
+    };
+    storage.setItem(LEGACY_RUN_STORAGE_KEY, JSON.stringify([phaseThreeRun]));
+
+    expect(readLocalRun("run-phase-three", storage)).toMatchObject({
+      ...phaseThreeRun,
+      actions: [],
+      modelCallCount: 0,
+      startedAt: null,
+    });
+  });
+
+  it("resets simulation state while preserving task and persona", () => {
+    const completed = {
+      ...validRun,
+      status: "completed" as const,
+      currentActionCount: 1,
+      modelCallCount: 1,
+      startedAt: "2026-08-06T10:00:00.000Z",
+      completedAt: "2026-08-06T10:01:00.000Z",
+      completionReason: "answer" as const,
+      finalAnswer: "A supported answer.",
+      finalConfidence: "high" as const,
+      actions: [
+        {
+          id: "action-run-demo-valid123-1",
+          number: 1,
+          type: "ANSWER" as const,
+          explanation: "The policy supports an answer.",
+          timestamp: "2026-08-06T10:01:00.000Z",
+          input: { answer: "A supported answer.", confidence: "high" },
+          observation: { kind: "answer" as const, answer: "A supported answer.", confidence: "high" as const },
+          success: true,
+        },
+      ],
+    };
+    const reset = resetSimulationRun(completed, "2026-08-06T11:00:00.000Z");
+
+    expect(reset).toMatchObject({ taskId: validRun.taskId, personaId: validRun.personaId, status: "ready", currentActionCount: 0, actions: [] });
+    expect(reset.finalAnswer).toBeNull();
   });
 });

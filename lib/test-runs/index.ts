@@ -1,7 +1,17 @@
 export { customerPersonas, customerTasks, getCustomerPersona, getCustomerTask } from "./data";
 export { createReadyRun } from "./run";
 export { generateRunId } from "./run-id";
-export { createLocalRun, listLocalRuns, parseStoredRun, readLocalRun, removeLocalRun, RUN_STORAGE_KEY } from "./storage";
+export { applySimulationFailure, applySimulationStep, compactRunHistory, resetSimulationRun, toSimulationStepRequest } from "./simulation";
+export {
+  createLocalRun,
+  LEGACY_RUN_STORAGE_KEY,
+  listLocalRuns,
+  parseStoredRun,
+  readLocalRun,
+  removeLocalRun,
+  RUN_STORAGE_KEY,
+  saveLocalRun,
+} from "./storage";
 export type { StorageLike } from "./storage";
 export {
   MAX_ACTIONS,

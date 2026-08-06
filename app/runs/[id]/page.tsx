@@ -4,7 +4,7 @@ import { RunDetail } from "@/components/run-detail";
 
 export const metadata: Metadata = {
   title: "Local test run | Trial by User",
-  description: "Review a browser-local FlowPilot test configuration.",
+  description: "Run and review a browser-local FlowPilot synthetic customer simulation.",
 };
 
 type RunPageProps = {

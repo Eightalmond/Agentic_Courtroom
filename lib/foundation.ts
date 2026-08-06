@@ -34,12 +34,13 @@ export const foundationChecks: readonly FoundationCheck[] = [
   { label: "Controlled FlowPilot knowledge base", complete: true },
   { label: "Browser-local test configuration", complete: true },
   { label: "Deterministic section retrieval", complete: true },
+  { label: "Bounded synthetic customer simulation", complete: true },
 ];
 
 export const futureCapabilities = [
-  "Run and observe a customer simulation",
-  "Collect evidence from customer actions",
-  "Review arguments and a courtroom verdict",
+  "Courtroom evaluation and verdicts",
+  "Document and screenshot uploads",
+  "Controlled live-site testing",
 ] as const;
 
 export function getFoundationProgress(checks: readonly FoundationCheck[]) {

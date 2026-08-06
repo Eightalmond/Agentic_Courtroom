@@ -70,7 +70,7 @@ export default function ProductIndexPage() {
         <div className="mx-auto grid max-w-7xl gap-6 px-6 py-12 sm:px-8 lg:grid-cols-[0.4fr_1fr] lg:items-center lg:px-10">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Why controlled?</p>
           <p className="max-w-3xl text-lg leading-8 text-slate-700">
-            A local, deterministic knowledge base gives future synthetic customers a safe environment with stable facts and no external actions. Customer simulations are not implemented yet.
+            A local, deterministic knowledge base gives synthetic customers a safe environment with stable facts and no external actions. Phase 5 simulations can inspect only this controlled content.
           </p>
         </div>
       </section>
