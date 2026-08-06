@@ -316,7 +316,7 @@ export function RunDetail({ runId }: RunDetailProps) {
             <div className="flex justify-between gap-3"><dt className="text-slate-400">Created</dt><dd className="text-right font-bold text-slate-700">{formatDateTime(run.createdAt)}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-slate-400">Persistence</dt><dd className="font-bold text-slate-700">This browser</dd></div>
           </dl>
-          <p className="mt-5 text-xs leading-5 text-slate-400">Each step consumes OpenAI API usage. Calls are sequential, and the server enforces the configured maximum.</p>
+          <p className="mt-5 text-xs leading-5 text-slate-400">Each step consumes usage from the server-configured LLM provider. Calls are sequential, and the server enforces the configured maximum.</p>
         </aside>
       </div>
     </main>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { SimulationError, runSimulationStep } from "@/lib/simulation";
-import { createOpenAICustomerProvider } from "@/lib/simulation/openai-provider";
+import { createSimulationProvider } from "@/lib/simulation/providers/factory";
 
 const MAX_REQUEST_BYTES = 64 * 1024;
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // This keeps builds and invalid requests independent of API credentials.
     const result = await runSimulationStep(body, {
       async decide(input) {
-        return createOpenAICustomerProvider().decide(input);
+        return createSimulationProvider().decide(input);
       },
     });
     return NextResponse.json(result, { status: 200 });

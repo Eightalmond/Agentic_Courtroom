@@ -3,22 +3,36 @@ import "server-only";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 
-import { SimulationError, mapProviderError } from "./errors";
-import { readOpenAIConfiguration, type OpenAIEnvironment } from "./environment";
-import type { CustomerDecisionProvider } from "./provider";
-import { CustomerDecisionWireSchema, parseCustomerDecision } from "./schemas";
+import { SimulationError, mapProviderError } from "../errors";
+import type { OpenAIProviderConfiguration } from "../environment";
+import type { CustomerDecisionProvider } from "../provider";
+import { CustomerDecisionWireSchema, parseCustomerDecision } from "../schemas";
 
 const PROVIDER_TIMEOUT_MS = 20_000;
 
-export function createOpenAICustomerProvider(environment: OpenAIEnvironment = process.env): CustomerDecisionProvider {
-  const { apiKey, model } = readOpenAIConfiguration(environment);
-  const client = new OpenAI({ apiKey, maxRetries: 0, timeout: PROVIDER_TIMEOUT_MS });
+type OpenAIResponsesClient = {
+  responses: {
+    parse(request: unknown): Promise<{ output_parsed: unknown }>;
+  };
+};
+
+export function createOpenAICustomerProvider(
+  configuration: OpenAIProviderConfiguration,
+  injectedClient?: OpenAIResponsesClient,
+): CustomerDecisionProvider {
+  const client =
+    injectedClient ??
+    (new OpenAI({
+      apiKey: configuration.apiKey,
+      maxRetries: 0,
+      timeout: PROVIDER_TIMEOUT_MS,
+    }) as unknown as OpenAIResponsesClient);
 
   return {
     async decide({ instructions, input }) {
       try {
         const response = await client.responses.parse({
-          model,
+          model: configuration.model,
           instructions,
           input,
           max_output_tokens: 500,

@@ -49,6 +49,26 @@ export const CustomerDecisionWireSchema = z
   })
   .strict();
 
+// Groq's strict Structured Outputs mode accepts an explicit JSON Schema.
+// Zod remains the runtime authority and applies the tighter content rules below.
+export const CUSTOMER_DECISION_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    action: { type: "string", enum: ["SEARCH", "OPEN_PAGE", "INSPECT_SECTION", "ANSWER", "GIVE_UP"] },
+    explanation: { type: "string" },
+    query: { type: ["string", "null"] },
+    pageSlug: { type: ["string", "null"] },
+    sectionId: { type: ["string", "null"] },
+    answer: { type: ["string", "null"] },
+    confidence: {
+      anyOf: [{ type: "string", enum: ["low", "medium", "high"] }, { type: "null" }],
+    },
+    reason: { type: ["string", "null"] },
+  },
+  required: ["action", "explanation", "query", "pageSlug", "sectionId", "answer", "confidence", "reason"],
+  additionalProperties: false,
+} as const;
+
 export function parseCustomerDecision(value: unknown) {
   const wire = CustomerDecisionWireSchema.parse(value);
 

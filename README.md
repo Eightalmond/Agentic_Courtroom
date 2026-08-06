@@ -2,7 +2,7 @@
 
 Trial by User is an agentic product-testing application. Its synthetic customer now attempts one focused FlowPilot task through short, observable actions. Courtroom evaluation—prosecutor, defense, and judge agents—remains deliberately unimplemented.
 
-Phase 5 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, and a browser-local simulation timeline backed by a stateless Next.js Route Handler and the OpenAI Responses API.
+Phase 5.1 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, and a browser-local simulation timeline backed by a stateless Next.js Route Handler and a configurable Groq or OpenAI provider.
 
 ## Available routes
 
@@ -17,7 +17,7 @@ Phase 5 is complete. The application includes the controlled fictional FlowPilot
 
 - Node.js 22
 - npm
-- An OpenAI API key and a Responses API model with Structured Outputs support for simulations
+- A Groq or OpenAI API key and a compatible model with Structured Outputs support for simulations
 - Docker Desktop or another Docker Compose-compatible runtime (optional)
 
 The app, tests, and production build do not require API credentials. Credentials are needed only when a simulation step is requested.
@@ -32,6 +32,15 @@ cp .env.example .env.local
 Add server-side values to `.env.local`:
 
 ```dotenv
+LLM_PROVIDER=groq
+GROQ_API_KEY=
+GROQ_MODEL=openai/gpt-oss-20b
+```
+
+Groq is the recommended local provider and is the default when `LLM_PROVIDER` is omitted. To use OpenAI instead, configure:
+
+```dotenv
+LLM_PROVIDER=openai
 OPENAI_API_KEY=
 OPENAI_MODEL=
 ```
@@ -63,21 +72,24 @@ npm test
 npm run build
 ```
 
-Tests mock the customer-decision provider and never make real OpenAI requests.
+Tests mock the customer-decision provider and never make real provider requests.
 
 ## Deploy to Vercel Hobby
 
 1. Import the repository into Vercel and keep the detected Next.js preset.
 2. Keep the default `npm run build` command and Node.js 22 runtime.
-3. Add `OPENAI_API_KEY` and `OPENAI_MODEL` as server-side project environment variables.
-4. Do not expose either variable with a `NEXT_PUBLIC_` prefix.
-5. Deploy on the Hobby plan.
+3. Set `LLM_PROVIDER` explicitly to `groq` or `openai` for production.
+4. Add only the selected provider's key and model variables as server-side project environment variables.
+5. Do not expose provider variables with a `NEXT_PUBLIC_` prefix.
+6. Deploy on the Hobby plan.
 
 The production design uses short Route Handler requests and requires no permanently running backend or Docker runtime.
 
 ## How simulation works
 
-The browser stores the run and sends a compact, validated history to `POST /api/simulations/step`. The server reconstructs the trusted task and persona, asks the OpenAI Responses API for one strict structured decision, validates it, and executes one deterministic tool against local FlowPilot content. The response returns the action and updated simulation fields for browser-local persistence.
+The browser stores the run and sends a compact, validated history to `POST /api/simulations/step`. The server reconstructs the trusted task and persona, resolves the configured provider, asks its Responses API for one strict structured decision, validates it with Zod, and executes one deterministic tool against local FlowPilot content. The response returns the action and updated simulation fields for browser-local persistence.
+
+Groq uses the official `openai` npm client against the fixed `https://api.groq.com/openai/v1` compatibility endpoint. It calls `responses.create` with an explicit strict JSON Schema, parses `response.output_text` as exact JSON, and then applies the same wire and discriminated-union Zod validation used by OpenAI. SDK retries are disabled, and the application never falls back automatically to a different provider.
 
 Calls are sequential, retries are minimized, deterministic validation happens before provider access, and the server enforces a maximum of 10 configured model calls. Product content is explicitly delimited as untrusted data. Internal expected-page metadata and expected answers are never added to the customer prompt.
 
@@ -87,7 +99,7 @@ Calls are sequential, retries are minimized, deterministic validation happens be
 - Runs remain local to one browser and can be lost when browser data is cleared.
 - FlowPilot is the only product, and retrieval is lexical over repository-owned content.
 - There are no uploads, database, authentication, arbitrary URLs, live website controls, browser automation, or external product actions.
-- A real OpenAI API call requires valid credentials and a compatible configured model.
+- A real simulation call requires valid credentials for the selected provider and a compatible configured model.
 
 ## Documentation
 

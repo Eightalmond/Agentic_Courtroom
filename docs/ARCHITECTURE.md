@@ -26,11 +26,15 @@ Embedding and vector search are deliberately deferred. Phase 5 calls the determi
 
 `POST /api/simulations/step` performs exactly one bounded agent step. The browser sends a compact snapshot containing stable task and persona IDs, counters, current content identifiers, limited recent search results, and sanitized action-history summaries. The server validates size, shape, sequential numbering, same-origin behavior, completion state, and the model-call budget before any provider access. Trusted task and persona definitions are reconstructed from repository-owned IDs, so client-supplied descriptions cannot replace them.
 
-The server builds a compact prompt with an explicit `<untrusted_product_data>` boundary, then uses the official OpenAI SDK and Responses API Structured Outputs. A root-object Zod schema constrains the wire response, and a second discriminated-union schema enforces the exact fields for `SEARCH`, `OPEN_PAGE`, `INSPECT_SECTION`, `ANSWER`, and `GIVE_UP`. The public explanation is length-limited plain text; raw chain-of-thought and provider traces are neither requested nor returned.
+The server builds a compact prompt with an explicit `<untrusted_product_data>` boundary, then resolves a server-configured Groq or OpenAI provider behind one customer-decision interface. A root-object Zod schema constrains the wire response, and a second discriminated-union schema enforces the exact fields for `SEARCH`, `OPEN_PAGE`, `INSPECT_SECTION`, `ANSWER`, and `GIVE_UP`. The public explanation is length-limited plain text; raw chain-of-thought and provider traces are neither requested nor returned.
 
 After validation, a deterministic server-owned executor resolves search, page, and section actions only against the local FlowPilot data. Unknown identifiers become recorded tool-error observations and do not trigger a second repair call. Answer and give-up actions complete the run without evaluating correctness. If the budget ends first, the run completes with a budget-exhausted outcome and no fabricated answer.
 
-The OpenAI API key and model name are read only inside the request path from `OPENAI_API_KEY` and `OPENAI_MODEL`. They are never sent to client code, responses, logs, or localStorage. SDK retries are disabled and requests have a short timeout. Provider authentication, rate-limit, timeout, connection, and malformed-output failures map to stable safe errors. A failed provider attempt consumes one model-call slot; safe manual retry is possible only while budget remains.
+`LLM_PROVIDER` selects `groq` or `openai` and defaults to Groq for local development. Production deployments should set it explicitly. Only the selected provider's key and model are validated, and configuration is resolved only when a valid simulation step reaches the provider boundary—not during builds, static rendering, or deterministic request rejection. There is no automatic fallback.
+
+Groq uses the existing official `openai` npm package with the fixed `https://api.groq.com/openai/v1` base URL and `responses.create`. The request supplies an explicit strict JSON Schema supported by the recommended `openai/gpt-oss-20b` model. The returned `output_text` must be exact JSON and must pass the existing Zod wire schema and exact action schema; there is no Markdown extraction, heuristic repair, or second provider call. OpenAI retains the Responses API parse path with the same Zod schemas.
+
+Provider keys and model names are read only inside the request path from `GROQ_API_KEY`/`GROQ_MODEL` or `OPENAI_API_KEY`/`OPENAI_MODEL`. They are never sent to client code, responses, logs, or localStorage. SDK retries are disabled and requests have a short timeout. Provider authentication, rate-limit, timeout, connection, and malformed-output failures map to stable safe errors. A failed provider attempt consumes one model-call slot; safe manual retry is possible only while budget remains.
 
 The browser applies each returned update to versioned localStorage and renders the timeline, current content, progress, and customer outcome. Auto-run is a client loop over the same endpoint. It awaits each response before issuing the next, stops on completion, error, user request, or budget exhaustion, and uses an in-flight guard to prevent duplicate simultaneous calls.
 
@@ -45,7 +49,7 @@ There is currently:
 - no database;
 - no authentication;
 - no file storage or uploads;
-- one OpenAI Responses API integration for the synthetic customer only;
+- configurable Groq and OpenAI Responses API integrations for the synthetic customer only;
 - one stateless simulation-step Route Handler and no separate backend.
 
 There is no database or server-side run persistence. The only run persistence is browser-specific localStorage. The prosecutor, defense, judge, and formal evidence collector do not exist yet.

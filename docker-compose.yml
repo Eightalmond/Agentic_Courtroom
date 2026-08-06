@@ -10,6 +10,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
+      # Next.js loads .env.local from this bind-mounted project directory.
+      # Provider secrets are never passed as image build arguments.
       - .:/app
       - node_modules:/app/node_modules
 
