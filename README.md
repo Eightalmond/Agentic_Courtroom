@@ -2,7 +2,7 @@
 
 Trial by User is an agentic product-testing application. Its synthetic customer now attempts one focused FlowPilot task through short, observable actions. Courtroom evaluation—prosecutor, defense, and judge agents—remains deliberately unimplemented.
 
-Phase 5.1 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, and a browser-local simulation timeline backed by a stateless Next.js Route Handler and a configurable Groq or OpenAI provider.
+Phase 6 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, a browser-local simulation timeline, and deterministic evidence preparation. Groq or OpenAI is used only for synthetic-customer decisions; evidence collection makes no provider call.
 
 ## Available routes
 
@@ -12,6 +12,7 @@ Phase 5.1 is complete. The application includes the controlled fictional FlowPil
 - `/runs/[id]` — synthetic customer controls, journey, and outcome
 - `/retrieval` — deterministic retrieval playground
 - `/api/simulations/step` — server-only, one-action simulation boundary
+- `/api/evidence/collect` — server-only, deterministic evidence collection boundary
 
 ## Requirements
 
@@ -93,9 +94,19 @@ Groq uses the official `openai` npm client against the fixed `https://api.groq.c
 
 Calls are sequential, retries are minimized, deterministic validation happens before provider access, and the server enforces a maximum of 10 configured model calls. Product content is explicitly delimited as untrusted data. Internal expected-page metadata and expected answers are never added to the customer prompt.
 
+## How evidence collection works
+
+After an answer, give-up, or action-budget outcome, the run page offers **Prepare evidence**. `POST /api/evidence/collect` validates the completed journey, reconstructs trusted task, persona, and FlowPilot sources, then returns one versioned evidence bundle. Search results, opened pages, inspected sections, and displayed callouts become customer-seen journey evidence. Required unseen sections become missing evidence, while at most three separate unseen sections may be included as clearly labelled context.
+
+Six internal task evaluation specifications contain source IDs and bounded fact concepts—not full expected natural-language answers. Mechanical fact checks use explainable phrase and negation rules to label answer concepts as supported, unsupported, contradicted, or not assessable. These checks prepare evidence and are not a verdict.
+
+The bundle records source text, stable references, exposure actions, coverage, integrity counts, customer outcome, and mechanical checks. It is saved with the run in versioned localStorage, survives refresh, and is removed by simulation reset. An existing bundle is reused by the interface; **Rebuild evidence** is the explicit replacement action for an unchanged completed run. Both courtroom sides will later receive the same bundle.
+
+> Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is deferred to the prosecutor, defense, and judge.
+
 ## Current limitations
 
-- Only the synthetic customer exists; there is no evidence collector or courtroom evaluation.
+- Synthetic-customer simulation and evidence collection exist; there are no prosecutor, defense, judge, or verdict agents yet.
 - Runs remain local to one browser and can be lost when browser data is cleared.
 - FlowPilot is the only product, and retrieval is lexical over repository-owned content.
 - There are no uploads, database, authentication, arbitrary URLs, live website controls, browser automation, or external product actions.

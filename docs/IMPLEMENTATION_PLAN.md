@@ -78,15 +78,21 @@
 - Existing simulation actions, API contracts, local persistence, and deterministic tool behavior remain unchanged.
 - Documentation covers local Docker and npm configuration plus explicit production selection.
 
-## Phase 6 — Evidence collection (planned)
+## Phase 6 — Evidence collection (completed)
 
 **Goal:** Preserve an auditable record of the customer's actions, observations, and conclusions.
 
 **Acceptance criteria:**
 
-- Evidence entries include sequence, source references, and timestamps.
-- Unsupported conclusions can be distinguished from sourced observations.
-- Incomplete and failed runs retain useful diagnostic evidence.
+- Answer, give-up, and budget-exhausted journeys produce one deterministic, versioned evidence bundle without an LLM call.
+- Customer-seen search results, opened pages, inspected sections, and callouts retain trusted source references and first-exposure actions.
+- Required unseen sources are labelled missing; no more than three separate unseen sources are clearly labelled as context.
+- Six internal task specifications provide valid section IDs, bounded fact concepts, qualification sources, and contradictory claim markers without storing full expected answers.
+- Mechanical checks return supported, unsupported, contradicted, or not-assessable and are visibly separated from future verdicts.
+- Integrity metadata records action, tool, completion, coverage, and missing-evidence counts.
+- The browser-local bundle survives refresh, explicit rebuild replaces it, and simulation reset clears it while older runs remain readable.
+- The evidence workspace provides coverage, filters, source links, fact checks, and a disabled Phase 7 courtroom control.
+- The collector uses no provider credentials, database, embeddings, uploads, URLs, browser automation, or courtroom agents.
 
 ## Phase 7 — Prosecutor and defense agents (planned)
 

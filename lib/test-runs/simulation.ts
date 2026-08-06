@@ -5,6 +5,7 @@ import type {
   SimulationStepRequest,
   SimulationStepResponse,
 } from "@/lib/simulation/types";
+import type { EvidenceBundle, EvidenceCollectionRequest } from "@/lib/evidence/types";
 
 import type { TestRun } from "./types";
 
@@ -38,6 +39,9 @@ export function compactRunHistory(run: TestRun): CompactHistoryEntry[] {
 }
 
 export function toSimulationStepRequest(run: TestRun): SimulationStepRequest {
+  if (run.evidenceBundle) {
+    throw new Error("Reset the simulation before taking another action after evidence collection.");
+  }
   return {
     runId: run.id,
     taskId: run.taskId,
@@ -52,6 +56,43 @@ export function toSimulationStepRequest(run: TestRun): SimulationStepRequest {
     currentSectionId: run.currentSectionId,
     latestSearchResults: run.latestSearchResults,
   };
+}
+
+export function toEvidenceCollectionRequest(run: TestRun): EvidenceCollectionRequest {
+  return {
+    id: run.id,
+    taskId: run.taskId,
+    personaId: run.personaId,
+    maxActions: run.maxActions,
+    createdAt: run.createdAt,
+    productId: run.productId,
+    status: run.status,
+    currentActionCount: run.currentActionCount,
+    modelCallCount: run.modelCallCount,
+    startedAt: run.startedAt,
+    updatedAt: run.updatedAt,
+    completedAt: run.completedAt,
+    actions: run.actions,
+    currentPageSlug: run.currentPageSlug,
+    currentSectionId: run.currentSectionId,
+    latestSearchResults: run.latestSearchResults,
+    finalAnswer: run.finalAnswer,
+    finalConfidence: run.finalConfidence,
+    giveUpReason: run.giveUpReason,
+    completionReason: run.completionReason,
+    lastError: run.lastError,
+  };
+}
+
+export function applyEvidenceBundle(run: TestRun, evidenceBundle: EvidenceBundle): TestRun {
+  if (run.status !== "completed" || evidenceBundle.runId !== run.id) {
+    throw new Error("Evidence can only be attached to its completed customer run.");
+  }
+  return { ...run, evidenceBundle };
+}
+
+export function discardEvidenceBundle(run: TestRun): TestRun {
+  return { ...run, evidenceBundle: null };
 }
 
 export function applySimulationStep(run: TestRun, response: SimulationStepResponse): TestRun {
@@ -76,6 +117,7 @@ export function resetSimulationRun(run: TestRun, now = new Date().toISOString())
     updatedAt: now,
     completedAt: null,
     actions: [],
+    evidenceBundle: null,
     currentPageSlug: null,
     currentSectionId: null,
     latestSearchResults: [],

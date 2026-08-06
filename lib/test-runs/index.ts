@@ -1,10 +1,20 @@
 export { customerPersonas, customerTasks, getCustomerPersona, getCustomerTask } from "./data";
 export { createReadyRun } from "./run";
 export { generateRunId } from "./run-id";
-export { applySimulationFailure, applySimulationStep, compactRunHistory, resetSimulationRun, toSimulationStepRequest } from "./simulation";
+export {
+  applyEvidenceBundle,
+  applySimulationFailure,
+  applySimulationStep,
+  compactRunHistory,
+  discardEvidenceBundle,
+  resetSimulationRun,
+  toEvidenceCollectionRequest,
+  toSimulationStepRequest,
+} from "./simulation";
 export {
   createLocalRun,
   LEGACY_RUN_STORAGE_KEY,
+  PHASE_FIVE_RUN_STORAGE_KEY,
   listLocalRuns,
   parseStoredRun,
   readLocalRun,

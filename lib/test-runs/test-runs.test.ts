@@ -14,6 +14,7 @@ import {
   MAX_ACTIONS,
   MIN_ACTIONS,
   parseStoredRun,
+  PHASE_FIVE_RUN_STORAGE_KEY,
   readLocalRun,
   resetSimulationRun,
   RUN_STORAGE_KEY,
@@ -123,6 +124,13 @@ describe("test library", () => {
       modelCallCount: 0,
       startedAt: null,
     });
+  });
+
+  it("keeps Phase 5 v2 runs readable after evidence-storage migration", () => {
+    const storage = createMemoryStorage();
+    storage.setItem(PHASE_FIVE_RUN_STORAGE_KEY, JSON.stringify([validRun]));
+
+    expect(readLocalRun(validRun.id, storage)).toEqual(validRun);
   });
 
   it("resets simulation state while preserving task and persona", () => {

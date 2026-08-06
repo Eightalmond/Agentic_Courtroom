@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
 
+import { EvidenceWorkspace } from "@/components/evidence/evidence-workspace";
+import { EvidenceClientError, requestEvidenceBundle } from "@/lib/evidence/client";
 import { flowPilotProduct, getProductPage } from "@/lib/product";
 import { getSectionById, searchProductKnowledge } from "@/lib/retrieval";
 import { requestSimulationStep, SimulationClientError } from "@/lib/simulation/client";
@@ -10,11 +12,13 @@ import type { SimulationActionEntry, SimulationObservation } from "@/lib/simulat
 import {
   applySimulationFailure,
   applySimulationStep,
+  applyEvidenceBundle,
   getCustomerPersona,
   getCustomerTask,
   readLocalRun,
   resetSimulationRun,
   saveLocalRun,
+  toEvidenceCollectionRequest,
   toSimulationStepRequest,
   type TestRun,
 } from "@/lib/test-runs";
@@ -101,8 +105,11 @@ export function RunDetail({ runId }: RunDetailProps) {
   const [revision, setRevision] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
   const [isAutoRunning, setIsAutoRunning] = useState(false);
+  const [isEvidenceBusy, setIsEvidenceBusy] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
+  const [evidenceError, setEvidenceError] = useState<string | null>(null);
   const inFlight = useRef(false);
+  const evidenceInFlight = useRef(false);
   const autoRunRequested = useRef(false);
   void revision;
 
@@ -121,7 +128,7 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   async function takeOneStep(sourceRun: TestRun) {
-    if (inFlight.current || sourceRun.status === "completed" || sourceRun.modelCallCount >= sourceRun.maxActions) {
+    if (inFlight.current || sourceRun.evidenceBundle || sourceRun.status === "completed" || sourceRun.modelCallCount >= sourceRun.maxActions) {
       return undefined;
     }
 
@@ -178,12 +185,31 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   function resetRun() {
-    if (!run || inFlight.current) {
+    if (!run || inFlight.current || evidenceInFlight.current) {
       return;
     }
     autoRunRequested.current = false;
     setIsAutoRunning(false);
     persist(resetSimulationRun(run));
+  }
+
+  async function prepareEvidence(sourceRun: TestRun) {
+    if (sourceRun.status !== "completed" || evidenceInFlight.current) return;
+    evidenceInFlight.current = true;
+    setIsEvidenceBusy(true);
+    setEvidenceError(null);
+    try {
+      const bundle = await requestEvidenceBundle(toEvidenceCollectionRequest(sourceRun));
+      persist(applyEvidenceBundle(sourceRun, bundle));
+    } catch (error) {
+      const clientError = error instanceof EvidenceClientError
+        ? error
+        : new EvidenceClientError({ code: "EVIDENCE_COLLECTION_FAILED", message: "Evidence collection failed safely.", retryable: true });
+      setEvidenceError(`${clientError.safeError.code}: ${clientError.safeError.message}`);
+    } finally {
+      evidenceInFlight.current = false;
+      setIsEvidenceBusy(false);
+    }
   }
 
   if (!browserReady) {
@@ -246,6 +272,22 @@ export function RunDetail({ runId }: RunDetailProps) {
             </section>
           )}
 
+          {isComplete && !run.evidenceBundle && (
+            <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:p-8" aria-labelledby="prepare-evidence-title">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-800">Deterministic evidence preparation</p>
+              <h2 id="prepare-evidence-title" className="mt-3 text-2xl font-bold text-slate-950">Prepare the customer journey for review</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">Collect customer-seen sources, bounded context, missing required evidence, and mechanical fact checks. This makes no courtroom judgment and uses no LLM call.</p>
+              {evidenceError && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">{evidenceError}</p>}
+              <button className="mt-5 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={isEvidenceBusy} onClick={() => void prepareEvidence(run)} type="button">
+                {isEvidenceBusy ? "Preparing evidence…" : "Prepare evidence"}
+              </button>
+            </section>
+          )}
+
+          {run.evidenceBundle && (
+            <EvidenceWorkspace bundle={run.evidenceBundle} isRebuilding={isEvidenceBusy} onRebuild={() => void prepareEvidence(run)} />
+          )}
+
           <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="journey-title">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -288,10 +330,10 @@ export function RunDetail({ runId }: RunDetailProps) {
           <h2 id="controls-heading" className="mt-2 text-xl font-bold">{persona.name}</h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">{persona.description}</p>
 
-          {(run.lastError || storageError) && (
+          {(run.lastError || storageError || evidenceError) && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4" role="alert">
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-red-700">{run.lastError?.code ?? "LOCAL_STORAGE_FAILURE"}</p>
-              <p className="mt-2 text-sm leading-6 text-red-900">{storageError ?? run.lastError?.message}</p>
+              <p className="mt-2 text-sm leading-6 text-red-900">{storageError ?? evidenceError ?? run.lastError?.message}</p>
             </div>
           )}
 
@@ -308,7 +350,7 @@ export function RunDetail({ runId }: RunDetailProps) {
             </div>
           )}
 
-          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
+          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || isEvidenceBusy || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
           <Link className="mt-3 block rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-bold text-slate-700" href="/tests/new">Configure another test</Link>
 
           <dl className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-xs">

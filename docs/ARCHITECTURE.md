@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, and the retrieval playground provide bounded client interaction, while one Next.js Route Handler provides the server-only synthetic-customer step boundary. Project configuration, product-content integrity, run business rules, retrieval, schemas, prompt construction, tool execution, and provider errors are covered by Vitest, while ESLint and the TypeScript compiler provide automated checks.
+The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, and the evidence workspace provide bounded interaction. Separate short Next.js Route Handlers provide the server-only synthetic-customer step and deterministic evidence-collection boundaries. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence collection, schemas, persistence, and provider errors are covered by Vitest.
 
 FlowPilot product knowledge is stored as readonly, typed TypeScript data under `lib/product/`. A deterministic lookup utility resolves page slugs. `/product` renders the complete knowledge index, and `/product/[slug]` renders each page from the same local data source. Static parameters are generated for the known slugs, related-page links are validated in tests, and unknown slugs return a product-specific not-found state.
 
@@ -38,6 +38,22 @@ Provider keys and model names are read only inside the request path from `GROQ_A
 
 The browser applies each returned update to versioned localStorage and renders the timeline, current content, progress, and customer outcome. Auto-run is a client loop over the same endpoint. It awaits each response before issuing the next, stops on completion, error, user request, or budget exhaustion, and uses an in-flight guard to prevent duplicate simultaneous calls.
 
+### Phase 6 evidence boundary
+
+`POST /api/evidence/collect` receives a compact completed browser-local run and performs one short deterministic request. It accepts answer, give-up, and budget-exhausted outcomes, but rejects ready, running, malformed, unknown-task, unknown-persona, and invalid-product inputs. Evaluation specifications remain in server-only modules. The client never supplies specifications, source text, arbitrary product IDs, or expected answers.
+
+The collector validates sequential action history and treats observation data only as references. Search observations are recomputed with the existing deterministic retrieval function; page and section identifiers are resolved against the repository-owned FlowPilot fixture. Returned excerpts and exact source text therefore come from trusted data rather than client-supplied strings. Failed tool actions are counted in integrity metadata but do not become product evidence.
+
+Customer-seen section and page sources are de-duplicated in first-exposure order, with later exposure action numbers retained. Required unseen sources become `missing` evidence. Up to three unseen qualification, optional-supporting, or bounded retrieval sources become `context` evidence. Missing and context items can never be marked customer-seen. The collector records stable IDs, precise source locations, category coverage, visited pages, inspected sections, search queries, completion state, and integrity counts.
+
+Six trusted task evaluation specifications define required source IDs, optional and qualification source IDs, bounded concept groups, contradictory claim markers, and exact fact-check sources. They contain no full expected answer, never enter the synthetic-customer prompt, and are not stored in localStorage. Mechanical phrase and negation checks return supported, unsupported, contradicted, or not-assessable. These values are explicitly not verdicts.
+
+The evidence bundle is versioned and readonly in application types. Browser persistence moved to `trial-by-user:runs:v3`; Phase 3 and Phase 5 records remain readable and receive a null evidence bundle during parsing. Refresh reuses the stored bundle. The interface issues no duplicate collection request while one is active, and only the explicit **Rebuild evidence** action replaces an existing bundle. Reset clears both the journey and bundle, and collected runs cannot take another simulation step until reset.
+
+No LLM, embedding, provider credential, database, or background worker is involved in evidence preparation. The prosecutor and defense will later receive the same bundle rather than independently gathering evidence.
+
+> Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is deferred to the prosecutor, defense, and judge.
+
 > Persisting the MVP run in localStorage keeps deployment free and serverless, but the client must send a compact action history with each stateless step. Server persistence would improve integrity and cross-device access, but adds infrastructure and is deferred until it is needed.
 
 Splitting autonomous execution into short requests makes timeouts, retries, budget enforcement, and UI observation compatible with Vercel Hobby. It also avoids a background worker or permanently running server. The tradeoff is that client-held history is not authoritative; every request therefore receives strict validation and only bounded, deterministic capabilities.
@@ -50,9 +66,9 @@ There is currently:
 - no authentication;
 - no file storage or uploads;
 - configurable Groq and OpenAI Responses API integrations for the synthetic customer only;
-- one stateless simulation-step Route Handler and no separate backend.
+- two stateless Route Handlers for simulation steps and evidence collection, with no separate backend.
 
-There is no database or server-side run persistence. The only run persistence is browser-specific localStorage. The prosecutor, defense, judge, and formal evidence collector do not exist yet.
+There is no database or server-side run persistence. The only run and evidence persistence is browser-specific localStorage. The prosecutor, defense, and judge do not exist yet.
 
 There are also no arbitrary document or screenshot uploads. The controlled product is repository-owned content, not user-supplied content.
 

@@ -1,4 +1,5 @@
 import type { SimulationActionEntry, SimulationState } from "@/lib/simulation/types";
+import type { EvidenceBundle } from "@/lib/evidence/types";
 
 export const MIN_ACTIONS = 3;
 export const MAX_ACTIONS = 10;
@@ -44,6 +45,7 @@ export type TestRun = SimulationState & {
   createdAt: string;
   productId: string;
   actions: readonly SimulationActionEntry[];
+  evidenceBundle: EvidenceBundle | null;
 };
 
 export type NewRunInput = {

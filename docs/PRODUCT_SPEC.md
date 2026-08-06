@@ -16,7 +16,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 2. Select a predefined customer task and behavioral persona, then configure a bounded action allowance (available now).
 3. Inspect deterministic retrieval suggestions for the configured question (available now).
 4. Start the synthetic customer and watch one bounded action execute per request (available now).
-5. Review the chronological actions and customer conclusion (available now); formal evidence collection comes next.
+5. Review the chronological actions and customer conclusion, then prepare a deterministic evidence bundle (available now).
 6. Compare the prosecutor and defense arguments.
 7. Read the judge's verdict, confidence, rationale, and recommended product action.
 
@@ -29,7 +29,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Browser-local configured run detail (available now)
 - Deterministic retrieval playground and run suggestions (available now)
 - Active synthetic-customer run visualization (available now)
-- Evidence timeline
+- Evidence workspace and source timeline (available now)
 - Courtroom arguments
 - Verdict detail
 - Product knowledge and asset management
@@ -110,4 +110,16 @@ The agent receives the selected task, persona, remaining budget, compact prior h
 
 Product content is wrapped in an explicit untrusted-data boundary. The model is instructed to treat it as information rather than instructions, and the server validates every returned action and every page or section identifier before use. The model cannot reach arbitrary URLs, files, browser controls, or external tools.
 
-Only the synthetic customer exists in Phase 5. Evidence collection, prosecutor and defense arguments, judge verdicts, document and screenshot uploads, and live website testing remain unimplemented.
+The synthetic customer and deterministic evidence collector now exist. Prosecutor and defense arguments, judge verdicts, document and screenshot uploads, and live website testing remain unimplemented.
+
+## Deterministic evidence collection
+
+Phase 6 adds evidence preparation after the customer answers, gives up, or exhausts the action budget. The collector processes validated actions in sequence and reconstructs all source content from trusted FlowPilot data. Search results, page summaries, inspected sections, and callouts actually shown to the customer are labelled as customer-seen. Required task sources that were not encountered are labelled missing; a bounded set of qualification or supporting sections may be added as context and is always labelled unseen.
+
+Each predefined task has an internal evaluation specification containing required, optional, and qualification section IDs plus structured critical concepts and contradictory claim markers. It does not contain a full expected natural-language answer, is never included in the customer prompt, and is not persisted in localStorage. Mechanical fact checks compare the final answer with these bounded markers and return `supported`, `unsupported`, `contradicted`, or `not-assessable`. They are evidence-preparation aids, not semantic grading or a courtroom verdict.
+
+The immutable versioned bundle includes exact sources, excerpts, source links, exposure actions, missing evidence, task coverage, search/page/section summaries, customer outcome, and integrity counts. It is stored with the browser-local run, survives refresh, and is cleared by reset. The interface reuses the existing bundle unless the user explicitly selects **Rebuild evidence**.
+
+Both prosecutor and defense agents will later receive this same source-traceable bundle. Phase 6 does not implement either argument, a judge, or verdict generation.
+
+> Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is deferred to the prosecutor, defense, and judge.

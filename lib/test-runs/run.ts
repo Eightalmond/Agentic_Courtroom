@@ -38,6 +38,7 @@ export function createReadyRun(input: NewRunInput, options: CreateReadyRunOption
     updatedAt: createdAt,
     completedAt: null,
     actions: [],
+    evidenceBundle: null,
     currentPageSlug: null,
     currentSectionId: null,
     latestSearchResults: [],
