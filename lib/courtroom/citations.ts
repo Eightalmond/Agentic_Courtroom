@@ -11,6 +11,12 @@ export function validateCourtroomArgument(
 ): CourtroomArgument {
   const parsed = CourtroomArgumentSchema.safeParse(value);
   if (!parsed.success) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("[courtroom] safe response validation diagnostic", parsed.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        code: issue.code,
+      })));
+    }
     throw new CourtroomError(
       "COURTROOM_INVALID_RESPONSE",
       "The advocate returned an invalid argument. Try generating this side again.",

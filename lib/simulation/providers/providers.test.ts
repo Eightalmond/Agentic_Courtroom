@@ -6,6 +6,11 @@ import OpenAI from "openai";
 import { z } from "zod";
 
 import {
+  COURTROOM_ARGUMENT_JSON_SCHEMA,
+  CourtroomArgumentWireSchema,
+} from "@/lib/courtroom/schemas";
+
+import {
   readGroqConfiguration,
   readSelectedProvider,
   readSimulationProviderConfiguration,
@@ -17,7 +22,10 @@ import {
   createGroqClientOptions,
   createGroqCustomerProvider,
   GROQ_BASE_URL,
+  GROQ_COURTROOM_TRANSPORT,
+  GROQ_COURTROOM_MAX_COMPLETION_TOKENS,
   GROQ_MAX_RETRIES,
+  formatGroqProviderDiagnostic,
   mapGroqProviderError,
   parseGroqDecisionOutput,
 } from "./groq";
@@ -207,23 +215,69 @@ describe("Groq Responses provider", () => {
   });
 
   it("supports one reusable structured courtroom request with the configured model", async () => {
-    const create = vi.fn().mockResolvedValue({ output_text: '{"role":"prosecutor"}' });
-    const selected = createGroqCustomerProvider(groqConfiguration, { responses: { create } });
+    const courtroomWireOutput = {
+      role: "prosecutor",
+      thesis: "The journey had material friction.",
+      keyClaims: [{ claim: "Required details were not seen.", evidenceIds: ["evidence-run-v1-item"], strength: "strong" }],
+      strongestPointClaim: "Required details were not seen.",
+      strongestPointEvidenceIds: ["evidence-run-v1-item"],
+      acknowledgements: [],
+      requestedVerdictDirection: "pass_with_friction",
+      closingStatement: "The cited journey supports material friction.",
+    };
+    const responsesCreate = vi.fn();
+    const chatCreate = vi.fn().mockResolvedValue({ choices: [{ message: { content: JSON.stringify(courtroomWireOutput) } }] });
+    const selected = createGroqCustomerProvider(groqConfiguration, {
+      responses: { create: responsesCreate },
+      chat: { completions: { create: chatCreate } },
+    });
     await expect(selected.generateStructured({
+      useCase: "courtroom-argument",
       instructions: "shared",
       input: "same evidence",
       schemaName: "courtroom_prosecutor_argument",
-      jsonSchema: { type: "object" },
-      zodSchema: z.object({ role: z.literal("prosecutor") }),
+      jsonSchema: COURTROOM_ARGUMENT_JSON_SCHEMA,
+      zodSchema: CourtroomArgumentWireSchema,
       maxOutputTokens: 1_400,
-    })).resolves.toEqual({ role: "prosecutor" });
+    })).resolves.toEqual(courtroomWireOutput);
     expect(selected.provider).toBe("groq");
-    expect(create).toHaveBeenCalledOnce();
-    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+    expect(GROQ_COURTROOM_TRANSPORT).toBe("chat.completions.create");
+    expect(chatCreate).toHaveBeenCalledOnce();
+    expect(responsesCreate).not.toHaveBeenCalled();
+    expect(chatCreate).toHaveBeenCalledWith(expect.objectContaining({
       model: groqConfiguration.model,
-      input: "same evidence",
-      text: { format: expect.objectContaining({ name: "courtroom_prosecutor_argument", strict: true }) },
+      messages: [
+        { role: "system", content: "shared" },
+        { role: "user", content: "same evidence" },
+      ],
+      max_completion_tokens: GROQ_COURTROOM_MAX_COMPLETION_TOKENS,
+      reasoning_effort: "low",
+      response_format: {
+        type: "json_schema",
+        json_schema: expect.objectContaining({ name: "courtroom_prosecutor_argument", strict: true }),
+      },
     }));
+  });
+
+  it("does not make a second courtroom request when Chat Completions returns malformed output", async () => {
+    const responsesCreate = vi.fn();
+    const chatCreate = vi.fn().mockResolvedValue({ choices: [{ message: { content: "not-json" } }] });
+    const selected = createGroqCustomerProvider(groqConfiguration, {
+      responses: { create: responsesCreate },
+      chat: { completions: { create: chatCreate } },
+    });
+
+    await expect(selected.generateStructured({
+      useCase: "courtroom-argument",
+      instructions: "shared",
+      input: "same evidence",
+      schemaName: "courtroom_prosecutor_argument",
+      jsonSchema: COURTROOM_ARGUMENT_JSON_SCHEMA,
+      zodSchema: CourtroomArgumentWireSchema,
+      maxOutputTokens: 1_400,
+    })).rejects.toMatchObject({ code: "GROQ_INVALID_RESPONSE" });
+    expect(chatCreate).toHaveBeenCalledOnce();
+    expect(responsesCreate).not.toHaveBeenCalled();
   });
 });
 
@@ -235,6 +289,7 @@ describe("OpenAI reusable structured provider", () => {
       { responses: { parse } },
     );
     await expect(selected.generateStructured({
+      useCase: "courtroom-argument",
       instructions: "shared",
       input: "same evidence",
       schemaName: "courtroom_defense_argument",
@@ -302,5 +357,58 @@ describe("Groq safe error mapping", () => {
       retryable: true,
     });
     expect(JSON.stringify(mapped.toSafeError())).not.toContain("gsk_secret");
+  });
+
+  it("maps structured-output request errors safely and exposes only sanitized development diagnostics", () => {
+    const error = new OpenAI.BadRequestError(
+      400,
+      {
+        message: "secret raw JSON schema body",
+        code: "json_schema_invalid",
+        type: "invalid_request_error",
+      },
+      "secret raw response",
+      new Headers(),
+    );
+    expect(mapGroqProviderError(error).toSafeError()).toEqual({
+      code: "GROQ_STRUCTURED_OUTPUT_ERROR",
+      message: "Groq rejected the structured-output request. Check the configured model and schema compatibility.",
+      retryable: false,
+    });
+    const diagnostic = formatGroqProviderDiagnostic(error, "courtroom_prosecutor_argument");
+    expect(diagnostic).toEqual({
+      operation: "courtroom_prosecutor_argument",
+      status: 400,
+      code: "json_schema_invalid",
+      type: "invalid_request_error",
+      description: "Groq rejected the JSON Schema structured-output request.",
+    });
+    expect(JSON.stringify(diagnostic)).not.toContain("secret raw");
+  });
+
+  it("classifies Groq JSON validation failures without exposing the provider body", () => {
+    const error = new OpenAI.BadRequestError(
+      400,
+      {
+        message: "secret generated JSON",
+        code: "json_validate_failed",
+        type: "invalid_request_error",
+      },
+      "secret raw response",
+      new Headers(),
+    );
+    const diagnostic = formatGroqProviderDiagnostic(error, "courtroom_defense_argument");
+    expect(diagnostic).toMatchObject({
+      status: 400,
+      code: "json_validate_failed",
+      type: "invalid_request_error",
+      description: "Groq could not complete a response that matched the requested JSON Schema.",
+    });
+    expect(mapGroqProviderError(error).toSafeError()).toEqual({
+      code: "GROQ_STRUCTURED_OUTPUT_ERROR",
+      message: "Groq could not complete valid structured output. Try the advocate again.",
+      retryable: true,
+    });
+    expect(JSON.stringify(diagnostic)).not.toContain("secret");
   });
 });

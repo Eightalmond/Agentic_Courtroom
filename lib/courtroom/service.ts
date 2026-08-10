@@ -9,9 +9,10 @@ import { CourtroomError } from "./errors";
 import { buildCourtroomPrompt } from "./prompt";
 import {
   COURTROOM_ARGUMENT_JSON_SCHEMA,
-  CourtroomArgumentSchema,
+  CourtroomArgumentWireSchema,
   CourtroomArgumentRecordSchema,
   CourtroomArgumentRequestSchema,
+  parseCourtroomArgumentWire,
 } from "./schemas";
 import type { CourtroomArgumentRecord } from "./types";
 
@@ -37,13 +38,33 @@ export async function generateCourtroomArgument(
   const provider = (dependencies.createProvider ?? createSimulationProvider)();
   const prompt = buildCourtroomPrompt(request.data.role, evidenceBundle);
   const output = await provider.generateStructured({
+    useCase: "courtroom-argument",
     ...prompt,
     schemaName: `courtroom_${request.data.role}_argument`,
     jsonSchema: COURTROOM_ARGUMENT_JSON_SCHEMA,
-    zodSchema: CourtroomArgumentSchema,
+    zodSchema: CourtroomArgumentWireSchema,
     maxOutputTokens: 1_400,
   });
-  const argument = validateCourtroomArgument(output, request.data.role, evidenceBundle);
+  const wireResult = CourtroomArgumentWireSchema.safeParse(output);
+  if (!wireResult.success) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("[courtroom] safe wire validation diagnostic", wireResult.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        code: issue.code,
+      })));
+    }
+    throw new CourtroomError(
+      "COURTROOM_INVALID_RESPONSE",
+      "The advocate returned invalid structured output. Try generating this side again.",
+      502,
+      true,
+    );
+  }
+  const argument = validateCourtroomArgument(
+    parseCourtroomArgumentWire(wireResult.data),
+    request.data.role,
+    evidenceBundle,
+  );
 
   return CourtroomArgumentRecordSchema.parse({
     argument,

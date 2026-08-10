@@ -104,7 +104,8 @@
 - Both sides receive the exact same compact immutable evidence bundle and shared prompt rules; only their role assignment differs.
 - Each strict structured argument includes a thesis, bounded claims, strongest point, acknowledgements, requested direction, and closing statement.
 - Every substantive point cites unique IDs from the supplied bundle; wrong roles and fabricated citations fail safely.
-- The existing provider abstraction uses the single configured Groq or OpenAI provider/model with no fallback, automatic retry, or repair call.
+- The existing provider abstraction uses the single configured Groq or OpenAI provider/model with no fallback, automatic retry, or repair call; Groq isolates courtroom Chat Completions from the working customer Responses path.
+- A Groq-compatible wire schema transforms into the unchanged internal argument while preserving strict bounds, unknown-field rejection, roles, and evidence citations.
 - Browser-local records retain role, provider, timestamp, and evidence bundle ID/version; regeneration and invalidation behavior preserves citation integrity.
 - The interface displays both independent cases, seen/not-seen source links, and a disabled Phase 8 judge control.
 - Automated tests mock all providers and cover schemas, prompts, source validation, call counts, role isolation, persistence, migration, and safe failures.

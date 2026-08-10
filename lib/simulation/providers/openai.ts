@@ -66,6 +66,7 @@ export function createOpenAICustomerProvider(
     async decide({ instructions, input }) {
       try {
         return parseCustomerDecision(await generateStructured({
+          useCase: "customer-decision",
           instructions,
           input,
           schemaName: "customer_decision",

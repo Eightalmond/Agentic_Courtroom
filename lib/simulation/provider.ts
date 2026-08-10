@@ -12,6 +12,7 @@ export interface CustomerDecisionProvider {
 }
 
 export type StructuredGenerationInput = {
+  useCase: "customer-decision" | "courtroom-argument";
   instructions: string;
   input: string;
   schemaName: string;

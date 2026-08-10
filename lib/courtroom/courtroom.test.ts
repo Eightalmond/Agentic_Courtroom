@@ -22,7 +22,12 @@ import {
 import { validateCourtroomArgument } from "./citations";
 import { revalidateCourtroomEvidence } from "./evidence";
 import { buildCourtroomPrompt, formatCourtroomEvidence } from "./prompt";
-import { CourtroomArgumentSchema } from "./schemas";
+import {
+  COURTROOM_ARGUMENT_JSON_SCHEMA,
+  CourtroomArgumentSchema,
+  CourtroomArgumentWireSchema,
+  parseCourtroomArgumentWire,
+} from "./schemas";
 import { generateCourtroomArgument } from "./service";
 import type { CourtroomArgument, CourtroomArgumentRecord, CourtroomRole } from "./types";
 
@@ -50,6 +55,19 @@ function validArgument(role: CourtroomRole, evidenceId: string): CourtroomArgume
     strongestPoint: { claim: "The cited item is the strongest bounded evidence.", evidenceIds: [evidenceId] },
     acknowledges: [{ claim: "The opposing interpretation has a documented basis.", evidenceIds: [evidenceId] }],
     requestedVerdictDirection: role === "prosecutor" ? "pass_with_friction" : "pass",
+    closingStatement: "The requested direction follows from the cited bundle only.",
+  };
+}
+
+function validWireArgument(role: CourtroomRole, evidenceId: string) {
+  return {
+    role,
+    thesis: role === "prosecutor" ? "The journey did not expose the customer to the required sources." : "The customer reached a materially correct answer.",
+    keyClaims: [{ claim: "The recorded outcome supports this side's position.", evidenceIds: [evidenceId], strength: "strong" as const }],
+    strongestPointClaim: "The cited item is the strongest bounded evidence.",
+    strongestPointEvidenceIds: [evidenceId],
+    acknowledgements: [{ point: "The opposing interpretation has a documented basis.", evidenceIds: [evidenceId] }],
+    requestedVerdictDirection: role === "prosecutor" ? "pass_with_friction" as const : "pass" as const,
     closingStatement: "The requested direction follows from the cited bundle only.",
   };
 }
@@ -104,6 +122,40 @@ describe("courtroom argument schema", () => {
     expect(CourtroomArgumentSchema.safeParse({ ...argument, keyClaims: [argument.keyClaims[0], argument.keyClaims[0]] }).success).toBe(false);
     expect(CourtroomArgumentSchema.safeParse({ ...argument, acknowledges: Array(4).fill(argument.strongestPoint) }).success).toBe(false);
     expect(CourtroomArgumentSchema.safeParse({ ...argument, requestedVerdictDirection: "acquit" }).success).toBe(false);
+  });
+});
+
+describe("Groq-compatible courtroom wire schema", () => {
+  it("transforms the provider wire object into the unchanged internal argument", () => {
+    const { bundle } = evidenceFixture();
+    const id = bundle.evidenceItems[0]!.evidenceId;
+    const argument = parseCourtroomArgumentWire(validWireArgument("prosecutor", id));
+    expect(argument).toEqual(validArgument("prosecutor", id));
+    expect(argument.keyClaims[0]?.id).toBe("claim-1");
+  });
+
+  it("rejects unknown wire fields, wrong roles, and malformed evidence IDs", () => {
+    const { bundle } = evidenceFixture();
+    const wire = validWireArgument("defense", bundle.evidenceItems[0]!.evidenceId);
+    expect(CourtroomArgumentWireSchema.safeParse({ ...wire, privateReasoning: "hidden" }).success).toBe(false);
+    expect(CourtroomArgumentWireSchema.safeParse({ ...wire, role: "judge" }).success).toBe(false);
+    expect(CourtroomArgumentWireSchema.safeParse({ ...wire, strongestPointEvidenceIds: ["INVALID ID"] }).success).toBe(false);
+  });
+
+  it("uses only Groq-compatible schema primitives and closes every object", () => {
+    const serialized = JSON.stringify(COURTROOM_ARGUMENT_JSON_SCHEMA);
+    expect(serialized).not.toContain('"anyOf"');
+    expect(serialized).not.toContain('"oneOf"');
+    expect(serialized).not.toContain('"pattern"');
+    expect(serialized).not.toContain('"prefixItems"');
+
+    function assertClosedObjects(value: unknown) {
+      if (!value || typeof value !== "object") return;
+      const record = value as Record<string, unknown>;
+      if (record.type === "object") expect(record.additionalProperties).toBe(false);
+      Object.values(record).forEach(assertClosedObjects);
+    }
+    assertClosedObjects(COURTROOM_ARGUMENT_JSON_SCHEMA);
   });
 });
 
@@ -171,7 +223,7 @@ describe("courtroom evidence and citations", () => {
 describe("one-call independent advocate service", () => {
   it.each(["prosecutor", "defense"] as const)("generates %s with exactly one configured-provider call", async (role) => {
     const { bundle } = evidenceFixture();
-    const output = validArgument(role, bundle.evidenceItems[0]!.evidenceId);
+    const output = validWireArgument(role, bundle.evidenceItems[0]!.evidenceId);
     const mock = mockProvider(output, "openai");
     const record = await generateCourtroomArgument({ runId: bundle.runId, role, evidenceBundle: bundle }, {
       createProvider: () => mock.provider,
@@ -183,7 +235,7 @@ describe("one-call independent advocate service", () => {
 
   it("does not call the provider for malformed requests or invalid evidence", async () => {
     const { bundle } = evidenceFixture();
-    const mock = mockProvider(validArgument("prosecutor", bundle.evidenceItems[0]!.evidenceId));
+    const mock = mockProvider(validWireArgument("prosecutor", bundle.evidenceItems[0]!.evidenceId));
     await expect(generateCourtroomArgument({ runId: bundle.runId, role: "judge", evidenceBundle: bundle }, { createProvider: () => mock.provider })).rejects.toMatchObject({ code: "COURTROOM_INVALID_REQUEST" });
     await expect(generateCourtroomArgument({ runId: "run-other", role: "prosecutor", evidenceBundle: bundle }, { createProvider: () => mock.provider })).rejects.toMatchObject({ code: "COURTROOM_EVIDENCE_RUN_MISMATCH" });
     expect(mock.generateStructured).not.toHaveBeenCalled();
@@ -196,10 +248,28 @@ describe("one-call independent advocate service", () => {
     expect(mock.generateStructured).toHaveBeenCalledOnce();
   });
 
+  it("still rejects wrong roles and fabricated citations after wire transformation", async () => {
+    const { bundle } = evidenceFixture();
+    const id = bundle.evidenceItems[0]!.evidenceId;
+    const wrongRole = mockProvider(validWireArgument("defense", id));
+    await expect(generateCourtroomArgument(
+      { runId: bundle.runId, role: "prosecutor", evidenceBundle: bundle },
+      { createProvider: () => wrongRole.provider },
+    )).rejects.toMatchObject({ code: "COURTROOM_ROLE_MISMATCH" });
+    expect(wrongRole.generateStructured).toHaveBeenCalledOnce();
+
+    const fabricated = mockProvider(validWireArgument("prosecutor", "evidence-fabricated"));
+    await expect(generateCourtroomArgument(
+      { runId: bundle.runId, role: "prosecutor", evidenceBundle: bundle },
+      { createProvider: () => fabricated.provider },
+    )).rejects.toMatchObject({ code: "COURTROOM_INVALID_CITATION" });
+    expect(fabricated.generateStructured).toHaveBeenCalledOnce();
+  });
+
   it("does not share one side's argument with the other side", async () => {
     const { bundle } = evidenceFixture();
-    const prosecutor = mockProvider(validArgument("prosecutor", bundle.evidenceItems[0]!.evidenceId));
-    const defense = mockProvider(validArgument("defense", bundle.evidenceItems[0]!.evidenceId));
+    const prosecutor = mockProvider(validWireArgument("prosecutor", bundle.evidenceItems[0]!.evidenceId));
+    const defense = mockProvider(validWireArgument("defense", bundle.evidenceItems[0]!.evidenceId));
     await generateCourtroomArgument({ runId: bundle.runId, role: "prosecutor", evidenceBundle: bundle }, { createProvider: () => prosecutor.provider });
     await generateCourtroomArgument({ runId: bundle.runId, role: "defense", evidenceBundle: bundle }, { createProvider: () => defense.provider });
     expect(prosecutor.generateStructured.mock.calls[0]?.[0].input).toBe(defense.generateStructured.mock.calls[0]?.[0].input);

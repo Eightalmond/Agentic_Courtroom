@@ -49,6 +49,56 @@ export const CourtroomArgumentSchema = z
     }
   });
 
+const CourtroomWireClaimSchema = z
+  .object({
+    claim: boundedText(500),
+    evidenceIds: uniqueEvidenceIds,
+    strength: z.enum(["weak", "moderate", "strong"]),
+  })
+  .strict();
+
+const CourtroomWireAcknowledgementSchema = z
+  .object({
+    point: boundedText(500),
+    evidenceIds: uniqueEvidenceIds,
+  })
+  .strict();
+
+export const CourtroomArgumentWireSchema = z
+  .object({
+    role: CourtroomRoleSchema,
+    thesis: boundedText(700),
+    keyClaims: z.array(CourtroomWireClaimSchema).min(1).max(5),
+    strongestPointClaim: boundedText(500),
+    strongestPointEvidenceIds: uniqueEvidenceIds,
+    acknowledgements: z.array(CourtroomWireAcknowledgementSchema).max(3),
+    requestedVerdictDirection: VerdictDirectionSchema,
+    closingStatement: boundedText(700),
+  })
+  .strict();
+
+export function parseCourtroomArgumentWire(value: unknown) {
+  const wire = CourtroomArgumentWireSchema.parse(value);
+  return CourtroomArgumentSchema.parse({
+    role: wire.role,
+    thesis: wire.thesis,
+    keyClaims: wire.keyClaims.map((claim, index) => ({
+      id: `claim-${index + 1}`,
+      ...claim,
+    })),
+    strongestPoint: {
+      claim: wire.strongestPointClaim,
+      evidenceIds: wire.strongestPointEvidenceIds,
+    },
+    acknowledges: wire.acknowledgements.map((acknowledgement) => ({
+      claim: acknowledgement.point,
+      evidenceIds: acknowledgement.evidenceIds,
+    })),
+    requestedVerdictDirection: wire.requestedVerdictDirection,
+    closingStatement: wire.closingStatement,
+  });
+}
+
 export const CourtroomArgumentRecordSchema = z
   .object({
     argument: CourtroomArgumentSchema,
@@ -93,16 +143,6 @@ const evidenceIdsSchema = {
   items: { type: "string" },
 } as const;
 
-const citedPointSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["claim", "evidenceIds"],
-  properties: {
-    claim: { type: "string" },
-    evidenceIds: evidenceIdsSchema,
-  },
-} as const;
-
 export const COURTROOM_ARGUMENT_JSON_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -110,8 +150,9 @@ export const COURTROOM_ARGUMENT_JSON_SCHEMA = {
     "role",
     "thesis",
     "keyClaims",
-    "strongestPoint",
-    "acknowledges",
+    "strongestPointClaim",
+    "strongestPointEvidenceIds",
+    "acknowledgements",
     "requestedVerdictDirection",
     "closingStatement",
   ],
@@ -123,17 +164,28 @@ export const COURTROOM_ARGUMENT_JSON_SCHEMA = {
       items: {
         type: "object",
         additionalProperties: false,
-        required: ["id", "claim", "evidenceIds", "strength"],
+        required: ["claim", "evidenceIds", "strength"],
         properties: {
-          id: { type: "string" },
           claim: { type: "string" },
           evidenceIds: evidenceIdsSchema,
           strength: { type: "string", enum: ["weak", "moderate", "strong"] },
         },
       },
     },
-    strongestPoint: citedPointSchema,
-    acknowledges: { type: "array", items: citedPointSchema },
+    strongestPointClaim: { type: "string" },
+    strongestPointEvidenceIds: evidenceIdsSchema,
+    acknowledgements: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["point", "evidenceIds"],
+        properties: {
+          point: { type: "string" },
+          evidenceIds: evidenceIdsSchema,
+        },
+      },
+    },
     requestedVerdictDirection: { type: "string", enum: [...VERDICT_DIRECTIONS] },
     closingStatement: { type: "string" },
   },
