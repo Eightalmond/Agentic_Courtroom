@@ -1,27 +1,28 @@
 # Trial by User
 
-Trial by User is an agentic product-testing application. Its synthetic customer now attempts one focused FlowPilot task through short, observable actions. Courtroom evaluation—prosecutor, defense, and judge agents—remains deliberately unimplemented.
+Trial by User is an agentic product-testing application. Its synthetic customer attempts one focused FlowPilot task through short, observable actions, then independent prosecutor and defense agents argue from the same prepared evidence. The judge remains deliberately unimplemented.
 
-Phase 6 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, a browser-local simulation timeline, and deterministic evidence preparation. Groq or OpenAI is used only for synthetic-customer decisions; evidence collection makes no provider call.
+Phase 7 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, a browser-local simulation timeline, deterministic evidence preparation, and separately generated source-cited courtroom arguments. The configured Groq or OpenAI provider handles customer decisions and advocates; evidence collection remains deterministic.
 
 ## Available routes
 
 - `/` — dashboard and current MVP status
 - `/product` and `/product/[slug]` — controlled FlowPilot knowledge
 - `/tests/new` — test and persona configuration
-- `/runs/[id]` — synthetic customer controls, journey, and outcome
+- `/runs/[id]` — customer journey, evidence workspace, and independent courtroom advocates
 - `/retrieval` — deterministic retrieval playground
 - `/api/simulations/step` — server-only, one-action simulation boundary
 - `/api/evidence/collect` — server-only, deterministic evidence collection boundary
+- `/api/courtroom/argue` — server-only, one independent advocate call
 
 ## Requirements
 
 - Node.js 22
 - npm
-- A Groq or OpenAI API key and a compatible model with Structured Outputs support for simulations
+- A Groq or OpenAI API key and a compatible model with Structured Outputs support for simulations and courtroom arguments
 - Docker Desktop or another Docker Compose-compatible runtime (optional)
 
-The app, tests, and production build do not require API credentials. Credentials are needed only when a simulation step is requested.
+The app, tests, and production build do not require API credentials. Credentials are needed only when a simulation step or courtroom advocate is requested.
 
 ## Run locally with npm
 
@@ -73,7 +74,7 @@ npm test
 npm run build
 ```
 
-Tests mock the customer-decision provider and never make real provider requests.
+Tests mock all provider calls and never consume provider credits.
 
 ## Deploy to Vercel Hobby
 
@@ -100,17 +101,25 @@ After an answer, give-up, or action-budget outcome, the run page offers **Prepar
 
 Six internal task evaluation specifications contain source IDs and bounded fact concepts—not full expected natural-language answers. Mechanical fact checks use explainable phrase and negation rules to label answer concepts as supported, unsupported, contradicted, or not assessable. These checks prepare evidence and are not a verdict.
 
-The bundle records source text, stable references, exposure actions, coverage, integrity counts, customer outcome, and mechanical checks. It is saved with the run in versioned localStorage, survives refresh, and is removed by simulation reset. An existing bundle is reused by the interface; **Rebuild evidence** is the explicit replacement action for an unchanged completed run. Both courtroom sides will later receive the same bundle.
+The bundle records source text, stable references, exposure actions, coverage, integrity counts, customer outcome, and mechanical checks. It is saved with the run in versioned localStorage, survives refresh, and is removed by simulation reset. An existing bundle is reused by the interface; **Rebuild evidence** is the explicit replacement action for an unchanged completed run. Both courtroom sides receive this exact bundle.
 
-> Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is deferred to the prosecutor, defense, and judge.
+> Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is separated across the prosecutor, defense, and future judge.
+
+## How courtroom arguments work
+
+After evidence is prepared, either advocate can run first. `POST /api/courtroom/argue` validates the run, bundle version, trusted FlowPilot source references, and deterministic fact checks before provider configuration is read. The prosecutor and defense receive the exact same compact evidence input and shared rules; only the role assignment changes. Neither request includes the other side's argument.
+
+Each side makes one call through the same server-configured Groq or OpenAI provider and model used by the simulation. The response must match a strict bounded Zod schema. Every key claim, strongest point, and acknowledged opposing point requires valid, unique evidence IDs from the supplied bundle. Wrong-role output, fabricated citations, extra properties, or malformed output fail safely without fallback, retry, heuristic repair, or a second call.
+
+Arguments are stored with the browser-local run, including role, provider label, timestamp, and bundle ID/version. Regenerating one side preserves the other and replaces the old argument only after success. Rebuilding evidence invalidates both arguments. The interface labels cited sources as customer-seen or not-seen and links to the controlled FlowPilot source. Requested verdict directions are advocacy, not a verdict; the judge control remains disabled.
 
 ## Current limitations
 
-- Synthetic-customer simulation and evidence collection exist; there are no prosecutor, defense, judge, or verdict agents yet.
+- Synthetic-customer simulation, evidence collection, and prosecutor/defense arguments exist; there is no judge or final verdict yet.
 - Runs remain local to one browser and can be lost when browser data is cleared.
 - FlowPilot is the only product, and retrieval is lexical over repository-owned content.
 - There are no uploads, database, authentication, arbitrary URLs, live website controls, browser automation, or external product actions.
-- A real simulation call requires valid credentials for the selected provider and a compatible configured model.
+- A real simulation or advocate call requires valid credentials for the selected provider and a compatible configured model.
 
 ## Documentation
 

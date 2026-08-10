@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, and the evidence workspace provide bounded interaction. Separate short Next.js Route Handlers provide the server-only synthetic-customer step and deterministic evidence-collection boundaries. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence collection, schemas, persistence, and provider errors are covered by Vitest.
+The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, evidence, and independent courtroom arguments provide bounded interaction. Short Next.js Route Handlers provide the server-only synthetic-customer, evidence-collection, and advocate boundaries. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence, courtroom schemas, citations, persistence, and provider errors are covered by Vitest.
 
 FlowPilot product knowledge is stored as readonly, typed TypeScript data under `lib/product/`. A deterministic lookup utility resolves page slugs. `/product` renders the complete knowledge index, and `/product/[slug]` renders each page from the same local data source. Static parameters are generated for the known slugs, related-page links are validated in tests, and unknown slugs return a product-specific not-found state.
 
@@ -48,11 +48,23 @@ Customer-seen section and page sources are de-duplicated in first-exposure order
 
 Six trusted task evaluation specifications define required source IDs, optional and qualification source IDs, bounded concept groups, contradictory claim markers, and exact fact-check sources. They contain no full expected answer, never enter the synthetic-customer prompt, and are not stored in localStorage. Mechanical phrase and negation checks return supported, unsupported, contradicted, or not-assessable. These values are explicitly not verdicts.
 
-The evidence bundle is versioned and readonly in application types. Browser persistence moved to `trial-by-user:runs:v3`; Phase 3 and Phase 5 records remain readable and receive a null evidence bundle during parsing. Refresh reuses the stored bundle. The interface issues no duplicate collection request while one is active, and only the explicit **Rebuild evidence** action replaces an existing bundle. Reset clears both the journey and bundle, and collected runs cannot take another simulation step until reset.
+The evidence bundle is versioned and readonly in application types. Phase 6 moved browser persistence to `trial-by-user:runs:v3`; older records remain readable and receive a null evidence bundle during parsing. Refresh reuses the stored bundle. The interface issues no duplicate collection request while one is active, and only the explicit **Rebuild evidence** action replaces an existing bundle. Reset clears both the journey and bundle, and collected runs cannot take another simulation step until reset.
 
-No LLM, embedding, provider credential, database, or background worker is involved in evidence preparation. The prosecutor and defense will later receive the same bundle rather than independently gathering evidence.
+No LLM, embedding, provider credential, database, or background worker is involved in evidence preparation. The prosecutor and defense receive the same bundle rather than independently gathering evidence.
 
 > Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is deferred to the prosecutor, defense, and judge.
+
+### Phase 7 courtroom advocate boundary
+
+`POST /api/courtroom/argue` performs exactly one advocate request for `prosecutor` or `defense`. The browser sends a run ID, role, and the prepared evidence bundle. Strict Zod validation runs before provider configuration. The server checks the bundle's run ID and version, resolves every page, section, summary, callout, and excerpt against trusted FlowPilot data, and recomputes the deterministic fact checks. A malformed or tampered request therefore fails before credentials are read or a provider call is attempted.
+
+Both roles use one shared evidence formatter and receive byte-for-byte identical compact input: task, persona, customer outcome, coverage, bounded fact checks, and ordered evidence items with explicit customer-seen labels. The data is enclosed in an untrusted-evidence delimiter. Shared instructions prohibit retrieval, browsing, invented sources, hidden specifications, final adjudication, and private chain-of-thought. The only prompt variation is the prosecutor or defense role assignment, and neither request contains the other side's argument.
+
+The existing provider abstraction now exposes reusable strict structured generation. Both advocate roles use the one server-configured Groq or OpenAI provider and model. Groq receives explicit strict JSON Schema; OpenAI receives the matching Zod format. Each role request makes at most one provider call. SDK retries remain disabled, and there is no fallback, repair request, or automatic regeneration.
+
+Returned arguments must contain the assigned role, a bounded thesis, one to five key claims, a strongest point, up to three acknowledgements, one of the five requested verdict directions, and a closing statement. Every substantive point requires unique citations. A second validation pass rejects wrong roles and any evidence ID not present in the supplied bundle. The requested direction is an advocate's position, not a verdict.
+
+Browser persistence is now `trial-by-user:runs:v4`; v3 and earlier runs migrate with an empty courtroom state. Each successful result records the argument, role, generation time, provider label, and evidence bundle ID/version. Regenerating one role preserves the other and replaces the existing record only after success. Rebuilding evidence or resetting the simulation clears both arguments. A client in-flight guard serializes provider calls. There is no judge endpoint, score, final verdict, recommendation, or additional retrieval.
 
 > Persisting the MVP run in localStorage keeps deployment free and serverless, but the client must send a compact action history with each stateless step. Server persistence would improve integrity and cross-device access, but adds infrastructure and is deferred until it is needed.
 
@@ -65,10 +77,10 @@ There is currently:
 - no database;
 - no authentication;
 - no file storage or uploads;
-- configurable Groq and OpenAI Responses API integrations for the synthetic customer only;
-- two stateless Route Handlers for simulation steps and evidence collection, with no separate backend.
+- configurable Groq and OpenAI Responses API integrations for the synthetic customer and courtroom advocates;
+- three stateless Route Handlers for simulation steps, evidence collection, and one courtroom argument, with no separate backend.
 
-There is no database or server-side run persistence. The only run and evidence persistence is browser-specific localStorage. The prosecutor, defense, and judge do not exist yet.
+There is no database or server-side run persistence. Runs, evidence, and courtroom argument records use browser-specific localStorage. The prosecutor and defense exist; the judge does not.
 
 There are also no arbitrary document or screenshot uploads. The controlled product is repository-owned content, not user-supplied content.
 
@@ -82,7 +94,7 @@ The remaining planned system boundaries are:
 - **Server functions:** Next.js Route Handlers for validated requests, orchestration steps, and server-side provider access.
 - **Persistence:** A hosted PostgreSQL service may be added later for products, test runs, evidence, and verdicts. No provider has been selected.
 - **Product knowledge:** The local FlowPilot fixture remains the deterministic baseline. Bounded documents and screenshots may be added later through validated upload and processing flows; arbitrary uploads are not part of the current architecture.
-- **Simulation orchestration:** The implemented short-request pattern will remain the boundary as later evidence and courtroom phases are added.
+- **Simulation orchestration:** The implemented short-request pattern will remain the boundary as the judge and later phases are added.
 - **Secrets:** API keys and service credentials will remain server-side and will never be placed in browser-exposed environment variables.
 - **Deployment:** Vercel will host the production Next.js application. Docker Compose will remain a local-development tool.
 

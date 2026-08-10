@@ -2,12 +2,15 @@
 
 import { flowPilotProduct } from "@/lib/product";
 import { EvidenceBundleSchema } from "@/lib/evidence/schemas";
+import { CourtroomStateSchema } from "@/lib/courtroom/schemas";
+import { EMPTY_COURTROOM_STATE } from "@/lib/courtroom/types";
 import { SimulationActionEntrySchema, SimulationStateSchema } from "@/lib/simulation/schemas";
 
 import { getCustomerPersona, getCustomerTask } from "./data";
 import { MAX_ACTIONS, MIN_ACTIONS, RUN_STATUSES, type RunStatus, type TestRun } from "./types";
 
-export const RUN_STORAGE_KEY = "trial-by-user:runs:v3";
+export const RUN_STORAGE_KEY = "trial-by-user:runs:v4";
+export const PHASE_SIX_RUN_STORAGE_KEY = "trial-by-user:runs:v3";
 export const PHASE_FIVE_RUN_STORAGE_KEY = "trial-by-user:runs:v2";
 export const LEGACY_RUN_STORAGE_KEY = "trial-by-user:runs:v1";
 
@@ -65,12 +68,14 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     lastError: value.lastError ?? null,
   });
   const evidenceResult = EvidenceBundleSchema.nullable().safeParse(value.evidenceBundle ?? null);
+  const courtroomResult = CourtroomStateSchema.safeParse(value.courtroom ?? EMPTY_COURTROOM_STATE);
 
   if (
     !stateResult.success ||
     stateResult.data.currentActionCount !== actionsResult.data.length ||
     stateResult.data.modelCallCount > maxActions ||
     !evidenceResult.success ||
+    !courtroomResult.success ||
     (evidenceResult.data !== null &&
       (status !== "completed" ||
         evidenceResult.data.runId !== id ||
@@ -81,6 +86,16 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     return undefined;
   }
 
+  const courtroomMatchesEvidence = Object.entries(courtroomResult.data).every(([role, record]) =>
+    record === null || (
+      evidenceResult.data !== null &&
+      record.role === role &&
+      record.evidenceBundleId === evidenceResult.data.bundleId &&
+      record.evidenceBundleVersion === evidenceResult.data.version
+    ),
+  );
+  if (!courtroomMatchesEvidence) return undefined;
+
   return {
     id,
     taskId,
@@ -90,6 +105,7 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     productId,
     actions: actionsResult.data,
     evidenceBundle: evidenceResult.data,
+    courtroom: courtroomResult.data,
     ...stateResult.data,
   };
 }
@@ -131,9 +147,10 @@ export function listLocalRuns(storage?: StorageLike): TestRun[] {
   }
 
   const currentRuns = readRunsAtKey(target, RUN_STORAGE_KEY);
+  const phaseSixRuns = readRunsAtKey(target, PHASE_SIX_RUN_STORAGE_KEY);
   const phaseFiveRuns = readRunsAtKey(target, PHASE_FIVE_RUN_STORAGE_KEY);
   const legacyRuns = readRunsAtKey(target, LEGACY_RUN_STORAGE_KEY);
-  const runs = [...currentRuns, ...phaseFiveRuns, ...legacyRuns].filter(
+  const runs = [...currentRuns, ...phaseSixRuns, ...phaseFiveRuns, ...legacyRuns].filter(
     (run, index, allRuns) => allRuns.findIndex((candidate) => candidate.id === run.id) === index,
   );
 
@@ -181,6 +198,7 @@ export function removeLocalRun(id: string, storage?: StorageLike) {
     }
     target.removeItem(LEGACY_RUN_STORAGE_KEY);
     target.removeItem(PHASE_FIVE_RUN_STORAGE_KEY);
+    target.removeItem(PHASE_SIX_RUN_STORAGE_KEY);
     return true;
   } catch {
     return false;

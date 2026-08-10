@@ -17,7 +17,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 3. Inspect deterministic retrieval suggestions for the configured question (available now).
 4. Start the synthetic customer and watch one bounded action execute per request (available now).
 5. Review the chronological actions and customer conclusion, then prepare a deterministic evidence bundle (available now).
-6. Compare the prosecutor and defense arguments.
+6. Run either prosecutor or defense first, then compare their independently generated, source-cited arguments (available now).
 7. Read the judge's verdict, confidence, rationale, and recommended product action.
 
 ## Planned frontend screens
@@ -30,7 +30,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Deterministic retrieval playground and run suggestions (available now)
 - Active synthetic-customer run visualization (available now)
 - Evidence workspace and source timeline (available now)
-- Courtroom arguments
+- Courtroom arguments (available now)
 - Verdict detail
 - Product knowledge and asset management
 - Public demo experience with usage protections
@@ -110,7 +110,7 @@ The agent receives the selected task, persona, remaining budget, compact prior h
 
 Product content is wrapped in an explicit untrusted-data boundary. The model is instructed to treat it as information rather than instructions, and the server validates every returned action and every page or section identifier before use. The model cannot reach arbitrary URLs, files, browser controls, or external tools.
 
-The synthetic customer and deterministic evidence collector now exist. Prosecutor and defense arguments, judge verdicts, document and screenshot uploads, and live website testing remain unimplemented.
+The synthetic customer, deterministic evidence collector, and independent prosecutor and defense arguments now exist. Judge verdicts, document and screenshot uploads, and live website testing remain unimplemented.
 
 ## Deterministic evidence collection
 
@@ -120,6 +120,16 @@ Each predefined task has an internal evaluation specification containing require
 
 The immutable versioned bundle includes exact sources, excerpts, source links, exposure actions, missing evidence, task coverage, search/page/section summaries, customer outcome, and integrity counts. It is stored with the browser-local run, survives refresh, and is cleared by reset. The interface reuses the existing bundle unless the user explicitly selects **Rebuild evidence**.
 
-Both prosecutor and defense agents will later receive this same source-traceable bundle. Phase 6 does not implement either argument, a judge, or verdict generation.
+Both prosecutor and defense agents receive this same source-traceable bundle. Phase 6 itself makes no argument or verdict.
 
 > Deterministic evidence preparation is more limited than an LLM evaluator, but it guarantees reproducibility, source traceability, and equal evidence access for both courtroom sides. Interpretive judgment is deferred to the prosecutor, defense, and judge.
+
+## Prosecutor and defense arguments
+
+Phase 7 adds two independent advocates to a prepared run. The user may run either role first. Each role receives the exact same immutable evidence bundle and common courtroom instructions; only the assignment to argue for failure or success differs. Neither advocate receives, references, or waits for the other argument.
+
+An argument contains a thesis, one to five key claims with strength labels, a strongest point, up to three acknowledged opposing points, a requested direction from the five verdict categories, and a closing statement. Every substantive point must cite one or more unique evidence IDs from the bundle. Source chips link back to FlowPilot and distinguish content the customer saw from context or missing evidence the customer did not see.
+
+The selected provider makes one structured call per requested side. There is no automatic retry, cross-provider fallback, repair call, browsing, or additional retrieval. A failed regeneration leaves the prior argument intact; a successful regeneration replaces only that role. Rebuilding evidence clears both arguments because their citation boundary has changed.
+
+The requested direction is advocacy, not an adjudicated result. Phase 7 does not implement a judge, final verdict, recommendation, or hidden scoring system.

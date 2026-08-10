@@ -5,7 +5,7 @@ import { zodTextFormat } from "openai/helpers/zod";
 
 import { SimulationError, mapProviderError } from "../errors";
 import type { OpenAIProviderConfiguration } from "../environment";
-import type { CustomerDecisionProvider } from "../provider";
+import type { StructuredGenerationInput, StructuredGenerationProvider } from "../provider";
 import { CustomerDecisionWireSchema, parseCustomerDecision } from "../schemas";
 
 const PROVIDER_TIMEOUT_MS = 20_000;
@@ -19,7 +19,7 @@ type OpenAIResponsesClient = {
 export function createOpenAICustomerProvider(
   configuration: OpenAIProviderConfiguration,
   injectedClient?: OpenAIResponsesClient,
-): CustomerDecisionProvider {
+): StructuredGenerationProvider {
   const client =
     injectedClient ??
     (new OpenAI({
@@ -28,41 +28,60 @@ export function createOpenAICustomerProvider(
       timeout: PROVIDER_TIMEOUT_MS,
     }) as unknown as OpenAIResponsesClient);
 
+  async function generateStructured({
+    instructions,
+    input,
+    schemaName,
+    zodSchema,
+    maxOutputTokens,
+  }: StructuredGenerationInput) {
+    try {
+      const response = await client.responses.parse({
+        model: configuration.model,
+        instructions,
+        input,
+        max_output_tokens: maxOutputTokens,
+        store: false,
+        text: { format: zodTextFormat(zodSchema, schemaName) },
+      });
+
+      if (!response.output_parsed) {
+        throw new SimulationError(
+          "MALFORMED_PROVIDER_RESPONSE",
+          "The model did not return usable structured output. Try again.",
+          502,
+          true,
+          true,
+        );
+      }
+      return response.output_parsed;
+    } catch (error) {
+      throw mapProviderError(error);
+    }
+  }
+
   return {
+    provider: "openai",
+    generateStructured,
     async decide({ instructions, input }) {
       try {
-        const response = await client.responses.parse({
-          model: configuration.model,
+        return parseCustomerDecision(await generateStructured({
           instructions,
           input,
-          max_output_tokens: 500,
-          store: false,
-          text: { format: zodTextFormat(CustomerDecisionWireSchema, "customer_decision") },
-        });
-
-        if (!response.output_parsed) {
-          throw new SimulationError(
-            "MALFORMED_PROVIDER_RESPONSE",
-            "The model did not return a usable structured action. Try this step again.",
-            502,
-            true,
-            true,
-          );
-        }
-
-        try {
-          return parseCustomerDecision(response.output_parsed);
-        } catch {
-          throw new SimulationError(
-            "MALFORMED_PROVIDER_RESPONSE",
-            "The model returned an invalid action shape. Try this step again.",
-            502,
-            true,
-            true,
-          );
-        }
+          schemaName: "customer_decision",
+          jsonSchema: {},
+          zodSchema: CustomerDecisionWireSchema,
+          maxOutputTokens: 500,
+        }));
       } catch (error) {
-        throw mapProviderError(error);
+        if (error instanceof SimulationError) throw error;
+        throw new SimulationError(
+          "MALFORMED_PROVIDER_RESPONSE",
+          "The model returned an invalid action shape. Try this step again.",
+          502,
+          true,
+          true,
+        );
       }
     },
   };

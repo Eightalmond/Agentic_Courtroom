@@ -188,6 +188,7 @@ export const EvidenceCollectionRequestSchema = z
     completionReason: z.enum(["answer", "gave_up", "budget_exhausted"]).nullable(),
     lastError: SafeSimulationErrorSchema.nullable(),
     evidenceBundle: EvidenceBundleSchema.nullable().optional(),
+    courtroom: z.unknown().optional(),
   })
   .strict()
   .superRefine((run, context) => {

@@ -36,10 +36,11 @@ export const foundationChecks: readonly FoundationCheck[] = [
   { label: "Deterministic section retrieval", complete: true },
   { label: "Bounded synthetic customer simulation", complete: true },
   { label: "Deterministic evidence collection", complete: true },
+  { label: "Independent courtroom advocates", complete: true },
 ];
 
 export const futureCapabilities = [
-  "Courtroom agents and final verdicts",
+  "Judge agent and final verdict",
   "Document and screenshot uploads",
   "Controlled live-site testing",
 ] as const;

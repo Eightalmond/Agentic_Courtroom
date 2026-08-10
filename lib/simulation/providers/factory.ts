@@ -6,13 +6,13 @@ import {
   type OpenAIProviderConfiguration,
   type SimulationEnvironment,
 } from "../environment";
-import type { CustomerDecisionProvider } from "../provider";
+import type { StructuredGenerationProvider } from "../provider";
 import { createGroqCustomerProvider } from "./groq";
 import { createOpenAICustomerProvider } from "./openai";
 
 type ProviderFactories = {
-  groq(configuration: GroqProviderConfiguration): CustomerDecisionProvider;
-  openai(configuration: OpenAIProviderConfiguration): CustomerDecisionProvider;
+  groq(configuration: GroqProviderConfiguration): StructuredGenerationProvider;
+  openai(configuration: OpenAIProviderConfiguration): StructuredGenerationProvider;
 };
 
 const providerFactories: ProviderFactories = {
@@ -23,7 +23,7 @@ const providerFactories: ProviderFactories = {
 export function createSimulationProvider(
   environment: SimulationEnvironment = process.env,
   factories: ProviderFactories = providerFactories,
-): CustomerDecisionProvider {
+): StructuredGenerationProvider {
   const configuration = readSimulationProviderConfiguration(environment);
 
   if (configuration.provider === "groq") {

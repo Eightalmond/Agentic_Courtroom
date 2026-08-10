@@ -6,6 +6,7 @@ import type {
   SimulationStepResponse,
 } from "@/lib/simulation/types";
 import type { EvidenceBundle, EvidenceCollectionRequest } from "@/lib/evidence/types";
+import { EMPTY_COURTROOM_STATE, type CourtroomArgumentRecord, type CourtroomRole } from "@/lib/courtroom/types";
 
 import type { TestRun } from "./types";
 
@@ -88,11 +89,30 @@ export function applyEvidenceBundle(run: TestRun, evidenceBundle: EvidenceBundle
   if (run.status !== "completed" || evidenceBundle.runId !== run.id) {
     throw new Error("Evidence can only be attached to its completed customer run.");
   }
-  return { ...run, evidenceBundle };
+  return { ...run, evidenceBundle, courtroom: EMPTY_COURTROOM_STATE };
 }
 
 export function discardEvidenceBundle(run: TestRun): TestRun {
-  return { ...run, evidenceBundle: null };
+  return { ...run, evidenceBundle: null, courtroom: EMPTY_COURTROOM_STATE };
+}
+
+export function toCourtroomArgumentRequest(run: TestRun, role: CourtroomRole) {
+  if (!run.evidenceBundle) {
+    throw new Error("Prepare evidence before running a courtroom advocate.");
+  }
+  return { runId: run.id, role, evidenceBundle: run.evidenceBundle };
+}
+
+export function applyCourtroomArgument(run: TestRun, record: CourtroomArgumentRecord): TestRun {
+  if (
+    !run.evidenceBundle ||
+    record.role !== record.argument.role ||
+    record.evidenceBundleId !== run.evidenceBundle.bundleId ||
+    record.evidenceBundleVersion !== run.evidenceBundle.version
+  ) {
+    throw new Error("The courtroom argument does not belong to this evidence bundle.");
+  }
+  return { ...run, courtroom: { ...run.courtroom, [record.role]: record } };
 }
 
 export function applySimulationStep(run: TestRun, response: SimulationStepResponse): TestRun {
@@ -118,6 +138,7 @@ export function resetSimulationRun(run: TestRun, now = new Date().toISOString())
     completedAt: null,
     actions: [],
     evidenceBundle: null,
+    courtroom: EMPTY_COURTROOM_STATE,
     currentPageSlug: null,
     currentSectionId: null,
     latestSearchResults: [],

@@ -1,4 +1,5 @@
 import { flowPilotProduct } from "@/lib/product";
+import { EMPTY_COURTROOM_STATE } from "@/lib/courtroom/types";
 
 import { getCustomerPersona, getCustomerTask } from "./data";
 import { generateRunId } from "./run-id";
@@ -39,6 +40,7 @@ export function createReadyRun(input: NewRunInput, options: CreateReadyRunOption
     completedAt: null,
     actions: [],
     evidenceBundle: null,
+    courtroom: EMPTY_COURTROOM_STATE,
     currentPageSlug: null,
     currentSectionId: null,
     latestSearchResults: [],

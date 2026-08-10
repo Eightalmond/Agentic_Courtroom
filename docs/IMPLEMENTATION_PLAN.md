@@ -91,18 +91,23 @@
 - Mechanical checks return supported, unsupported, contradicted, or not-assessable and are visibly separated from future verdicts.
 - Integrity metadata records action, tool, completion, coverage, and missing-evidence counts.
 - The browser-local bundle survives refresh, explicit rebuild replaces it, and simulation reset clears it while older runs remain readable.
-- The evidence workspace provides coverage, filters, source links, fact checks, and a disabled Phase 7 courtroom control.
+- The evidence workspace provides coverage, filters, source links, and fact checks for the next phase.
 - The collector uses no provider credentials, database, embeddings, uploads, URLs, browser automation, or courtroom agents.
 
-## Phase 7 — Prosecutor and defense agents (planned)
+## Phase 7 — Prosecutor and defense agents (completed)
 
 **Goal:** Produce opposing assessments grounded only in the collected evidence.
 
 **Acceptance criteria:**
 
-- Each argument cites specific evidence records.
-- The prosecutor and defense use clearly separated instructions and outputs.
-- Missing or contradictory evidence is surfaced rather than invented.
+- Either advocate can run first, with at most one provider call active at a time.
+- Both sides receive the exact same compact immutable evidence bundle and shared prompt rules; only their role assignment differs.
+- Each strict structured argument includes a thesis, bounded claims, strongest point, acknowledgements, requested direction, and closing statement.
+- Every substantive point cites unique IDs from the supplied bundle; wrong roles and fabricated citations fail safely.
+- The existing provider abstraction uses the single configured Groq or OpenAI provider/model with no fallback, automatic retry, or repair call.
+- Browser-local records retain role, provider, timestamp, and evidence bundle ID/version; regeneration and invalidation behavior preserves citation integrity.
+- The interface displays both independent cases, seen/not-seen source links, and a disabled Phase 8 judge control.
+- Automated tests mock all providers and cover schemas, prompts, source validation, call counts, role isolation, persistence, migration, and safe failures.
 
 ## Phase 8 — Judge and verdict (planned)
 

@@ -180,10 +180,6 @@ export function EvidenceWorkspace({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center sm:p-8">
-        <button className="rounded-xl bg-slate-200 px-5 py-3 text-sm font-bold text-slate-500" disabled type="button">Send evidence to courtroom</button>
-        <p className="mt-3 text-sm text-slate-500">Coming in Phase 7</p>
-      </div>
     </section>
   );
 }

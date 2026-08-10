@@ -1,5 +1,6 @@
 import type { SimulationActionEntry, SimulationState } from "@/lib/simulation/types";
 import type { EvidenceBundle } from "@/lib/evidence/types";
+import type { CourtroomState } from "@/lib/courtroom/types";
 
 export const MIN_ACTIONS = 3;
 export const MAX_ACTIONS = 10;
@@ -46,6 +47,7 @@ export type TestRun = SimulationState & {
   productId: string;
   actions: readonly SimulationActionEntry[];
   evidenceBundle: EvidenceBundle | null;
+  courtroom: CourtroomState;
 };
 
 export type NewRunInput = {

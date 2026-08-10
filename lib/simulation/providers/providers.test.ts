@@ -3,13 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import OpenAI from "openai";
+import { z } from "zod";
 
 import {
   readGroqConfiguration,
   readSelectedProvider,
   readSimulationProviderConfiguration,
 } from "../environment";
-import type { CustomerDecisionProvider } from "../provider";
+import type { StructuredGenerationProvider } from "../provider";
 import { SimulationStepRequestSchema } from "../schemas";
 import { createSimulationProvider } from "./factory";
 import {
@@ -20,6 +21,7 @@ import {
   mapGroqProviderError,
   parseGroqDecisionOutput,
 } from "./groq";
+import { createOpenAICustomerProvider } from "./openai";
 
 const groqConfiguration = {
   provider: "groq" as const,
@@ -38,8 +40,12 @@ const validWireDecision = {
   reason: null,
 };
 
-function provider(label: string): CustomerDecisionProvider {
+function provider(label: "groq" | "openai"): StructuredGenerationProvider {
   return {
+    provider: label,
+    async generateStructured() {
+      return {};
+    },
     async decide() {
       return { action: "GIVE_UP", explanation: label, reason: "No evidence." };
     },
@@ -198,6 +204,47 @@ describe("Groq Responses provider", () => {
       code: "GROQ_INVALID_RESPONSE",
     });
     expect(create).toHaveBeenCalledOnce();
+  });
+
+  it("supports one reusable structured courtroom request with the configured model", async () => {
+    const create = vi.fn().mockResolvedValue({ output_text: '{"role":"prosecutor"}' });
+    const selected = createGroqCustomerProvider(groqConfiguration, { responses: { create } });
+    await expect(selected.generateStructured({
+      instructions: "shared",
+      input: "same evidence",
+      schemaName: "courtroom_prosecutor_argument",
+      jsonSchema: { type: "object" },
+      zodSchema: z.object({ role: z.literal("prosecutor") }),
+      maxOutputTokens: 1_400,
+    })).resolves.toEqual({ role: "prosecutor" });
+    expect(selected.provider).toBe("groq");
+    expect(create).toHaveBeenCalledOnce();
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      model: groqConfiguration.model,
+      input: "same evidence",
+      text: { format: expect.objectContaining({ name: "courtroom_prosecutor_argument", strict: true }) },
+    }));
+  });
+});
+
+describe("OpenAI reusable structured provider", () => {
+  it("makes exactly one parsed request using the configured model and Zod format", async () => {
+    const parse = vi.fn().mockResolvedValue({ output_parsed: { role: "defense" } });
+    const selected = createOpenAICustomerProvider(
+      { provider: "openai", apiKey: "test-key", model: "gpt-test" },
+      { responses: { parse } },
+    );
+    await expect(selected.generateStructured({
+      instructions: "shared",
+      input: "same evidence",
+      schemaName: "courtroom_defense_argument",
+      jsonSchema: { type: "object" },
+      zodSchema: z.object({ role: z.literal("defense") }),
+      maxOutputTokens: 1_400,
+    })).resolves.toEqual({ role: "defense" });
+    expect(selected.provider).toBe("openai");
+    expect(parse).toHaveBeenCalledOnce();
+    expect(parse).toHaveBeenCalledWith(expect.objectContaining({ model: "gpt-test", input: "same evidence", store: false }));
   });
 });
 

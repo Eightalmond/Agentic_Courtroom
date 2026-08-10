@@ -4,8 +4,8 @@ import OpenAI, { type ClientOptions } from "openai";
 
 import { SimulationError } from "../errors";
 import type { GroqProviderConfiguration } from "../environment";
-import type { CustomerDecisionProvider } from "../provider";
-import { CUSTOMER_DECISION_JSON_SCHEMA, parseCustomerDecision } from "../schemas";
+import type { StructuredGenerationInput, StructuredGenerationProvider } from "../provider";
+import { CUSTOMER_DECISION_JSON_SCHEMA, CustomerDecisionWireSchema, parseCustomerDecision } from "../schemas";
 
 export const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 export const GROQ_MAX_RETRIES = 0;
@@ -27,11 +27,11 @@ export function createGroqClientOptions(configuration: GroqProviderConfiguration
   };
 }
 
-export function parseGroqDecisionOutput(output: unknown) {
+export function parseGroqStructuredOutput(output: unknown) {
   if (typeof output !== "string" || output.length === 0 || output.length > MAX_PROVIDER_OUTPUT_CHARACTERS) {
     throw new SimulationError(
       "GROQ_INVALID_RESPONSE",
-      "Groq returned an invalid structured action. Try this step again.",
+      "Groq returned invalid structured output. Try again.",
       502,
       true,
       true,
@@ -39,8 +39,23 @@ export function parseGroqDecisionOutput(output: unknown) {
   }
 
   try {
-    return parseCustomerDecision(JSON.parse(output) as unknown);
+    return JSON.parse(output) as unknown;
   } catch {
+    throw new SimulationError(
+      "GROQ_INVALID_RESPONSE",
+      "Groq returned invalid structured output. Try again.",
+      502,
+      true,
+      true,
+    );
+  }
+}
+
+export function parseGroqDecisionOutput(output: unknown) {
+  try {
+    return parseCustomerDecision(parseGroqStructuredOutput(output));
+  } catch (error) {
+    if (error instanceof SimulationError) throw error;
     throw new SimulationError(
       "GROQ_INVALID_RESPONSE",
       "Groq returned an invalid structured action. Try this step again.",
@@ -77,32 +92,62 @@ export function mapGroqProviderError(error: unknown): SimulationError {
 export function createGroqCustomerProvider(
   configuration: GroqProviderConfiguration,
   injectedClient?: GroqResponsesClient,
-): CustomerDecisionProvider {
+): StructuredGenerationProvider {
   const client =
     injectedClient ??
     (new OpenAI(createGroqClientOptions(configuration)) as unknown as GroqResponsesClient);
 
+  async function generateStructured({
+    instructions,
+    input,
+    schemaName,
+    jsonSchema,
+    maxOutputTokens,
+  }: StructuredGenerationInput) {
+    try {
+      const response = await client.responses.create({
+        model: configuration.model,
+        instructions,
+        input,
+        max_output_tokens: maxOutputTokens,
+        text: {
+          format: {
+            type: "json_schema",
+            name: schemaName,
+            schema: jsonSchema,
+            strict: true,
+          },
+        },
+      });
+
+      return parseGroqStructuredOutput(response.output_text);
+    } catch (error) {
+      throw mapGroqProviderError(error);
+    }
+  }
+
   return {
+    provider: "groq",
+    generateStructured,
     async decide({ instructions, input }) {
       try {
-        const response = await client.responses.create({
-          model: configuration.model,
+        return parseCustomerDecision(await generateStructured({
           instructions,
           input,
-          max_output_tokens: 500,
-          text: {
-            format: {
-              type: "json_schema",
-              name: "customer_decision",
-              schema: CUSTOMER_DECISION_JSON_SCHEMA,
-              strict: true,
-            },
-          },
-        });
-
-        return parseGroqDecisionOutput(response.output_text);
+          schemaName: "customer_decision",
+          jsonSchema: CUSTOMER_DECISION_JSON_SCHEMA,
+          zodSchema: CustomerDecisionWireSchema,
+          maxOutputTokens: 500,
+        }));
       } catch (error) {
-        throw mapGroqProviderError(error);
+        if (error instanceof SimulationError && error.code === "GROQ_INVALID_RESPONSE") throw error;
+        throw new SimulationError(
+          "GROQ_INVALID_RESPONSE",
+          "Groq returned an invalid structured action. Try this step again.",
+          502,
+          true,
+          true,
+        );
       }
     },
   };

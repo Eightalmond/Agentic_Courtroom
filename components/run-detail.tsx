@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
 
 import { EvidenceWorkspace } from "@/components/evidence/evidence-workspace";
+import { CourtroomWorkspace } from "@/components/courtroom/courtroom-workspace";
+import { CourtroomClientError, requestCourtroomArgument } from "@/lib/courtroom/client";
+import type { CourtroomRole } from "@/lib/courtroom/types";
 import { EvidenceClientError, requestEvidenceBundle } from "@/lib/evidence/client";
 import { flowPilotProduct, getProductPage } from "@/lib/product";
 import { getSectionById, searchProductKnowledge } from "@/lib/retrieval";
@@ -12,6 +15,7 @@ import type { SimulationActionEntry, SimulationObservation } from "@/lib/simulat
 import {
   applySimulationFailure,
   applySimulationStep,
+  applyCourtroomArgument,
   applyEvidenceBundle,
   getCustomerPersona,
   getCustomerTask,
@@ -19,6 +23,7 @@ import {
   resetSimulationRun,
   saveLocalRun,
   toEvidenceCollectionRequest,
+  toCourtroomArgumentRequest,
   toSimulationStepRequest,
   type TestRun,
 } from "@/lib/test-runs";
@@ -106,10 +111,13 @@ export function RunDetail({ runId }: RunDetailProps) {
   const [isBusy, setIsBusy] = useState(false);
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [isEvidenceBusy, setIsEvidenceBusy] = useState(false);
+  const [busyCourtroomRole, setBusyCourtroomRole] = useState<CourtroomRole | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
+  const [courtroomErrors, setCourtroomErrors] = useState<Record<CourtroomRole, string | null>>({ prosecutor: null, defense: null });
   const inFlight = useRef(false);
   const evidenceInFlight = useRef(false);
+  const courtroomInFlight = useRef(false);
   const autoRunRequested = useRef(false);
   void revision;
 
@@ -185,7 +193,7 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   function resetRun() {
-    if (!run || inFlight.current || evidenceInFlight.current) {
+    if (!run || inFlight.current || evidenceInFlight.current || courtroomInFlight.current) {
       return;
     }
     autoRunRequested.current = false;
@@ -194,7 +202,11 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   async function prepareEvidence(sourceRun: TestRun) {
-    if (sourceRun.status !== "completed" || evidenceInFlight.current) return;
+    if (sourceRun.status !== "completed" || evidenceInFlight.current || courtroomInFlight.current) return;
+    if (
+      (sourceRun.courtroom.prosecutor || sourceRun.courtroom.defense) &&
+      !window.confirm("Rebuilding evidence will remove both courtroom arguments. Continue?")
+    ) return;
     evidenceInFlight.current = true;
     setIsEvidenceBusy(true);
     setEvidenceError(null);
@@ -209,6 +221,30 @@ export function RunDetail({ runId }: RunDetailProps) {
     } finally {
       evidenceInFlight.current = false;
       setIsEvidenceBusy(false);
+    }
+  }
+
+  async function runCourtroomRole(sourceRun: TestRun, role: CourtroomRole) {
+    if (!sourceRun.evidenceBundle || courtroomInFlight.current || evidenceInFlight.current) return;
+    if (
+      sourceRun.courtroom[role] &&
+      !window.confirm(`Regenerate the ${role} argument? The existing ${role} argument will be replaced only if generation succeeds.`)
+    ) return;
+
+    courtroomInFlight.current = true;
+    setBusyCourtroomRole(role);
+    setCourtroomErrors((current) => ({ ...current, [role]: null }));
+    try {
+      const record = await requestCourtroomArgument(toCourtroomArgumentRequest(sourceRun, role));
+      persist(applyCourtroomArgument(sourceRun, record));
+    } catch (error) {
+      const message = error instanceof CourtroomClientError
+        ? `${error.detail.code}: ${error.detail.message}`
+        : "COURTROOM_FAILED: The advocate failed safely. Try again.";
+      setCourtroomErrors((current) => ({ ...current, [role]: message }));
+    } finally {
+      courtroomInFlight.current = false;
+      setBusyCourtroomRole(null);
     }
   }
 
@@ -288,6 +324,16 @@ export function RunDetail({ runId }: RunDetailProps) {
             <EvidenceWorkspace bundle={run.evidenceBundle} isRebuilding={isEvidenceBusy} onRebuild={() => void prepareEvidence(run)} />
           )}
 
+          {run.evidenceBundle && (
+            <CourtroomWorkspace
+              bundle={run.evidenceBundle}
+              busyRole={busyCourtroomRole}
+              courtroom={run.courtroom}
+              errors={courtroomErrors}
+              onRun={(role) => void runCourtroomRole(run, role)}
+            />
+          )}
+
           <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="journey-title">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -350,7 +396,7 @@ export function RunDetail({ runId }: RunDetailProps) {
             </div>
           )}
 
-          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || isEvidenceBusy || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
+          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || isEvidenceBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
           <Link className="mt-3 block rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-bold text-slate-700" href="/tests/new">Configure another test</Link>
 
           <dl className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-xs">
