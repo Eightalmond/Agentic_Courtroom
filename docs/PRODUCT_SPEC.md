@@ -18,7 +18,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 4. Start the synthetic customer and watch one bounded action execute per request (available now).
 5. Review the chronological actions and customer conclusion, then prepare a deterministic evidence bundle (available now).
 6. Run either prosecutor or defense first, then compare their independently generated, source-cited arguments (available now).
-7. Read the judge's verdict, confidence, rationale, and recommended product action.
+7. Run the neutral judge and read its cited verdict, confidence, findings, primary friction, and recommended product action (available now).
 
 ## Planned frontend screens
 
@@ -31,7 +31,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Active synthetic-customer run visualization (available now)
 - Evidence workspace and source timeline (available now)
 - Courtroom arguments (available now)
-- Verdict detail
+- Verdict detail and compact final report (available now)
 - Product knowledge and asset management
 - Public demo experience with usage protections
 
@@ -110,7 +110,7 @@ The agent receives the selected task, persona, remaining budget, compact prior h
 
 Product content is wrapped in an explicit untrusted-data boundary. The model is instructed to treat it as information rather than instructions, and the server validates every returned action and every page or section identifier before use. The model cannot reach arbitrary URLs, files, browser controls, or external tools.
 
-The synthetic customer, deterministic evidence collector, and independent prosecutor and defense arguments now exist. Judge verdicts, document and screenshot uploads, and live website testing remain unimplemented.
+The synthetic customer, deterministic evidence collector, independent prosecutor and defense arguments, and judge verdict now exist. Document and screenshot uploads and live website testing remain unimplemented.
 
 ## Deterministic evidence collection
 
@@ -132,4 +132,16 @@ An argument contains a thesis, one to five key claims with strength labels, a st
 
 The selected provider makes one structured call per requested side. There is no automatic retry, cross-provider fallback, repair call, browsing, or additional retrieval. A failed regeneration leaves the prior argument intact; a successful regeneration replaces only that role. Rebuilding evidence clears both arguments because their citation boundary has changed.
 
-The requested direction is advocacy, not an adjudicated result. Phase 7 does not implement a judge, final verdict, recommendation, or hidden scoring system.
+The requested direction is advocacy, not an adjudicated result. Phase 8 supplies the separate final judgment without changing either advocate's assignment.
+
+## Judge and final verdict
+
+Phase 8 adds a neutral judge after both current advocate records exist. The judge receives the same immutable evidence bundle used by both sides, along with their structured arguments, the customer outcome and conclusion, persona, action usage, coverage, and explicitly non-binding mechanical fact checks. It makes one structured call through the configured Groq or OpenAI provider and performs no retrieval.
+
+The result contains exactly one of the five verdict categories, a bounded summary, one to five cited findings, an assessment of each side's strongest supported point and weakness, a cited customer-answer assessment, optional cited primary friction, one concrete cited recommendation, and confidence. Every citation must be unique within its list and resolve to product evidence from the current bundle; advocate claim IDs are never evidence.
+
+The judge is instructed to prefer direct evidence over rhetorical force, evaluate both sides fairly, distinguish what the customer saw from unseen product context, consider information availability at the decision point, use persona and action budget proportionately, penalize unsupported claims, avoid splitting the difference by default, and select insufficient evidence when warranted. It cannot invent facts, retrieve new material, request tools, or expose hidden reasoning.
+
+Browser-local persistence retains the verdict, provider label, creation time, bundle identity and fingerprint, and fingerprints for both advocate records. Rebuilding evidence or resetting clears the complete courtroom. A successful advocate regeneration clears the judge; a failed advocate or judge regeneration preserves all prior successful records. The final report appears only after a judge exists.
+
+> The judge sees both adversarial arguments but remains constrained to the original immutable evidence bundle. This allows the judge to compare reasoning quality without introducing new retrieval asymmetry, at the cost of not being able to investigate evidence gaps independently.

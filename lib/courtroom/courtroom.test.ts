@@ -21,6 +21,7 @@ import {
 
 import { validateCourtroomArgument } from "./citations";
 import { revalidateCourtroomEvidence } from "./evidence";
+import { fingerprintEvidenceBundle } from "./fingerprints";
 import { buildCourtroomPrompt, formatCourtroomEvidence } from "./prompt";
 import {
   COURTROOM_ARGUMENT_JSON_SCHEMA,
@@ -79,6 +80,7 @@ function argumentRecord(role: CourtroomRole, bundle = evidenceFixture().bundle):
     provider: "groq",
     evidenceBundleId: bundle.bundleId,
     evidenceBundleVersion: bundle.version,
+    evidenceBundleFingerprint: fingerprintEvidenceBundle(bundle),
     role,
   };
 }
@@ -294,8 +296,8 @@ describe("courtroom persistence lifecycle", () => {
     let run = applyEvidenceBundle(fixture.run, fixture.bundle);
     run = applyCourtroomArgument(run, argumentRecord("prosecutor", fixture.bundle));
     run = applyCourtroomArgument(run, argumentRecord("defense", fixture.bundle));
-    expect(applyEvidenceBundle(run, fixture.bundle).courtroom).toEqual({ prosecutor: null, defense: null });
-    expect(resetSimulationRun(run, NOW).courtroom).toEqual({ prosecutor: null, defense: null });
+    expect(applyEvidenceBundle(run, fixture.bundle).courtroom).toEqual({ prosecutor: null, defense: null, judge: null });
+    expect(resetSimulationRun(run, NOW).courtroom).toEqual({ prosecutor: null, defense: null, judge: null });
   });
 
   it("rejects records for another bundle and keeps arguments in browser-shaped storage", () => {
@@ -309,7 +311,7 @@ describe("courtroom persistence lifecycle", () => {
   it("migrates pre-courtroom runs with an empty courtroom state", () => {
     const legacy = evidenceFixture().run;
     const phaseSixRun = Object.fromEntries(Object.entries(legacy).filter(([key]) => key !== "courtroom"));
-    expect(parseStoredRun(phaseSixRun)?.courtroom).toEqual({ prosecutor: null, defense: null });
+    expect(parseStoredRun(phaseSixRun)?.courtroom).toEqual({ prosecutor: null, defense: null, judge: null });
   });
 
   it("builds a request only when matching evidence exists", () => {

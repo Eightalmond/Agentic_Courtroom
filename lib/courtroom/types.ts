@@ -42,18 +42,84 @@ export type CourtroomArgumentRecord = Readonly<{
   provider: LlmProviderName;
   evidenceBundleId: string;
   evidenceBundleVersion: number;
+  evidenceBundleFingerprint: string | null;
   role: CourtroomRole;
+}>;
+
+export type JudgeFindingWeight = "minor" | "moderate" | "major";
+export type CustomerAnswerStatus =
+  | "supported"
+  | "partially_supported"
+  | "contradicted"
+  | "not_assessable";
+
+export type JudgeVerdict = Readonly<{
+  verdict: VerdictDirection;
+  summary: string;
+  findings: readonly Readonly<{
+    title: string;
+    finding: string;
+    evidenceIds: readonly string[];
+    weight: JudgeFindingWeight;
+  }>[];
+  prosecutorAssessment: Readonly<{
+    strongestSupportedPoint: string;
+    evidenceIds: readonly string[];
+    overreachOrWeakness: string;
+  }>;
+  defenseAssessment: Readonly<{
+    strongestSupportedPoint: string;
+    evidenceIds: readonly string[];
+    overreachOrWeakness: string;
+  }>;
+  customerOutcomeAssessment: Readonly<{
+    answerStatus: CustomerAnswerStatus;
+    explanation: string;
+    evidenceIds: readonly string[];
+  }>;
+  primaryFriction: Readonly<{
+    title: string;
+    explanation: string;
+    evidenceIds: readonly string[];
+  }> | null;
+  recommendation: Readonly<{
+    title: string;
+    action: string;
+    rationale: string;
+    evidenceIds: readonly string[];
+  }>;
+  confidence: "low" | "medium" | "high";
+}>;
+
+export type JudgeVerdictRecord = Readonly<{
+  verdict: JudgeVerdict;
+  createdAt: string;
+  provider: LlmProviderName;
+  evidenceBundleId: string;
+  evidenceBundleVersion: number;
+  evidenceBundleFingerprint: string;
+  prosecutorArgumentFingerprint: string;
+  defenseArgumentFingerprint: string;
 }>;
 
 export type CourtroomState = Readonly<{
   prosecutor: CourtroomArgumentRecord | null;
   defense: CourtroomArgumentRecord | null;
+  judge: JudgeVerdictRecord | null;
 }>;
 
 export type CourtroomArgumentRequest = Readonly<{
   runId: string;
   role: CourtroomRole;
   evidenceBundle: EvidenceBundle;
+}>;
+
+export type JudgeVerdictRequest = Readonly<{
+  runId: string;
+  maxActions: number;
+  evidenceBundle: EvidenceBundle;
+  prosecutor: CourtroomArgumentRecord;
+  defense: CourtroomArgumentRecord;
 }>;
 
 export type SafeCourtroomError = Readonly<{
@@ -65,4 +131,5 @@ export type SafeCourtroomError = Readonly<{
 export const EMPTY_COURTROOM_STATE: CourtroomState = {
   prosecutor: null,
   defense: null,
+  judge: null,
 };

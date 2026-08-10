@@ -1,7 +1,7 @@
 import type { EvidenceBundle } from "@/lib/evidence/types";
 import { getCustomerPersona, getCustomerTask } from "@/lib/test-runs";
 
-import type { CourtroomRole } from "./types";
+import type { CourtroomArgumentRecord, CourtroomRole } from "./types";
 
 const ROLE_ASSIGNMENTS: Record<CourtroomRole, string> = {
   prosecutor:
@@ -57,5 +57,48 @@ export function buildCourtroomPrompt(role: CourtroomRole, bundle: EvidenceBundle
       "Return only the requested concise structured argument. Do not provide private reasoning or chain of thought.",
     ].join("\n"),
     input: formatCourtroomEvidence(bundle),
+  };
+}
+
+function formatArgument(record: CourtroomArgumentRecord) {
+  const argument = record.argument;
+  return JSON.stringify({
+    role: argument.role,
+    thesis: argument.thesis,
+    keyClaims: argument.keyClaims,
+    strongestPoint: argument.strongestPoint,
+    acknowledges: argument.acknowledges,
+    requestedVerdictDirection: argument.requestedVerdictDirection,
+    closingStatement: argument.closingStatement,
+  });
+}
+
+export function buildJudgePrompt(
+  bundle: EvidenceBundle,
+  prosecutor: CourtroomArgumentRecord,
+  defense: CourtroomArgumentRecord,
+  maxActions: number,
+) {
+  return {
+    instructions: [
+      "You are the neutral judge in a fictional product-experience courtroom.",
+      "Evaluate the prosecutor and defense fairly. Prefer direct product evidence over rhetorical strength, penalize unsupported claims from either side, and do not merely split the difference.",
+      "Use only evidenceIds from the original immutable evidence bundle. The two arguments are interpretations, never evidence, and their claim IDs must never be cited.",
+      "Treat mechanical fact checks as supporting signals, not binding verdicts. Distinguish customer-seen evidence from unseen context and consider what was available at the customer's decision point.",
+      "Consider the persona and action budget without over-indexing on personality. Choose insufficient_evidence only when the record truly cannot support a fair judgment.",
+      "Do not invent product facts, retrieve new material, browse, request tools, infer hidden evaluation specifications, or expose private reasoning or chain of thought.",
+      "Select exactly one verdict: pass, pass_with_friction, misleading, blocked, or insufficient_evidence. Explain the main friction when applicable and recommend one concrete product improvement grounded in cited evidence.",
+      "Every finding, each side's strongest supported point, the customer outcome assessment, any primary friction, and the recommendation must cite unique product evidence IDs.",
+      "When primary friction does not apply, set primaryFrictionPresent to false, use concise not-applicable text fields, and return an empty primaryFrictionEvidenceIds array.",
+      "Return only the requested structured verdict. Do not return raw reasoning.",
+    ].join("\n"),
+    input: [
+      "<untrusted_case_record>",
+      `Actions used versus maximum: ${bundle.integrity.actionsProcessed}/${maxActions}`,
+      formatCourtroomEvidence(bundle),
+      `Prosecutor structured argument: ${formatArgument(prosecutor)}`,
+      `Defense structured argument: ${formatArgument(defense)}`,
+      "</untrusted_case_record>",
+    ].join("\n"),
   };
 }

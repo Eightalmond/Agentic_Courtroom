@@ -6,7 +6,13 @@ import type {
   SimulationStepResponse,
 } from "@/lib/simulation/types";
 import type { EvidenceBundle, EvidenceCollectionRequest } from "@/lib/evidence/types";
-import { EMPTY_COURTROOM_STATE, type CourtroomArgumentRecord, type CourtroomRole } from "@/lib/courtroom/types";
+import { fingerprintCourtroomArgument, fingerprintEvidenceBundle } from "@/lib/courtroom/fingerprints";
+import {
+  EMPTY_COURTROOM_STATE,
+  type CourtroomArgumentRecord,
+  type CourtroomRole,
+  type JudgeVerdictRecord,
+} from "@/lib/courtroom/types";
 
 import type { TestRun } from "./types";
 
@@ -108,11 +114,43 @@ export function applyCourtroomArgument(run: TestRun, record: CourtroomArgumentRe
     !run.evidenceBundle ||
     record.role !== record.argument.role ||
     record.evidenceBundleId !== run.evidenceBundle.bundleId ||
-    record.evidenceBundleVersion !== run.evidenceBundle.version
+    record.evidenceBundleVersion !== run.evidenceBundle.version ||
+    record.evidenceBundleFingerprint !== fingerprintEvidenceBundle(run.evidenceBundle)
   ) {
     throw new Error("The courtroom argument does not belong to this evidence bundle.");
   }
-  return { ...run, courtroom: { ...run.courtroom, [record.role]: record } };
+  return { ...run, courtroom: { ...run.courtroom, [record.role]: record, judge: null } };
+}
+
+export function toJudgeVerdictRequest(run: TestRun) {
+  if (!run.evidenceBundle) throw new Error("Prepare evidence before running the judge.");
+  if (!run.courtroom.prosecutor || !run.courtroom.defense) {
+    throw new Error("Generate both courtroom arguments before running the judge.");
+  }
+  return {
+    runId: run.id,
+    maxActions: run.maxActions,
+    evidenceBundle: run.evidenceBundle,
+    prosecutor: run.courtroom.prosecutor,
+    defense: run.courtroom.defense,
+  };
+}
+
+export function applyJudgeVerdict(run: TestRun, record: JudgeVerdictRecord): TestRun {
+  const bundle = run.evidenceBundle;
+  const prosecutor = run.courtroom.prosecutor;
+  const defense = run.courtroom.defense;
+  if (
+    !bundle || !prosecutor || !defense ||
+    record.evidenceBundleId !== bundle.bundleId ||
+    record.evidenceBundleVersion !== bundle.version ||
+    record.evidenceBundleFingerprint !== fingerprintEvidenceBundle(bundle) ||
+    record.prosecutorArgumentFingerprint !== fingerprintCourtroomArgument(prosecutor) ||
+    record.defenseArgumentFingerprint !== fingerprintCourtroomArgument(defense)
+  ) {
+    throw new Error("The judge verdict does not belong to the current evidence and arguments.");
+  }
+  return { ...run, courtroom: { ...run.courtroom, judge: record } };
 }
 
 export function applySimulationStep(run: TestRun, response: SimulationStepResponse): TestRun {

@@ -1,4 +1,4 @@
-export { requestCourtroomArgument, CourtroomClientError } from "./client";
+export { requestCourtroomArgument, requestJudgeVerdict, CourtroomClientError } from "./client";
 export { EMPTY_COURTROOM_STATE } from "./types";
 export type {
   CourtroomArgument,
@@ -6,6 +6,9 @@ export type {
   CourtroomArgumentRequest,
   CourtroomRole,
   CourtroomState,
+  JudgeVerdict,
+  JudgeVerdictRecord,
+  JudgeVerdictRequest,
   SafeCourtroomError,
   VerdictDirection,
 } from "./types";

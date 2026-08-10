@@ -5,7 +5,7 @@ import { useRef, useState, useSyncExternalStore } from "react";
 
 import { EvidenceWorkspace } from "@/components/evidence/evidence-workspace";
 import { CourtroomWorkspace } from "@/components/courtroom/courtroom-workspace";
-import { CourtroomClientError, requestCourtroomArgument } from "@/lib/courtroom/client";
+import { CourtroomClientError, requestCourtroomArgument, requestJudgeVerdict } from "@/lib/courtroom/client";
 import type { CourtroomRole } from "@/lib/courtroom/types";
 import { EvidenceClientError, requestEvidenceBundle } from "@/lib/evidence/client";
 import { flowPilotProduct, getProductPage } from "@/lib/product";
@@ -16,6 +16,7 @@ import {
   applySimulationFailure,
   applySimulationStep,
   applyCourtroomArgument,
+  applyJudgeVerdict,
   applyEvidenceBundle,
   getCustomerPersona,
   getCustomerTask,
@@ -24,6 +25,7 @@ import {
   saveLocalRun,
   toEvidenceCollectionRequest,
   toCourtroomArgumentRequest,
+  toJudgeVerdictRequest,
   toSimulationStepRequest,
   type TestRun,
 } from "@/lib/test-runs";
@@ -112,12 +114,15 @@ export function RunDetail({ runId }: RunDetailProps) {
   const [isAutoRunning, setIsAutoRunning] = useState(false);
   const [isEvidenceBusy, setIsEvidenceBusy] = useState(false);
   const [busyCourtroomRole, setBusyCourtroomRole] = useState<CourtroomRole | null>(null);
+  const [isJudgeBusy, setIsJudgeBusy] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
   const [courtroomErrors, setCourtroomErrors] = useState<Record<CourtroomRole, string | null>>({ prosecutor: null, defense: null });
+  const [judgeError, setJudgeError] = useState<string | null>(null);
   const inFlight = useRef(false);
   const evidenceInFlight = useRef(false);
   const courtroomInFlight = useRef(false);
+  const judgeInFlight = useRef(false);
   const autoRunRequested = useRef(false);
   void revision;
 
@@ -193,7 +198,7 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   function resetRun() {
-    if (!run || inFlight.current || evidenceInFlight.current || courtroomInFlight.current) {
+    if (!run || inFlight.current || evidenceInFlight.current || courtroomInFlight.current || judgeInFlight.current) {
       return;
     }
     autoRunRequested.current = false;
@@ -202,10 +207,10 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   async function prepareEvidence(sourceRun: TestRun) {
-    if (sourceRun.status !== "completed" || evidenceInFlight.current || courtroomInFlight.current) return;
+    if (sourceRun.status !== "completed" || evidenceInFlight.current || courtroomInFlight.current || judgeInFlight.current) return;
     if (
-      (sourceRun.courtroom.prosecutor || sourceRun.courtroom.defense) &&
-      !window.confirm("Rebuilding evidence will remove both courtroom arguments. Continue?")
+      (sourceRun.courtroom.prosecutor || sourceRun.courtroom.defense || sourceRun.courtroom.judge) &&
+      !window.confirm("Rebuilding evidence will remove both courtroom arguments and the judge verdict. Continue?")
     ) return;
     evidenceInFlight.current = true;
     setIsEvidenceBusy(true);
@@ -225,10 +230,10 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   async function runCourtroomRole(sourceRun: TestRun, role: CourtroomRole) {
-    if (!sourceRun.evidenceBundle || courtroomInFlight.current || evidenceInFlight.current) return;
+    if (!sourceRun.evidenceBundle || courtroomInFlight.current || evidenceInFlight.current || judgeInFlight.current) return;
     if (
       sourceRun.courtroom[role] &&
-      !window.confirm(`Regenerate the ${role} argument? The existing ${role} argument will be replaced only if generation succeeds.`)
+      !window.confirm(`Regenerate the ${role} argument? A successful result will invalidate the current judge verdict; a failed result will preserve existing records.`)
     ) return;
 
     courtroomInFlight.current = true;
@@ -245,6 +250,30 @@ export function RunDetail({ runId }: RunDetailProps) {
     } finally {
       courtroomInFlight.current = false;
       setBusyCourtroomRole(null);
+    }
+  }
+
+  async function runJudge(sourceRun: TestRun) {
+    if (!sourceRun.evidenceBundle || !sourceRun.courtroom.prosecutor || !sourceRun.courtroom.defense || courtroomInFlight.current || evidenceInFlight.current || judgeInFlight.current) return;
+    if (
+      sourceRun.courtroom.judge &&
+      !window.confirm("Regenerate the judge verdict? The existing verdict will remain visible unless replacement succeeds.")
+    ) return;
+
+    judgeInFlight.current = true;
+    setIsJudgeBusy(true);
+    setJudgeError(null);
+    try {
+      const record = await requestJudgeVerdict(toJudgeVerdictRequest(sourceRun));
+      persist(applyJudgeVerdict(sourceRun, record));
+    } catch (error) {
+      const message = error instanceof CourtroomClientError
+        ? `${error.detail.code}: ${error.detail.message}`
+        : "JUDGE_FAILED: The judge failed safely. Try again.";
+      setJudgeError(message);
+    } finally {
+      judgeInFlight.current = false;
+      setIsJudgeBusy(false);
     }
   }
 
@@ -329,8 +358,16 @@ export function RunDetail({ runId }: RunDetailProps) {
               bundle={run.evidenceBundle}
               busyRole={busyCourtroomRole}
               courtroom={run.courtroom}
+              isJudgeBusy={isJudgeBusy}
+              judgeError={judgeError}
               errors={courtroomErrors}
               onRun={(role) => void runCourtroomRole(run, role)}
+              onRunJudge={() => void runJudge(run)}
+              taskQuestion={task.question}
+              personaName={persona.name}
+              customerConclusion={run.finalAnswer ?? run.giveUpReason ?? "No final answer was provided."}
+              actionsUsed={run.currentActionCount}
+              maxActions={run.maxActions}
             />
           )}
 
@@ -396,7 +433,7 @@ export function RunDetail({ runId }: RunDetailProps) {
             </div>
           )}
 
-          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || isEvidenceBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
+          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || isEvidenceBusy || isJudgeBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
           <Link className="mt-3 block rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-bold text-slate-700" href="/tests/new">Configure another test</Link>
 
           <dl className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-xs">

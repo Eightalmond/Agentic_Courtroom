@@ -110,16 +110,20 @@
 - The interface displays both independent cases, seen/not-seen source links, and a disabled Phase 8 judge control.
 - Automated tests mock all providers and cover schemas, prompts, source validation, call counts, role isolation, persistence, migration, and safe failures.
 
-## Phase 8 — Judge and verdict (planned)
+## Phase 8 — Judge and verdict (completed)
 
 **Goal:** Return a reasoned verdict and practical product recommendation.
 
 **Acceptance criteria:**
 
-- The judge selects exactly one defined verdict category.
-- The rationale cites the evidence and addresses both arguments.
-- Confidence and an actionable recommendation are included.
-- Insufficient evidence is selected when the record cannot support a conclusion.
+- The judge runs only after a completed journey, current immutable evidence, and valid prosecutor and defense arguments reference the same bundle ID, version, and fingerprint.
+- One strict structured request through the configured Groq or OpenAI provider selects exactly one defined verdict category with no retry, repair, fallback, retrieval, or tool request.
+- Bounded findings, both-side assessments, customer-outcome assessment, optional primary friction, confidence, and one concrete recommendation are returned.
+- Every substantive result cites unique evidence IDs from the original bundle, and fabricated or advocate claim IDs fail before persistence.
+- Fairness rules prefer direct evidence over rhetoric, keep mechanical checks non-binding, distinguish customer-seen from unseen context, and preserve insufficient evidence as a responsible outcome.
+- Browser-local persistence survives refresh; successful argument regeneration, evidence rebuild, and reset apply the documented invalidation rules while failed judge regeneration preserves the prior verdict.
+- The run page displays a prominent verdict, linked citations, findings, side assessments, friction, recommendation, and a compact final report.
+- Automated tests and production builds require no provider credentials.
 
 ## Phase 9 — Run visualization (planned)
 

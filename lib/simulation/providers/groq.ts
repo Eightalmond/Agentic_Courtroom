@@ -11,6 +11,7 @@ export const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 export const GROQ_MAX_RETRIES = 0;
 export const GROQ_COURTROOM_TRANSPORT = "chat.completions.create" as const;
 export const GROQ_COURTROOM_MAX_COMPLETION_TOKENS = 4_000;
+export const GROQ_JUDGE_MAX_COMPLETION_TOKENS = 6_000;
 const PROVIDER_TIMEOUT_MS = 20_000;
 const MAX_PROVIDER_OUTPUT_CHARACTERS = 12_000;
 
@@ -144,7 +145,10 @@ export function mapGroqProviderError(error: unknown): SimulationError {
       true,
     );
   }
-  if (error instanceof OpenAI.RateLimitError) {
+  if (
+    error instanceof OpenAI.RateLimitError ||
+    (error instanceof OpenAI.APIError && error.code === "rate_limit_exceeded")
+  ) {
     return new SimulationError("GROQ_RATE_LIMITED", "Groq is temporarily rate limited. Try again shortly.", 429, true, true);
   }
   if (error instanceof OpenAI.BadRequestError || error instanceof OpenAI.UnprocessableEntityError) {
@@ -152,7 +156,7 @@ export function mapGroqProviderError(error: unknown): SimulationError {
     return new SimulationError(
       "GROQ_STRUCTURED_OUTPUT_ERROR",
       generatedJsonFailed
-        ? "Groq could not complete valid structured output. Try the advocate again."
+        ? "Groq could not complete valid structured output. Try the courtroom request again."
         : "Groq rejected the structured-output request. Check the configured model and schema compatibility.",
       502,
       generatedJsonFailed,
@@ -189,7 +193,7 @@ export function createGroqCustomerProvider(
     maxOutputTokens,
   }: StructuredGenerationInput) {
     try {
-      if (useCase === "courtroom-argument") {
+      if (useCase === "courtroom-argument" || useCase === "courtroom-judge") {
         if (!client.chat) {
           throw new SimulationError(
             "GROQ_PROVIDER_ERROR",
@@ -205,7 +209,10 @@ export function createGroqCustomerProvider(
             { role: "system", content: instructions },
             { role: "user", content: input },
           ],
-          max_completion_tokens: Math.max(maxOutputTokens, GROQ_COURTROOM_MAX_COMPLETION_TOKENS),
+          max_completion_tokens: Math.max(
+            maxOutputTokens,
+            useCase === "courtroom-judge" ? GROQ_JUDGE_MAX_COMPLETION_TOKENS : GROQ_COURTROOM_MAX_COMPLETION_TOKENS,
+          ),
           reasoning_effort: "low",
           response_format: {
             type: "json_schema",

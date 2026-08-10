@@ -10,8 +10,8 @@ describe("project foundation configuration", () => {
 
   it("reports the completed foundation accurately", () => {
     expect(getFoundationProgress(foundationChecks)).toEqual({
-      completed: 10,
-      total: 10,
+      completed: 11,
+      total: 11,
       percentage: 100,
     });
   });

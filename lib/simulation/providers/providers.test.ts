@@ -8,6 +8,8 @@ import { z } from "zod";
 import {
   COURTROOM_ARGUMENT_JSON_SCHEMA,
   CourtroomArgumentWireSchema,
+  JUDGE_VERDICT_JSON_SCHEMA,
+  JudgeVerdictWireSchema,
 } from "@/lib/courtroom/schemas";
 
 import {
@@ -24,6 +26,7 @@ import {
   GROQ_BASE_URL,
   GROQ_COURTROOM_TRANSPORT,
   GROQ_COURTROOM_MAX_COMPLETION_TOKENS,
+  GROQ_JUDGE_MAX_COMPLETION_TOKENS,
   GROQ_MAX_RETRIES,
   formatGroqProviderDiagnostic,
   mapGroqProviderError,
@@ -279,6 +282,50 @@ describe("Groq Responses provider", () => {
     expect(chatCreate).toHaveBeenCalledOnce();
     expect(responsesCreate).not.toHaveBeenCalled();
   });
+
+  it("uses one strict Chat Completions request with the larger judge budget", async () => {
+    const output = {
+      verdict: "pass",
+      summary: "The record supports a pass.",
+      findings: [{ title: "Supported", finding: "The answer is supported.", evidenceIds: ["evidence-run-v1-item"], weight: "major" }],
+      prosecutorAssessment: { strongestSupportedPoint: "Some friction existed.", evidenceIds: ["evidence-run-v1-item"], overreachOrWeakness: "It did not block completion." },
+      defenseAssessment: { strongestSupportedPoint: "The answer was correct.", evidenceIds: ["evidence-run-v1-item"], overreachOrWeakness: "It understates friction." },
+      customerAnswerStatus: "supported",
+      customerOutcomeExplanation: "The answer matches the source.",
+      customerOutcomeEvidenceIds: ["evidence-run-v1-item"],
+      primaryFrictionPresent: false,
+      primaryFrictionTitle: "Not applicable",
+      primaryFrictionExplanation: "No material friction was established.",
+      primaryFrictionEvidenceIds: [],
+      recommendationTitle: "Preserve clarity",
+      recommendationAction: "Keep the policy easy to find.",
+      recommendationRationale: "The cited source supported the answer.",
+      recommendationEvidenceIds: ["evidence-run-v1-item"],
+      confidence: "high",
+    };
+    const responsesCreate = vi.fn();
+    const chatCreate = vi.fn().mockResolvedValue({ choices: [{ message: { content: JSON.stringify(output) } }] });
+    const selected = createGroqCustomerProvider(groqConfiguration, {
+      responses: { create: responsesCreate },
+      chat: { completions: { create: chatCreate } },
+    });
+    await expect(selected.generateStructured({
+      useCase: "courtroom-judge",
+      instructions: "judge fairly",
+      input: "evidence and arguments",
+      schemaName: "courtroom_judge_verdict",
+      jsonSchema: JUDGE_VERDICT_JSON_SCHEMA,
+      zodSchema: JudgeVerdictWireSchema,
+      maxOutputTokens: 2_400,
+    })).resolves.toEqual(output);
+    expect(chatCreate).toHaveBeenCalledOnce();
+    expect(responsesCreate).not.toHaveBeenCalled();
+    expect(chatCreate).toHaveBeenCalledWith(expect.objectContaining({
+      max_completion_tokens: GROQ_JUDGE_MAX_COMPLETION_TOKENS,
+      reasoning_effort: "low",
+      response_format: { type: "json_schema", json_schema: expect.objectContaining({ name: "courtroom_judge_verdict", strict: true }) },
+    }));
+  });
 });
 
 describe("OpenAI reusable structured provider", () => {
@@ -338,6 +385,20 @@ describe("Groq safe error mapping", () => {
 
   it("maps rate limits and timeouts to retryable stable errors", () => {
     expect(mapGroqProviderError(new OpenAI.RateLimitError(429, {}, "raw", new Headers()))).toMatchObject({
+      code: "GROQ_RATE_LIMITED",
+      retryable: true,
+      modelCallConsumed: true,
+    });
+    expect(
+      mapGroqProviderError(
+        new OpenAI.APIError(
+          413,
+          { message: "secret token limit details", code: "rate_limit_exceeded", type: "tokens" },
+          "secret raw response",
+          new Headers(),
+        ),
+      ),
+    ).toMatchObject({
       code: "GROQ_RATE_LIMITED",
       retryable: true,
       modelCallConsumed: true,
@@ -406,7 +467,7 @@ describe("Groq safe error mapping", () => {
     });
     expect(mapGroqProviderError(error).toSafeError()).toEqual({
       code: "GROQ_STRUCTURED_OUTPUT_ERROR",
-      message: "Groq could not complete valid structured output. Try the advocate again.",
+      message: "Groq could not complete valid structured output. Try the courtroom request again.",
       retryable: true,
     });
     expect(JSON.stringify(diagnostic)).not.toContain("secret");

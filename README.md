@@ -1,28 +1,29 @@
 # Trial by User
 
-Trial by User is an agentic product-testing application. Its synthetic customer attempts one focused FlowPilot task through short, observable actions, then independent prosecutor and defense agents argue from the same prepared evidence. The judge remains deliberately unimplemented.
+Trial by User is an agentic product-testing application. Its synthetic customer attempts one focused FlowPilot task through short, observable actions, independent prosecutor and defense agents argue from the same prepared evidence, and a neutral judge returns a cited verdict and recommendation.
 
-Phase 7 is complete. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, a browser-local simulation timeline, deterministic evidence preparation, and separately generated source-cited courtroom arguments. The configured Groq or OpenAI provider handles customer decisions and advocates; evidence collection remains deterministic.
+Phase 8 is complete, finishing the core courtroom MVP. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, a browser-local simulation timeline, deterministic evidence preparation, separately generated source-cited courtroom arguments, and a final evidence-grounded judge verdict. The configured Groq or OpenAI provider handles customer decisions, advocates, and judge; evidence collection remains deterministic.
 
 ## Available routes
 
 - `/` — dashboard and current MVP status
 - `/product` and `/product/[slug]` — controlled FlowPilot knowledge
 - `/tests/new` — test and persona configuration
-- `/runs/[id]` — customer journey, evidence workspace, and independent courtroom advocates
+- `/runs/[id]` — customer journey, evidence workspace, courtroom advocates, judge verdict, and final report
 - `/retrieval` — deterministic retrieval playground
 - `/api/simulations/step` — server-only, one-action simulation boundary
 - `/api/evidence/collect` — server-only, deterministic evidence collection boundary
 - `/api/courtroom/argue` — server-only, one independent advocate call
+- `/api/courtroom/judge` — server-only, one neutral judge call
 
 ## Requirements
 
 - Node.js 22
 - npm
-- A Groq or OpenAI API key and a compatible model with Structured Outputs support for simulations and courtroom arguments
+- A Groq or OpenAI API key and a compatible model with Structured Outputs support for simulations and courtroom generation
 - Docker Desktop or another Docker Compose-compatible runtime (optional)
 
-The app, tests, and production build do not require API credentials. Credentials are needed only when a simulation step or courtroom advocate is requested.
+The app, tests, and production build do not require API credentials. Credentials are needed only when a simulation step, courtroom advocate, or judge is requested.
 
 ## Run locally with npm
 
@@ -113,15 +114,27 @@ Each side makes one call through the same server-configured Groq or OpenAI provi
 
 The provider-facing courtroom wire shape omits free-form claim IDs and flattens the strongest-point fields. After strict wire validation, the server assigns deterministic claim IDs and transforms the result into the existing internal argument shape. Every key claim, strongest point, and acknowledged opposing point still requires valid, unique evidence IDs from the supplied bundle. Wrong-role output, fabricated citations, extra properties, or malformed output fail safely without fallback, retry, heuristic repair, or a second call.
 
-Arguments are stored with the browser-local run, including role, provider label, timestamp, and bundle ID/version. Regenerating one side preserves the other and replaces the old argument only after success. Rebuilding evidence invalidates both arguments. The interface labels cited sources as customer-seen or not-seen and links to the controlled FlowPilot source. Requested verdict directions are advocacy, not a verdict; the judge control remains disabled.
+Arguments are stored with the browser-local run, including role, provider label, timestamp, bundle ID/version, and a deterministic evidence fingerprint. Regenerating one side preserves the other, replaces the old argument only after success, and invalidates an existing judge verdict. Rebuilding evidence invalidates both arguments and the judge. The interface labels cited sources as customer-seen or not-seen and links to the controlled FlowPilot source. Requested verdict directions remain advocacy rather than adjudication.
+
+## How the judge works
+
+After both current arguments exist, `POST /api/courtroom/judge` revalidates the immutable evidence bundle, both argument roles, every advocate citation, bundle ID/version consistency, and deterministic evidence fingerprints before provider configuration is read. Legacy Phase 7 arguments remain readable but must be regenerated because they predate freshness fingerprints.
+
+The judge receives the task, persona, customer outcome, conclusion, action budget, bundle summary, non-binding mechanical checks, all bounded evidence items, and both structured arguments. It is instructed to evaluate both sides fairly, prefer direct product evidence over rhetoric, distinguish customer-seen sources from unseen context, penalize unsupported claims, and choose `insufficient_evidence` when the record cannot support a fair conclusion. It cannot retrieve, browse, request tools, or cite advocate claim IDs.
+
+One strict structured provider call returns exactly one of `pass`, `pass_with_friction`, `misleading`, `blocked`, or `insufficient_evidence`, plus bounded cited findings, both-side assessments, a customer-outcome assessment, optional primary friction, one concrete cited recommendation, and confidence. Groq reuses Chat Completions strict JSON Schema with low reasoning effort and a larger judge completion budget; OpenAI reuses Responses parsing. There is no retry, repair call, provider fallback, or second request.
+
+Every judge citation must be unique within its field and resolve to the current product evidence bundle before persistence. The browser stores only the validated verdict record and fingerprints—not prompts, raw model output, provider errors, or hidden reasoning. Failed regeneration preserves the prior verdict. The run page shows the verdict, findings, side assessments, primary friction, recommendation, linked source chips, and a compact final report.
+
+> The judge sees both adversarial arguments but remains constrained to the original immutable evidence bundle. This allows the judge to compare reasoning quality without introducing new retrieval asymmetry, at the cost of not being able to investigate evidence gaps independently.
 
 ## Current limitations
 
-- Synthetic-customer simulation, evidence collection, and prosecutor/defense arguments exist; there is no judge or final verdict yet.
+- The controlled FlowPilot courtroom loop is complete; uploads and arbitrary live-product testing are not available.
 - Runs remain local to one browser and can be lost when browser data is cleared.
 - FlowPilot is the only product, and retrieval is lexical over repository-owned content.
 - There are no uploads, database, authentication, arbitrary URLs, live website controls, browser automation, or external product actions.
-- A real simulation or advocate call requires valid credentials for the selected provider and a compatible configured model.
+- A real simulation, advocate, or judge call requires valid credentials for the selected provider and a compatible configured model.
 
 ## Documentation
 

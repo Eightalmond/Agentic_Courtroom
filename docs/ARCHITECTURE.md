@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, evidence, and independent courtroom arguments provide bounded interaction. Short Next.js Route Handlers provide the server-only synthetic-customer, evidence-collection, and advocate boundaries. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence, courtroom schemas, citations, persistence, and provider errors are covered by Vitest.
+The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, evidence, independent courtroom arguments, judge verdict, and final report provide bounded interaction. Short Next.js Route Handlers provide the server-only synthetic-customer, evidence-collection, advocate, and judge boundaries. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence, courtroom schemas, citations, persistence, and provider errors are covered by Vitest.
 
 FlowPilot product knowledge is stored as readonly, typed TypeScript data under `lib/product/`. A deterministic lookup utility resolves page slugs. `/product` renders the complete knowledge index, and `/product/[slug]` renders each page from the same local data source. Static parameters are generated for the known slugs, related-page links are validated in tests, and unknown slugs return a product-specific not-found state.
 
@@ -68,7 +68,23 @@ GPT-OSS reasoning defaults previously shared a 1,400-token completion cap with t
 
 Returned arguments must contain the assigned role, a bounded thesis, one to five key claims, a strongest point, up to three acknowledgements, one of the five requested verdict directions, and a closing statement. Every substantive point requires unique citations. A second validation pass rejects wrong roles and any evidence ID not present in the supplied bundle. The requested direction is an advocate's position, not a verdict.
 
-Browser persistence is now `trial-by-user:runs:v4`; v3 and earlier runs migrate with an empty courtroom state. Each successful result records the argument, role, generation time, provider label, and evidence bundle ID/version. Regenerating one role preserves the other and replaces the existing record only after success. Rebuilding evidence or resetting the simulation clears both arguments. A client in-flight guard serializes provider calls. There is no judge endpoint, score, final verdict, recommendation, or additional retrieval.
+Phase 7 introduced `trial-by-user:runs:v4`; those and earlier records remain readable after the Phase 8 migration. Each newly generated argument also records a deterministic evidence fingerprint. Regenerating one role preserves the other and replaces the existing record only after success. Rebuilding evidence or resetting the simulation clears both arguments. A client in-flight guard serializes provider calls.
+
+### Phase 8 judge boundary
+
+`POST /api/courtroom/judge` accepts the minimum browser-held state needed by the stateless server: run ID, maximum action count, the prepared evidence bundle, and both advocate records. Before provider configuration is accessed, strict schemas and trusted reconstruction verify the completed evidence bundle, action-budget consistency, prosecutor and defense roles, all advocate citations, matching bundle ID/version, and a deterministic bundle fingerprint captured when each argument was generated. Phase 7 records without fingerprints remain readable but are not judge-eligible until regenerated.
+
+The server builds one compact deterministic case record containing task, persona, customer outcome and conclusion, actions used versus maximum, coverage, mechanical checks, bounded evidence, and both structured arguments. Evidence and arguments are delimited as untrusted data. Internal task evaluation specifications, hidden expected answers, raw provider errors, browser storage, prompts, and chain-of-thought never enter the package.
+
+Fairness instructions make the judge a neutral evaluator rather than a third advocate. Direct product evidence takes priority over rhetoric; mechanical checks are supporting signals rather than binding verdicts; customer-seen evidence is distinguished from unseen context; decision-point availability, persona, and action budget are considered; unsupported claims are penalized; and `insufficient_evidence` remains a valid outcome. The judge cannot retrieve, browse, request tools, or cite advocate claim IDs.
+
+The provider-facing judge wire schema uses closed objects and simple arrays, strings, booleans, and enums. It flattens nullable friction and recommendation fields, then transforms into the strict nested domain schema. The result selects exactly one defined verdict and includes bounded cited findings, two side assessments, a cited customer-outcome assessment, optional primary friction, a cited recommendation, and confidence. Domain validation and shared citation validation reject unknown fields, malformed output, duplicate IDs, or evidence IDs outside the immutable bundle before persistence.
+
+Both providers reuse the existing structured-generation interface. Groq uses the proven OpenAI-compatible `chat.completions.create` strict JSON Schema path, low reasoning effort, and a 6,000-token completion ceiling for the larger judge result. OpenAI uses `responses.parse` with the same Zod wire schema. One judge action makes exactly one provider request. SDK retries remain disabled; there is no repair call, fallback, or automatic regeneration.
+
+Browser persistence is now `trial-by-user:runs:v5`. A judge record stores only the validated verdict, timestamp, safe provider label, bundle ID/version/fingerprint, and both advocate fingerprints. Refresh preserves it. Judge regeneration replaces only the judge after success, so failure preserves the prior verdict. Successful advocate regeneration invalidates the judge; evidence rebuild and simulation reset clear all courtroom records. None of these operations changes the customer action count or evidence contents. The UI exposes the complete verdict and a final report only when a judge record exists.
+
+> The judge sees both adversarial arguments but remains constrained to the original immutable evidence bundle. This allows the judge to compare reasoning quality without introducing new retrieval asymmetry, at the cost of not being able to investigate evidence gaps independently.
 
 > Persisting the MVP run in localStorage keeps deployment free and serverless, but the client must send a compact action history with each stateless step. Server persistence would improve integrity and cross-device access, but adds infrastructure and is deferred until it is needed.
 
@@ -81,10 +97,10 @@ There is currently:
 - no database;
 - no authentication;
 - no file storage or uploads;
-- configurable Groq and OpenAI Responses API integrations for the synthetic customer and courtroom advocates;
-- three stateless Route Handlers for simulation steps, evidence collection, and one courtroom argument, with no separate backend.
+- configurable Groq and OpenAI structured-output integrations for the synthetic customer, courtroom advocates, and judge;
+- four stateless Route Handlers for simulation steps, evidence collection, one courtroom argument, and one judge verdict, with no separate backend.
 
-There is no database or server-side run persistence. Runs, evidence, and courtroom argument records use browser-specific localStorage. The prosecutor and defense exist; the judge does not.
+There is no database or server-side run persistence. Runs, evidence, courtroom argument records, and judge verdicts use browser-specific localStorage. The core controlled-product courtroom loop is complete.
 
 There are also no arbitrary document or screenshot uploads. The controlled product is repository-owned content, not user-supplied content.
 
@@ -98,7 +114,7 @@ The remaining planned system boundaries are:
 - **Server functions:** Next.js Route Handlers for validated requests, orchestration steps, and server-side provider access.
 - **Persistence:** A hosted PostgreSQL service may be added later for products, test runs, evidence, and verdicts. No provider has been selected.
 - **Product knowledge:** The local FlowPilot fixture remains the deterministic baseline. Bounded documents and screenshots may be added later through validated upload and processing flows; arbitrary uploads are not part of the current architecture.
-- **Simulation orchestration:** The implemented short-request pattern will remain the boundary as the judge and later phases are added.
+- **Simulation orchestration:** The implemented short-request pattern remains the boundary for customer steps, advocates, judge, and later phases.
 - **Secrets:** API keys and service credentials will remain server-side and will never be placed in browser-exposed environment variables.
 - **Deployment:** Vercel will host the production Next.js application. Docker Compose will remain a local-development tool.
 

@@ -4,6 +4,7 @@ export { generateRunId } from "./run-id";
 export {
   applyEvidenceBundle,
   applyCourtroomArgument,
+  applyJudgeVerdict,
   applySimulationFailure,
   applySimulationStep,
   compactRunHistory,
@@ -11,6 +12,7 @@ export {
   resetSimulationRun,
   toEvidenceCollectionRequest,
   toCourtroomArgumentRequest,
+  toJudgeVerdictRequest,
   toSimulationStepRequest,
 } from "./simulation";
 export {
@@ -18,6 +20,7 @@ export {
   LEGACY_RUN_STORAGE_KEY,
   PHASE_FIVE_RUN_STORAGE_KEY,
   PHASE_SIX_RUN_STORAGE_KEY,
+  PHASE_SEVEN_RUN_STORAGE_KEY,
   listLocalRuns,
   parseStoredRun,
   readLocalRun,

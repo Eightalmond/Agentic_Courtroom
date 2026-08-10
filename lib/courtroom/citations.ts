@@ -1,8 +1,20 @@
 import type { EvidenceBundle } from "@/lib/evidence/types";
 
 import { CourtroomError } from "./errors";
-import { CourtroomArgumentSchema } from "./schemas";
-import type { CourtroomArgument, CourtroomRole } from "./types";
+import { CourtroomArgumentSchema, JudgeVerdictSchema } from "./schemas";
+import type { CourtroomArgument, CourtroomRole, JudgeVerdict } from "./types";
+
+function ensureEvidenceIdsExist(citationLists: readonly (readonly string[])[], bundle: EvidenceBundle, subject: string) {
+  const validIds = new Set(bundle.evidenceItems.map((item) => item.evidenceId));
+  if (citationLists.flat().some((evidenceId) => !validIds.has(evidenceId))) {
+    throw new CourtroomError(
+      "COURTROOM_INVALID_CITATION",
+      `The ${subject} cited evidence outside this bundle. Try generating it again.`,
+      502,
+      true,
+    );
+  }
+}
 
 export function validateCourtroomArgument(
   value: unknown,
@@ -34,20 +46,33 @@ export function validateCourtroomArgument(
     );
   }
 
-  const validIds = new Set(bundle.evidenceItems.map((item) => item.evidenceId));
-  const citations = [
-    ...parsed.data.keyClaims.flatMap((claim) => claim.evidenceIds),
-    ...parsed.data.strongestPoint.evidenceIds,
-    ...parsed.data.acknowledges.flatMap((point) => point.evidenceIds),
-  ];
-  if (citations.some((evidenceId) => !validIds.has(evidenceId))) {
+  ensureEvidenceIdsExist([
+    ...parsed.data.keyClaims.map((claim) => claim.evidenceIds),
+    parsed.data.strongestPoint.evidenceIds,
+    ...parsed.data.acknowledges.map((point) => point.evidenceIds),
+  ], bundle, "advocate");
+
+  return parsed.data;
+}
+
+export function validateJudgeVerdict(value: unknown, bundle: EvidenceBundle): JudgeVerdict {
+  const parsed = JudgeVerdictSchema.safeParse(value);
+  if (!parsed.success) {
     throw new CourtroomError(
-      "COURTROOM_INVALID_CITATION",
-      "The advocate cited evidence outside this bundle. Try generating this side again.",
+      "JUDGE_INVALID_RESPONSE",
+      "The judge returned an invalid verdict. Try running the judge again.",
       502,
       true,
     );
   }
 
+  ensureEvidenceIdsExist([
+    ...parsed.data.findings.map((finding) => finding.evidenceIds),
+    parsed.data.prosecutorAssessment.evidenceIds,
+    parsed.data.defenseAssessment.evidenceIds,
+    parsed.data.customerOutcomeAssessment.evidenceIds,
+    ...(parsed.data.primaryFriction ? [parsed.data.primaryFriction.evidenceIds] : []),
+    parsed.data.recommendation.evidenceIds,
+  ], bundle, "judge");
   return parsed.data;
 }
