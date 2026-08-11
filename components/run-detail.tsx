@@ -154,7 +154,7 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
   }
 
   async function takeOneStep(sourceRun: TestRun, cycle = runCycle.current) {
-    if (inFlight.current || sourceRun.evidenceBundle || sourceRun.status === "completed" || sourceRun.modelCallCount >= sourceRun.maxActions) {
+    if (inFlight.current || sourceRun.evidenceBundle || sourceRun.status === "completed" || sourceRun.currentActionCount >= sourceRun.maxActions) {
       return undefined;
     }
 
@@ -192,14 +192,14 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
     if (!run || inFlight.current || autoRunRequested.current || run.status === "completed") {
       return;
     }
-    const remaining = Math.max(0, run.maxActions - run.modelCallCount);
+    const remaining = Math.max(0, run.maxActions - run.currentActionCount);
     if (!window.confirm(`Auto-run may use one LLM request per remaining customer action (up to ${remaining}). Start sequential auto-run?`)) return;
     const cycle = runCycle.current;
     autoRunRequested.current = true;
     setIsAutoRunning(true);
     await runSequentially(run, {
       isActive: () => autoRunRequested.current && cycle === runCycle.current && mounted.current,
-      canContinue: (activeRun) => activeRun.status !== "completed" && activeRun.status !== "failed" && activeRun.modelCallCount < activeRun.maxActions,
+      canContinue: (activeRun) => activeRun.status !== "completed" && activeRun.status !== "failed" && activeRun.currentActionCount < activeRun.maxActions,
       takeStep: (activeRun) => takeOneStep(activeRun, cycle),
     });
 
@@ -322,7 +322,7 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
   }
 
   const retrievalSuggestions = searchProductKnowledge(task.question, { limit: 3 });
-  const usedPercent = Math.round((run.modelCallCount / run.maxActions) * 100);
+  const usedPercent = Math.round((run.currentActionCount / run.maxActions) * 100);
   const isComplete = run.status === "completed";
 
   return (
@@ -394,9 +394,9 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Synthetic customer</p>
                 <h2 id="journey-title" className="mt-2 text-2xl font-bold">Customer journey</h2>
               </div>
-              <p className="text-sm font-semibold text-slate-500">{run.currentActionCount} recorded · {run.modelCallCount}/{run.maxActions} API steps used</p>
+              <p className="text-sm font-semibold text-slate-500">{run.currentActionCount}/{run.maxActions} customer actions · {run.modelCallCount} provider requests attempted</p>
             </div>
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100" aria-label={`${usedPercent}% of action budget used`} role="progressbar" aria-valuemin={0} aria-valuemax={run.maxActions} aria-valuenow={run.modelCallCount}>
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100" aria-label={`${usedPercent}% of customer action budget used`} role="progressbar" aria-valuemin={0} aria-valuemax={run.maxActions} aria-valuenow={run.currentActionCount}>
               <div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${usedPercent}%` }} />
             </div>
             <div className="mt-7"><ActionTimeline actions={run.actions} /></div>
@@ -433,6 +433,7 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
           {(run.lastError || storageError || evidenceError) && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4" role="alert">
               <p className="text-sm leading-6 text-red-900">{storageError ?? evidenceError ?? (run.lastError ? toDisplayError(run.lastError).message : undefined)}</p>
+              {run.lastError?.retryAfterSeconds && <p className="mt-2 text-xs font-semibold text-red-800">Retry in approximately {run.lastError.retryAfterSeconds} seconds.</p>}
               <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-red-700">{run.lastError?.code ?? "LOCAL_STORAGE_FAILURE"}</p>
             </div>
           )}
@@ -447,7 +448,7 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
               ) : (
                 <button className="w-full rounded-xl border border-red-300 px-5 py-3 text-sm font-bold text-red-700" type="button" onClick={stopAutoRun}>Stop after current step</button>
               )}
-              <p className="text-xs leading-5 text-slate-500">One customer step uses 1 LLM request. {Math.max(0, run.maxActions - run.modelCallCount)} actions may remain.</p>
+              <p className="text-xs leading-5 text-slate-500">One successful customer step uses 1 LLM request. {Math.max(0, run.maxActions - run.currentActionCount)} customer actions remain.</p>
               <p className="text-xs leading-5 text-slate-500">Auto-run stays sequential and may use one LLM request per remaining action.</p>
             </div>
           )}
@@ -460,7 +461,7 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
             <div className="flex justify-between gap-3"><dt className="text-slate-400">Created</dt><dd className="text-right font-bold text-slate-700">{formatDateTime(run.createdAt)}</dd></div>
             <div className="flex justify-between gap-3"><dt className="text-slate-400">Persistence</dt><dd className="font-bold text-slate-700">This browser</dd></div>
           </dl>
-          <p className="mt-5 text-xs leading-5 text-slate-400">Each step consumes usage from the server-configured LLM provider. Calls are sequential, and the server enforces the configured maximum.</p>
+          <p className="mt-5 text-xs leading-5 text-slate-400">Provider requests are attempted sequentially. Failed attempts stop the run without consuming a customer action.</p>
         </aside>
       </div>
     </main>

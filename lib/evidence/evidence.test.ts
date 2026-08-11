@@ -169,10 +169,22 @@ describe("journey evidence extraction", () => {
   });
 
   it("ignores failed tool actions as product evidence", () => {
-    const run = completedRun([
-      { action: "OPEN_PAGE", explanation: "Open an invalid page.", pageSlug: "not-a-page" },
+    const completed = completedRun([
       { action: "ANSWER", explanation: "Answer anyway.", answer: "I could not verify this.", confidence: "low" },
     ]);
+    const failedAction = {
+      id: `action-${completed.id}-1-legacy-failure`,
+      number: 1,
+      type: "OPEN_PAGE" as const,
+      explanation: "Open an invalid page.",
+      timestamp: "2026-08-06T11:01:00.000Z",
+      input: { pageSlug: "not-a-page" },
+      observation: { kind: "tool_error" as const, code: "UNKNOWN_PAGE" as const, message: "No page exists." },
+      success: false,
+      error: { code: "UNKNOWN_PAGE", message: "No page exists." },
+    };
+    const answerAction = { ...completed.actions[0], id: `action-${completed.id}-2`, number: 2 };
+    const run = { ...completed, currentActionCount: 2, modelCallCount: 2, actions: [failedAction, answerAction] };
     const bundle = collectEvidenceBundle(run, { now: NOW });
     expect(bundle.integrity.failedToolActions).toBe(1);
     expect(bundle.evidenceItems.some((item) => item.pageSlug === "not-a-page")).toBe(false);

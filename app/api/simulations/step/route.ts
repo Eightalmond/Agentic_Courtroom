@@ -13,7 +13,10 @@ function safeErrorResponse(error: SimulationError & { simulation?: unknown }) {
       error: error.toSafeError(),
       ...(error.simulation ? { simulation: error.simulation } : {}),
     },
-    { status: error.status },
+    {
+      status: error.status,
+      ...(error.retryAfterSeconds ? { headers: { "Retry-After": String(error.retryAfterSeconds) } } : {}),
+    },
   );
 }
 
@@ -34,7 +37,14 @@ export async function POST(request: NextRequest) {
     }));
     if (!execution.allowed) {
       return NextResponse.json(
-        { error: { code: "DEMO_RATE_LIMITED", message: "This demo has reached its customer-step limit. Try again after the limit resets.", retryable: true } },
+        {
+          error: {
+            code: "DEMO_RATE_LIMITED",
+            message: "This demo has reached its customer-step limit. No customer action was consumed.",
+            retryable: true,
+            retryAfterSeconds: execution.rateLimit.retryAfterSeconds,
+          },
+        },
         { status: 429, headers: { "Retry-After": String(execution.rateLimit.retryAfterSeconds) } },
       );
     }

@@ -62,7 +62,7 @@
 - Each HTTP request makes at most one selected-provider Responses API call and receives one strict structured customer action.
 - The stateless Route Handler validates compact browser-supplied state, reconstructs trusted task and persona data, and executes only deterministic FlowPilot tools.
 - Browser-local runs preserve sequential actions, current content, outcomes, safe errors, and Phase 3 migration compatibility.
-- Manual and auto-run controls prevent parallel calls, stop on completion, and enforce a maximum of 10 configured model calls.
+- Manual and auto-run controls prevent parallel calls, stop on completion, and enforce a maximum of 10 successful customer actions without charging failures to that budget.
 - Tests cover schemas, boundaries, tools, prompts, provider errors, budget exhaustion, migration, reset, and no-call validation failures without consuming API credits.
 - The customer cannot control arbitrary live websites, access arbitrary URLs or files, or perform external actions.
 
@@ -74,7 +74,7 @@
 
 - Server-side `LLM_PROVIDER` selection supports `groq` and `openai`, defaults to Groq locally, and validates only the selected provider at request execution.
 - Groq uses the existing official OpenAI-compatible client with a fixed endpoint, strict JSON Schema, Zod validation, disabled SDK retries, and at most one request per step.
-- Provider failures map to safe stable errors, consume the attempted model-call budget, and never trigger automatic fallback or repair calls.
+- Provider failures map to safe stable errors, increment only the separate provider-attempt counter when a call occurred, consume no customer action, and never trigger automatic fallback or repair calls.
 - Existing simulation actions, API contracts, local persistence, and deterministic tool behavior remain unchanged.
 - Documentation covers local Docker and npm configuration plus explicit production selection.
 

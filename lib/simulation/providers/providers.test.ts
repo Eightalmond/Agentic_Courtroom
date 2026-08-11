@@ -399,10 +399,11 @@ describe("Groq safe error mapping", () => {
   });
 
   it("maps rate limits and timeouts to retryable stable errors", () => {
-    expect(mapGroqProviderError(new OpenAI.RateLimitError(429, {}, "raw", new Headers()))).toMatchObject({
+    expect(mapGroqProviderError(new OpenAI.RateLimitError(429, {}, "raw", new Headers({ "retry-after": "8" })))).toMatchObject({
       code: "GROQ_RATE_LIMITED",
       retryable: true,
       modelCallConsumed: true,
+      retryAfterSeconds: 8,
     });
     expect(
       mapGroqProviderError(

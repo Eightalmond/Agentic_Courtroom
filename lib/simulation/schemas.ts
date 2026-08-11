@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { MAX_ACTIONS, MIN_ACTIONS } from "@/lib/test-runs/types";
 
+import { MAX_PROVIDER_REQUEST_ATTEMPTS } from "./types";
+
 const NO_MARKUP_OR_PRIVATE_REASONING = /<[^>]*>|chain[- ]of[- ]thought|step[- ]by[- ]step reasoning|\banalysis\s*:/i;
 
 function publicText(maximum: number) {
@@ -119,7 +121,7 @@ export const SimulationStepRequestSchema = z
     maxActions: z.number().int().min(MIN_ACTIONS).max(MAX_ACTIONS),
     status: z.enum(["ready", "running", "completed", "failed"]),
     currentActionCount: z.number().int().min(0).max(MAX_ACTIONS),
-    modelCallCount: z.number().int().min(0).max(MAX_ACTIONS),
+    modelCallCount: z.number().int().min(0).max(MAX_PROVIDER_REQUEST_ATTEMPTS),
     startedAt: z.string().datetime().nullable(),
     history: z.array(CompactHistoryEntrySchema).max(MAX_ACTIONS),
     currentPageSlug: pageSlug.nullable(),
@@ -131,7 +133,7 @@ export const SimulationStepRequestSchema = z
     if (value.history.length !== value.currentActionCount) {
       context.addIssue({ code: "custom", path: ["history"], message: "History length must match the action count." });
     }
-    if (value.currentActionCount > value.modelCallCount || value.modelCallCount > value.maxActions) {
+    if (value.currentActionCount > value.modelCallCount) {
       context.addIssue({ code: "custom", path: ["modelCallCount"], message: "Model-call count is inconsistent." });
     }
     value.history.forEach((entry, index) => {
@@ -142,7 +144,12 @@ export const SimulationStepRequestSchema = z
   });
 
 export const SafeSimulationErrorSchema = z
-  .object({ code: z.string().min(1).max(80), message: publicText(300), retryable: z.boolean() })
+  .object({
+    code: z.string().min(1).max(80),
+    message: publicText(300),
+    retryable: z.boolean(),
+    retryAfterSeconds: z.number().int().min(1).max(86_400).optional(),
+  })
   .strict();
 
 export const SimulationObservationSchema = z.discriminatedUnion("kind", [
@@ -200,7 +207,7 @@ export const SimulationStateSchema = z
   .object({
     status: z.enum(["ready", "running", "completed", "failed"]),
     currentActionCount: z.number().int().min(0).max(MAX_ACTIONS),
-    modelCallCount: z.number().int().min(0).max(MAX_ACTIONS),
+    modelCallCount: z.number().int().min(0).max(MAX_PROVIDER_REQUEST_ATTEMPTS),
     startedAt: z.string().datetime().nullable(),
     updatedAt: z.string().datetime(),
     completedAt: z.string().datetime().nullable(),
@@ -217,6 +224,14 @@ export const SimulationStateSchema = z
 
 export const SimulationStepResponseSchema = z
   .object({ action: SimulationActionEntrySchema, simulation: SimulationStateSchema })
-  .strict();
+  .strict()
+  .superRefine((value, context) => {
+    if (!value.action.success || value.action.error) {
+      context.addIssue({ code: "custom", path: ["action"], message: "Only successful customer actions may be returned." });
+    }
+    if (value.action.number !== value.simulation.currentActionCount) {
+      context.addIssue({ code: "custom", path: ["action", "number"], message: "The action number must match the successful-action count." });
+    }
+  });
 
 export { publicText };

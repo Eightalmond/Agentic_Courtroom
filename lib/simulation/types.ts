@@ -6,6 +6,7 @@ export type CustomerDecision = z.infer<typeof CustomerDecisionSchema>;
 export type CustomerActionType = CustomerDecision["action"];
 export type Confidence = "low" | "medium" | "high";
 export type CompletionReason = "answer" | "gave_up" | "budget_exhausted";
+export const MAX_PROVIDER_REQUEST_ATTEMPTS = 1_000_000;
 
 export type SearchResultSnapshot = {
   sectionId: string;
@@ -55,6 +56,7 @@ export type SafeSimulationError = {
   code: string;
   message: string;
   retryable: boolean;
+  retryAfterSeconds?: number;
 };
 
 export type SimulationState = {

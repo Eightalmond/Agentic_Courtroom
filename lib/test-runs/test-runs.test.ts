@@ -133,6 +133,76 @@ describe("test library", () => {
     expect(readLocalRun(validRun.id, storage)).toEqual(validRun);
   });
 
+  it("reopens an unprepared legacy run exhausted by provider attempts while preserving successful history", () => {
+    const actions = [1, 2].map((number) => ({
+      id: `action-run-legacy-attempts-${number}`,
+      number,
+      type: "SEARCH" as const,
+      explanation: "Search the controlled product knowledge.",
+      timestamp: `2026-08-06T10:0${number}:00.000Z`,
+      input: { query: "trial cancellation" },
+      observation: { kind: "search" as const, query: "trial cancellation", results: [] },
+      success: true,
+    }));
+    const migrated = parseStoredRun({
+      ...validRun,
+      id: "run-legacy-attempts",
+      maxActions: 3,
+      status: "completed",
+      currentActionCount: 2,
+      modelCallCount: 3,
+      actions,
+      completedAt: "2026-08-06T10:03:00.000Z",
+      completionReason: "budget_exhausted",
+      lastError: { code: "GROQ_RATE_LIMITED", message: "Rate limited.", retryable: true },
+    });
+
+    expect(migrated).toMatchObject({
+      status: "failed",
+      currentActionCount: 2,
+      modelCallCount: 3,
+      actions,
+      completedAt: null,
+      completionReason: null,
+    });
+  });
+
+  it("removes unprepared legacy failed tool entries from customer-action numbering", () => {
+    const successful = {
+      id: "action-run-legacy-tool-1",
+      number: 1,
+      type: "SEARCH" as const,
+      explanation: "Search the controlled product knowledge.",
+      timestamp: "2026-08-06T10:01:00.000Z",
+      input: { query: "trial cancellation" },
+      observation: { kind: "search" as const, query: "trial cancellation", results: [] },
+      success: true,
+    };
+    const failed = {
+      id: "action-run-legacy-tool-2",
+      number: 2,
+      type: "OPEN_PAGE" as const,
+      explanation: "Open an unavailable page.",
+      timestamp: "2026-08-06T10:02:00.000Z",
+      input: { pageSlug: "not-a-page" },
+      observation: { kind: "tool_error" as const, code: "UNKNOWN_PAGE" as const, message: "No page exists." },
+      success: false,
+      error: { code: "UNKNOWN_PAGE", message: "No page exists." },
+    };
+    const migrated = parseStoredRun({
+      ...validRun,
+      id: "run-legacy-tool",
+      maxActions: 3,
+      status: "failed",
+      currentActionCount: 2,
+      modelCallCount: 2,
+      actions: [successful, failed],
+      lastError: { code: "UNKNOWN_PAGE", message: "No page exists.", retryable: true },
+    });
+
+    expect(migrated).toMatchObject({ currentActionCount: 1, modelCallCount: 2, actions: [{ number: 1, success: true }] });
+  });
+
   it("resets simulation state while preserving task and persona", () => {
     const completed = {
       ...validRun,

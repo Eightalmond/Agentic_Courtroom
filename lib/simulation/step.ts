@@ -22,7 +22,7 @@ export function validateSimulationRequest(input: unknown): SimulationStepRequest
   if (result.data.status === "completed") {
     throw new SimulationError("RUN_COMPLETED", "This simulation is already complete.", 409);
   }
-  if (result.data.modelCallCount >= result.data.maxActions) {
+  if (result.data.currentActionCount >= result.data.maxActions) {
     throw new SimulationError("ACTION_BUDGET_EXHAUSTED", "This run has used its full action budget.", 409);
   }
 
@@ -35,22 +35,21 @@ export function stateAfterFailedStep(
   now = new Date().toISOString(),
 ): SimulationState {
   const modelCallCount = request.modelCallCount + (error.modelCallConsumed ? 1 : 0);
-  const budgetExhausted = modelCallCount >= request.maxActions;
 
   return {
-    status: budgetExhausted ? "completed" : "failed",
+    status: "failed",
     currentActionCount: request.currentActionCount,
     modelCallCount,
     startedAt: request.startedAt ?? (error.modelCallConsumed ? now : null),
     updatedAt: now,
-    completedAt: budgetExhausted ? now : null,
+    completedAt: null,
     currentPageSlug: request.currentPageSlug,
     currentSectionId: request.currentSectionId,
     latestSearchResults: request.latestSearchResults,
     finalAnswer: null,
     finalConfidence: null,
     giveUpReason: null,
-    completionReason: budgetExhausted ? "budget_exhausted" : null,
+    completionReason: null,
     lastError: error.toSafeError(),
   };
 }

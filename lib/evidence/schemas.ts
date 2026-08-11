@@ -7,6 +7,7 @@ import {
   SearchResultSnapshotSchema,
   SimulationActionEntrySchema,
 } from "@/lib/simulation/schemas";
+import { MAX_PROVIDER_REQUEST_ATTEMPTS } from "@/lib/simulation/types";
 
 import { EVIDENCE_BUNDLE_VERSION, MAX_CONTEXT_EVIDENCE, MAX_EVIDENCE_ITEMS } from "./types";
 
@@ -174,7 +175,7 @@ export const EvidenceCollectionRequestSchema = z
     productId: z.literal(flowPilotProduct.id),
     status: z.enum(["ready", "running", "completed", "failed"]),
     currentActionCount: z.number().int().min(0).max(MAX_ACTIONS),
-    modelCallCount: z.number().int().min(0).max(MAX_ACTIONS),
+    modelCallCount: z.number().int().min(0).max(MAX_PROVIDER_REQUEST_ATTEMPTS),
     startedAt: z.string().datetime().nullable(),
     updatedAt: z.string().datetime(),
     completedAt: z.string().datetime().nullable(),
@@ -195,7 +196,7 @@ export const EvidenceCollectionRequestSchema = z
     if (run.actions.length !== run.currentActionCount) {
       context.addIssue({ code: "custom", path: ["actions"], message: "Action history length is inconsistent." });
     }
-    if (run.currentActionCount > run.modelCallCount || run.modelCallCount > run.maxActions) {
+    if (run.currentActionCount > run.modelCallCount) {
       context.addIssue({ code: "custom", path: ["modelCallCount"], message: "Model-call count is inconsistent." });
     }
     run.actions.forEach((action, index) => {

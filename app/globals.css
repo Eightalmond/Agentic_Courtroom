@@ -27,6 +27,19 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@layer base {
+  button:not(:disabled),
+  select:not(:disabled),
+  summary {
+    @apply cursor-pointer;
+  }
+
+  button:disabled,
+  select:disabled {
+    @apply cursor-not-allowed;
+  }
+}
+
 .font-serif {
   font-family: Georgia, "Times New Roman", serif;
 }

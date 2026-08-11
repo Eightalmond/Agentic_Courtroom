@@ -139,7 +139,9 @@ describe("public request and response safeguards", () => {
   });
 
   it("turns technical provider failures into human-readable primary messages", () => {
-    expect(toDisplayError({ code: "GROQ_RATE_LIMITED", message: "raw" }).message).toContain("temporarily rate-limited");
+    const rateLimit = toDisplayError({ code: "GROQ_RATE_LIMITED", message: "raw", retryAfterSeconds: 8 });
+    expect(rateLimit.message).toContain("No customer action was consumed");
+    expect(rateLimit.retryAfterSeconds).toBe(8);
     expect(toDisplayError({ code: "OPENAI_API_KEY_MISSING", message: "raw" }).message).toContain("not configured");
     expect(toDisplayError({ code: "PROVIDER_TIMEOUT", message: "raw" }).message).toContain("did not respond in time");
   });

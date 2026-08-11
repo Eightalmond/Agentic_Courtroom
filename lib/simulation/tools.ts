@@ -1,6 +1,7 @@
 import { flowPilotProduct, getProductPage } from "@/lib/product";
 import { getSectionById, productSearchIndex, searchProductKnowledge } from "@/lib/retrieval";
 
+import { SimulationError } from "./errors";
 import type {
   CustomerDecision,
   SearchResultSnapshot,
@@ -90,14 +91,13 @@ export function executeCustomerAction(
     case "OPEN_PAGE": {
       const page = getProductPage(decision.pageSlug);
       if (!page) {
-        const message = `No product page exists for “${decision.pageSlug}”.`;
-        action = {
-          ...baseEntry,
-          observation: { kind: "tool_error", code: "UNKNOWN_PAGE", message },
-          success: false,
-          error: { code: "UNKNOWN_PAGE", message },
-        };
-        break;
+        throw new SimulationError(
+          "INVALID_TOOL_ACTION",
+          "The model selected an unavailable product page. No customer action was consumed. Try this step again.",
+          502,
+          true,
+          true,
+        );
       }
       const sections = productSearchIndex
         .filter((record) => record.pageSlug === page.slug)
@@ -125,14 +125,13 @@ export function executeCustomerAction(
     case "INSPECT_SECTION": {
       const section = getSectionById(decision.sectionId);
       if (!section) {
-        const message = `No product section exists for “${decision.sectionId}”.`;
-        action = {
-          ...baseEntry,
-          observation: { kind: "tool_error", code: "UNKNOWN_SECTION", message },
-          success: false,
-          error: { code: "UNKNOWN_SECTION", message },
-        };
-        break;
+        throw new SimulationError(
+          "INVALID_TOOL_ACTION",
+          "The model selected an unavailable product section. No customer action was consumed. Try this step again.",
+          502,
+          true,
+          true,
+        );
       }
       const page = getProductPage(section.pageSlug)!;
       action = {
@@ -177,7 +176,7 @@ export function executeCustomerAction(
       break;
   }
 
-  if (state.status === "running" && state.modelCallCount >= request.maxActions) {
+  if (state.status === "running" && state.currentActionCount >= request.maxActions) {
     state.status = "completed";
     state.completedAt = now;
     state.completionReason = "budget_exhausted";

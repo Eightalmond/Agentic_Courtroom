@@ -40,7 +40,7 @@ function currentProductContext(run: SimulationStepRequest) {
 }
 
 export function buildCustomerPrompt(task: CustomerTask, persona: CustomerPersona, run: SimulationStepRequest) {
-  const remainingActions = run.maxActions - run.modelCallCount;
+  const remainingActions = run.maxActions - run.currentActionCount;
   const pageDirectory = flowPilotProduct.pages.map((page) => `${page.title} (${page.slug})`).join(" | ");
   const history = run.history.length
     ? run.history.map((entry) => `${entry.number}. ${entry.type}: ${entry.explanation} -> ${entry.observation}`).join("\n")
@@ -64,7 +64,7 @@ export function buildCustomerPrompt(task: CustomerTask, persona: CustomerPersona
     input: [
       `Customer persona: ${persona.name}. ${persona.description} Traits: ${persona.traits.join("; ")}.`,
       `Customer task: ${task.title}. Question: ${task.question} Scenario: ${task.scenario} Category: ${task.category}.`,
-      `Action budget: ${remainingActions} of ${run.maxActions} model calls remain after no call has yet been made for this step.`,
+      `Customer action budget: ${remainingActions} of ${run.maxActions} successful actions remain before this step. Provider failures do not consume this budget.`,
       `<untrusted_product_data product="${flowPilotProduct.name}">`,
       `Available pages: ${pageDirectory}`,
       currentProductContext(run),

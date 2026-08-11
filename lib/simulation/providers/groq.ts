@@ -2,7 +2,7 @@ import "server-only";
 
 import OpenAI, { type ClientOptions } from "openai";
 
-import { SimulationError } from "../errors";
+import { providerRetryAfterSeconds, SimulationError } from "../errors";
 import type { GroqProviderConfiguration } from "../environment";
 import type { StructuredGenerationInput, StructuredGenerationProvider } from "../provider";
 import { CUSTOMER_DECISION_JSON_SCHEMA, CustomerDecisionWireSchema, parseCustomerDecision } from "../schemas";
@@ -149,7 +149,14 @@ export function mapGroqProviderError(error: unknown): SimulationError {
     error instanceof OpenAI.RateLimitError ||
     (error instanceof OpenAI.APIError && error.code === "rate_limit_exceeded")
   ) {
-    return new SimulationError("GROQ_RATE_LIMITED", "Groq is temporarily rate limited. Try again shortly.", 429, true, true);
+    return new SimulationError(
+      "GROQ_RATE_LIMITED",
+      "Groq is temporarily rate limited. Try again shortly.",
+      429,
+      true,
+      true,
+      providerRetryAfterSeconds(error),
+    );
   }
   if (error instanceof OpenAI.BadRequestError || error instanceof OpenAI.UnprocessableEntityError) {
     const generatedJsonFailed = error.code === "json_validate_failed";

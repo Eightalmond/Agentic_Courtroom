@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import { runSequentially } from "./auto-run";
 
-type State = { status: "running" | "completed" | "failed"; calls: number; maximum: number };
+type State = { status: "running" | "completed" | "failed"; actions: number; attempts: number; maximum: number };
 
-const canContinue = (state: State) => state.status === "running" && state.calls < state.maximum;
+const canContinue = (state: State) => state.status === "running" && state.actions < state.maximum;
 
 describe("sequential auto-run", () => {
   it("never creates parallel customer requests and stops on completion", async () => {
@@ -15,24 +15,25 @@ describe("sequential auto-run", () => {
       maximumActive = Math.max(maximumActive, active);
       await Promise.resolve();
       active -= 1;
-      const calls = state.calls + 1;
-      return { ...state, calls, status: calls === 3 ? "completed" as const : "running" as const };
+      const actions = state.actions + 1;
+      return { ...state, actions, attempts: state.attempts + 1, status: actions === 3 ? "completed" as const : "running" as const };
     });
-    const result = await runSequentially<State>({ status: "running", calls: 0, maximum: 6 }, { isActive: () => true, canContinue, takeStep });
-    expect(result).toMatchObject({ status: "completed", calls: 3 });
+    const result = await runSequentially<State>({ status: "running", actions: 0, attempts: 0, maximum: 6 }, { isActive: () => true, canContinue, takeStep });
+    expect(result).toMatchObject({ status: "completed", actions: 3, attempts: 3 });
     expect(maximumActive).toBe(1);
   });
 
   it("stops immediately after failure", async () => {
-    const takeStep = vi.fn(async (state: State) => ({ ...state, calls: state.calls + 1, status: "failed" as const }));
-    await runSequentially<State>({ status: "running", calls: 0, maximum: 6 }, { isActive: () => true, canContinue, takeStep });
+    const takeStep = vi.fn(async (state: State) => ({ ...state, attempts: state.attempts + 1, status: "failed" as const }));
+    const result = await runSequentially<State>({ status: "running", actions: 2, attempts: 4, maximum: 6 }, { isActive: () => true, canContinue, takeStep });
     expect(takeStep).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({ status: "failed", actions: 2, attempts: 5 });
   });
 
   it("stops at budget exhaustion", async () => {
-    const takeStep = vi.fn(async (state: State) => ({ ...state, calls: state.calls + 1 }));
-    const result = await runSequentially<State>({ status: "running", calls: 0, maximum: 2 }, { isActive: () => true, canContinue, takeStep });
-    expect(result?.calls).toBe(2);
+    const takeStep = vi.fn(async (state: State) => ({ ...state, actions: state.actions + 1, attempts: state.attempts + 1 }));
+    const result = await runSequentially<State>({ status: "running", actions: 0, attempts: 0, maximum: 2 }, { isActive: () => true, canContinue, takeStep });
+    expect(result?.actions).toBe(2);
     expect(takeStep).toHaveBeenCalledTimes(2);
   });
 
@@ -40,9 +41,9 @@ describe("sequential auto-run", () => {
     let active = true;
     const takeStep = vi.fn(async (state: State) => {
       active = false;
-      return { ...state, calls: state.calls + 1 };
+      return { ...state, actions: state.actions + 1, attempts: state.attempts + 1 };
     });
-    await runSequentially<State>({ status: "running", calls: 0, maximum: 6 }, { isActive: () => active, canContinue, takeStep });
+    await runSequentially<State>({ status: "running", actions: 0, attempts: 0, maximum: 6 }, { isActive: () => active, canContinue, takeStep });
     expect(takeStep).toHaveBeenCalledOnce();
   });
 });

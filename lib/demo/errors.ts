@@ -1,13 +1,14 @@
-export type DisplayError = Readonly<{ code: string; message: string }>;
+export type DisplayError = Readonly<{ code: string; message: string; retryAfterSeconds?: number }>;
 
-export function toDisplayError(error: { code: string; message: string }): DisplayError {
+export function toDisplayError(error: { code: string; message: string; retryAfterSeconds?: number }): DisplayError {
   const code = error.code;
+  const retry = error.retryAfterSeconds ? { retryAfterSeconds: error.retryAfterSeconds } : {};
 
   if (code === "DEMO_RATE_LIMITED") {
-    return { code, message: "This public demo has reached its temporary usage limit. Try again after the limit resets." };
+    return { code, message: "This public demo has reached its temporary usage limit. No customer action was consumed.", ...retry };
   }
   if (code.includes("RATE_LIMIT")) {
-    return { code, message: "The model provider is temporarily rate-limited. Try again after the provider limit resets." };
+    return { code, message: "The model provider is temporarily rate-limited. No customer action was consumed. Try again after the provider limit resets.", ...retry };
   }
   if (code.includes("API_KEY_MISSING") || code.includes("MODEL_MISSING") || code === "LLM_PROVIDER_INVALID") {
     return { code, message: "This deployment has not configured an LLM provider yet. Ask the demo owner to finish setup." };

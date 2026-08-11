@@ -102,7 +102,7 @@ The three provider-backed routes use fixed-window, dependency-free in-memory lim
 
 Rate limiting and the per-run in-flight guard are best-effort protections within one warm server instance. They do not coordinate across Vercel instances, regions, browser tabs routed to different instances, or cold starts. They are cost guardrails, not strong distributed abuse prevention. Every endpoint still validates origin, content type, byte size, schema bounds, trusted source references, completion state, and courtroom freshness before invoking the configured provider.
 
-Provider actions are explicit. One customer step, one advocate, or one judge action makes at most one provider request. Auto-run asks for confirmation, reports the maximum remaining calls, awaits each step sequentially, and stops on completion, failure, budget exhaustion, user stop, reset, refresh, or unmount. SDK retries and provider fallback remain disabled.
+Provider actions are explicit. One customer step, one advocate, or one judge action makes at most one provider request. The configured customer-action budget counts only successful synthetic customer actions; provider failures and manual retries remain separate request attempts and do not consume that budget. Auto-run asks for confirmation, reports the maximum remaining successful actions, awaits each step sequentially, and stops on completion, failure, budget exhaustion, user stop, reset, refresh, or unmount. SDK retries and provider fallback remain disabled.
 
 All application responses include `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`, and `X-Frame-Options: DENY`. A CSP is intentionally deferred until it can be tested against the deployed Next.js application.
 
@@ -114,7 +114,7 @@ The browser stores the run and sends a compact, validated history to `POST /api/
 
 Groq uses the official `openai` npm client against the fixed `https://api.groq.com/openai/v1` compatibility endpoint. It calls `responses.create` with an explicit strict JSON Schema, parses `response.output_text` as exact JSON, and then applies the same wire and discriminated-union Zod validation used by OpenAI. SDK retries are disabled, and the application never falls back automatically to a different provider.
 
-Calls are sequential, retries are minimized, deterministic validation happens before provider access, and the server enforces a maximum of 10 configured model calls. Product content is explicitly delimited as untrusted data. Internal expected-page metadata and expected answers are never added to the customer prompt.
+Calls are sequential, automatic retries are disabled, deterministic validation happens before provider access, and the server enforces a maximum of 10 successful customer actions. Provider request attempts are tracked separately for cost visibility. Product content is explicitly delimited as untrusted data. Internal expected-page metadata and expected answers are never added to the customer prompt.
 
 ## How evidence collection works
 

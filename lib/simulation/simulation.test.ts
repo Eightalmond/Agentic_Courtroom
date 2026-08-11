@@ -4,9 +4,10 @@ import { getCustomerPersona, getCustomerTask } from "@/lib/test-runs";
 
 import { readOpenAIConfiguration } from "./environment";
 import { SimulationError, mapProviderError } from "./errors";
+import { requestSimulationStep, SimulationClientError } from "./client";
 import { buildCustomerPrompt } from "./prompt";
 import type { CustomerDecisionProvider } from "./provider";
-import { CustomerDecisionSchema } from "./schemas";
+import { CustomerDecisionSchema, SimulationStepResponseSchema } from "./schemas";
 import { runSimulationStep, stateAfterFailedStep, validateSimulationRequest } from "./step";
 import { executeCustomerAction } from "./tools";
 import type { CustomerDecision, SimulationStepRequest } from "./types";
@@ -117,18 +118,29 @@ describe("deterministic action execution", () => {
     }
   });
 
-  it("records tool errors for unknown pages and sections without a repair call", () => {
-    const page = executeCustomerAction(
-      { action: "OPEN_PAGE", explanation: "Open a page.", pageSlug: "not-a-page" },
-      request(),
-    );
-    const section = executeCustomerAction(
-      { action: "INSPECT_SECTION", explanation: "Inspect a section.", sectionId: "not-a-section" },
-      request(),
-    );
-    expect(page.action).toMatchObject({ success: false, error: { code: "UNKNOWN_PAGE" } });
-    expect(section.action).toMatchObject({ success: false, error: { code: "UNKNOWN_SECTION" } });
-    expect(page.simulation.status).toBe("running");
+  it.each([
+    ["SEARCH", decisions[0]],
+    ["OPEN_PAGE", decisions[1]],
+    ["INSPECT_SECTION", decisions[2]],
+  ])("increments once for a successful %s action", (_label, decision) => {
+    const result = executeCustomerAction(decision, request({ currentActionCount: 1, modelCallCount: 3, history: history(1) }));
+    expect(result.action).toMatchObject({ number: 2, success: true });
+    expect(result.simulation).toMatchObject({ currentActionCount: 2, modelCallCount: 4 });
+  });
+
+  it("rejects invalid page and section actions without creating a customer action", async () => {
+    for (const decision of [
+      { action: "OPEN_PAGE", explanation: "Open a page.", pageSlug: "not-a-page" } as const,
+      { action: "INSPECT_SECTION", explanation: "Inspect a section.", sectionId: "not-a-section" } as const,
+    ]) {
+      const provider = { decide: vi.fn().mockResolvedValue(decision) } satisfies CustomerDecisionProvider;
+      const error = await runSimulationStep(request({ currentActionCount: 1, modelCallCount: 2, history: history(1) }), provider).catch((caught) => caught);
+      expect(error).toMatchObject({
+        code: "INVALID_TOOL_ACTION",
+        simulation: { status: "failed", currentActionCount: 1, modelCallCount: 3, completionReason: null },
+      });
+      expect(provider.decide).toHaveBeenCalledOnce();
+    }
   });
 
   it("completes answer and give-up actions without evaluating them", () => {
@@ -136,14 +148,25 @@ describe("deterministic action execution", () => {
     const giveUp = executeCustomerAction(decisions[4], request());
     expect(answer.simulation).toMatchObject({ status: "completed", completionReason: "answer", finalConfidence: "high" });
     expect(giveUp.simulation).toMatchObject({ status: "completed", completionReason: "gave_up" });
+    expect(answer.simulation.currentActionCount).toBe(1);
+    expect(giveUp.simulation.currentActionCount).toBe(1);
     expect(JSON.stringify(answer)).not.toMatch(/verdict|pass|fail/i);
   });
 
   it("increments action numbers and completes exactly at budget exhaustion", () => {
     const result = executeCustomerAction(decisions[0], request({ maxActions: 3, currentActionCount: 2, modelCallCount: 2 }));
     expect(result.action.number).toBe(3);
-    expect(result.simulation).toMatchObject({ status: "completed", modelCallCount: 3, completionReason: "budget_exhausted" });
+    expect(result.simulation).toMatchObject({ status: "completed", currentActionCount: 3, modelCallCount: 3, completionReason: "budget_exhausted" });
     expect(result.simulation.finalAnswer).toBeNull();
+  });
+
+  it("rejects a failed action masquerading as a successful step response", () => {
+    const response = executeCustomerAction(decisions[0], request());
+    expect(SimulationStepResponseSchema.safeParse(response).success).toBe(true);
+    expect(SimulationStepResponseSchema.safeParse({
+      ...response,
+      action: { ...response.action, success: false, error: { code: "TOOL_FAILED", message: "Failed." } },
+    }).success).toBe(false);
   });
 });
 
@@ -154,7 +177,8 @@ describe("prompt and provider safeguards", () => {
     const combined = `${prompt.instructions}\n${prompt.input}`;
     expect(combined).toContain("Careful researcher");
     expect(combined).toContain("Can I cancel the Pro free trial");
-    expect(combined).toContain("3 of 4 model calls remain");
+    expect(combined).toContain("3 of 4 successful actions remain");
+    expect(combined).toContain("Provider failures do not consume this budget");
     expect(combined).toContain("Compact action history");
     expect(combined).toContain("<untrusted_product_data");
     expect(combined).not.toContain("secret-expected-page");
@@ -177,9 +201,76 @@ describe("prompt and provider safeguards", () => {
     expect(readOpenAIConfiguration({ OPENAI_API_KEY: "test-key", OPENAI_MODEL: "test-model" })).toEqual({ apiKey: "test-key", model: "test-model" });
   });
 
-  it("charges a provider failure to the budget without leaking the provider error", () => {
-    const error = new SimulationError("PROVIDER_TIMEOUT", "The model request timed out. Try this step again.", 504, true, true);
-    const state = stateAfterFailedStep(request({ maxActions: 3, currentActionCount: 2, modelCallCount: 2 }), error, "2026-08-06T10:00:00.000Z");
-    expect(state).toMatchObject({ status: "completed", modelCallCount: 3, completionReason: "budget_exhausted" });
+  it.each([
+    ["GROQ_RATE_LIMITED", true],
+    ["PROVIDER_RATE_LIMIT", true],
+    ["PROVIDER_TIMEOUT", true],
+    ["GROQ_AUTHENTICATION_FAILED", true],
+    ["OPENAI_API_KEY_MISSING", false],
+    ["MALFORMED_PROVIDER_RESPONSE", true],
+  ])("keeps %s outside the customer-action budget", (code, modelCallConsumed) => {
+    const error = new SimulationError(code, "The provider attempt failed safely.", 502, true, modelCallConsumed);
+    const state = stateAfterFailedStep(
+      request({ maxActions: 3, currentActionCount: 2, modelCallCount: 7, history: history(2) }),
+      error,
+      "2026-08-06T10:00:00.000Z",
+    );
+    expect(state).toMatchObject({
+      status: "failed",
+      currentActionCount: 2,
+      modelCallCount: modelCallConsumed ? 8 : 7,
+      completedAt: null,
+      completionReason: null,
+    });
+  });
+
+  it("retries the same next action number and increments exactly once after success", () => {
+    const source = request({ maxActions: 4, currentActionCount: 2, modelCallCount: 5, history: history(2) });
+    const failed = stateAfterFailedStep(
+      source,
+      new SimulationError("GROQ_RATE_LIMITED", "Rate limited.", 429, true, true),
+      "2026-08-06T10:00:00.000Z",
+    );
+    const retried = executeCustomerAction(decisions[2], { ...source, ...failed });
+
+    expect(failed.currentActionCount).toBe(2);
+    expect(retried.action.number).toBe(3);
+    expect(retried.simulation).toMatchObject({ currentActionCount: 3, modelCallCount: 7 });
+  });
+
+  it("never exhausts the action budget through repeated provider failures", () => {
+    let active = request({ maxActions: 3, currentActionCount: 2, modelCallCount: 2, history: history(2) });
+    const error = new SimulationError("GROQ_RATE_LIMITED", "Rate limited.", 429, true, true);
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const failed = stateAfterFailedStep(active, error);
+      active = {
+        ...active,
+        status: failed.status,
+        currentActionCount: failed.currentActionCount,
+        modelCallCount: failed.modelCallCount,
+        startedAt: failed.startedAt,
+      };
+    }
+
+    expect(active).toMatchObject({ status: "failed", currentActionCount: 2, modelCallCount: 22 });
+    expect(() => validateSimulationRequest(active)).not.toThrow();
+  });
+
+  it("keeps a local application 429 outside persisted customer action state", async () => {
+    const source = request({ currentActionCount: 2, modelCallCount: 4, history: history(2) });
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: {
+        code: "DEMO_RATE_LIMITED",
+        message: "No customer action was consumed.",
+        retryable: true,
+        retryAfterSeconds: 8,
+      },
+    }), { status: 429, headers: { "content-type": "application/json", "retry-after": "8" } }));
+
+    const error = await requestSimulationStep(source, fetcher).catch((caught) => caught);
+    expect(error).toBeInstanceOf(SimulationClientError);
+    expect(error).toMatchObject({ safeError: { code: "DEMO_RATE_LIMITED", retryAfterSeconds: 8 }, simulation: undefined });
+    expect(source).toMatchObject({ currentActionCount: 2, modelCallCount: 4 });
   });
 });

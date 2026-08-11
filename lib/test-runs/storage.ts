@@ -10,7 +10,8 @@ import { SimulationActionEntrySchema, SimulationStateSchema } from "@/lib/simula
 import { getCustomerPersona, getCustomerTask } from "./data";
 import { MAX_ACTIONS, MIN_ACTIONS, RUN_STATUSES, type RunStatus, type TestRun } from "./types";
 
-export const RUN_STORAGE_KEY = "trial-by-user:runs:v5";
+export const RUN_STORAGE_KEY = "trial-by-user:runs:v6";
+export const PHASE_NINE_RUN_STORAGE_KEY = "trial-by-user:runs:v5";
 export const PHASE_SEVEN_RUN_STORAGE_KEY = "trial-by-user:runs:v4";
 export const PHASE_SIX_RUN_STORAGE_KEY = "trial-by-user:runs:v3";
 export const PHASE_FIVE_RUN_STORAGE_KEY = "trial-by-user:runs:v2";
@@ -47,35 +48,57 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     return undefined;
   }
 
-  const actionsResult = SimulationActionEntrySchema.array().max(MAX_ACTIONS).safeParse(value.actions ?? []);
-  if (!actionsResult.success) {
+  const parsedActions = SimulationActionEntrySchema.array().max(MAX_ACTIONS).safeParse(value.actions ?? []);
+  if (!parsedActions.success) {
     return undefined;
   }
 
-  const currentActionCount = value.currentActionCount ?? actionsResult.data.length;
+  const hasPreparedEvidence = value.evidenceBundle !== null && value.evidenceBundle !== undefined;
+  const shouldNormalizeFailedActions = !hasPreparedEvidence && parsedActions.data.some((action) => !action.success);
+  const actions = shouldNormalizeFailedActions
+    ? parsedActions.data
+        .filter((action) => action.success)
+        .map((action, index) => ({ ...action, id: `action-${id}-${index + 1}`, number: index + 1 }))
+    : parsedActions.data;
+  const storedActionCount = typeof value.currentActionCount === "number" ? value.currentActionCount : actions.length;
+  const currentActionCount = shouldNormalizeFailedActions
+    ? actions.length
+    : storedActionCount;
+  const shouldReopenIncorrectExhaustion =
+    !hasPreparedEvidence &&
+    status === "completed" &&
+    value.completionReason === "budget_exhausted" &&
+    currentActionCount < maxActions;
+  const normalizedStatus = shouldReopenIncorrectExhaustion ? "failed" : status;
+  const normalizedLastError = shouldReopenIncorrectExhaustion && !value.lastError
+    ? {
+        code: "LEGACY_ATTEMPT_NOT_ACTION",
+        message: "A previous failed attempt did not consume the customer-action budget. Retry the step.",
+        retryable: true,
+      }
+    : value.lastError ?? null;
   const stateResult = SimulationStateSchema.safeParse({
-    status,
+    status: normalizedStatus,
     currentActionCount,
     modelCallCount: value.modelCallCount ?? currentActionCount,
     startedAt: value.startedAt ?? null,
     updatedAt: value.updatedAt ?? createdAt,
-    completedAt: value.completedAt ?? null,
+    completedAt: shouldReopenIncorrectExhaustion ? null : value.completedAt ?? null,
     currentPageSlug: value.currentPageSlug ?? null,
     currentSectionId: value.currentSectionId ?? null,
     latestSearchResults: value.latestSearchResults ?? [],
     finalAnswer: value.finalAnswer ?? null,
     finalConfidence: value.finalConfidence ?? null,
     giveUpReason: value.giveUpReason ?? null,
-    completionReason: value.completionReason ?? null,
-    lastError: value.lastError ?? null,
+    completionReason: shouldReopenIncorrectExhaustion ? null : value.completionReason ?? null,
+    lastError: normalizedLastError,
   });
   const evidenceResult = EvidenceBundleSchema.nullable().safeParse(value.evidenceBundle ?? null);
   const courtroomResult = CourtroomStateSchema.safeParse(value.courtroom ?? EMPTY_COURTROOM_STATE);
 
   if (
     !stateResult.success ||
-    stateResult.data.currentActionCount !== actionsResult.data.length ||
-    stateResult.data.modelCallCount > maxActions ||
+    stateResult.data.currentActionCount !== actions.length ||
     !evidenceResult.success ||
     !courtroomResult.success ||
     (evidenceResult.data !== null &&
@@ -120,7 +143,7 @@ export function parseStoredRun(value: unknown): TestRun | undefined {
     maxActions,
     createdAt,
     productId,
-    actions: actionsResult.data,
+    actions,
     evidenceBundle: evidenceResult.data,
     courtroom: courtroomResult.data,
     ...stateResult.data,
@@ -164,11 +187,12 @@ export function listLocalRuns(storage?: StorageLike): TestRun[] {
   }
 
   const currentRuns = readRunsAtKey(target, RUN_STORAGE_KEY);
+  const phaseNineRuns = readRunsAtKey(target, PHASE_NINE_RUN_STORAGE_KEY);
   const phaseSevenRuns = readRunsAtKey(target, PHASE_SEVEN_RUN_STORAGE_KEY);
   const phaseSixRuns = readRunsAtKey(target, PHASE_SIX_RUN_STORAGE_KEY);
   const phaseFiveRuns = readRunsAtKey(target, PHASE_FIVE_RUN_STORAGE_KEY);
   const legacyRuns = readRunsAtKey(target, LEGACY_RUN_STORAGE_KEY);
-  const runs = [...currentRuns, ...phaseSevenRuns, ...phaseSixRuns, ...phaseFiveRuns, ...legacyRuns].filter(
+  const runs = [...currentRuns, ...phaseNineRuns, ...phaseSevenRuns, ...phaseSixRuns, ...phaseFiveRuns, ...legacyRuns].filter(
     (run, index, allRuns) => allRuns.findIndex((candidate) => candidate.id === run.id) === index,
   );
 
@@ -218,6 +242,7 @@ export function removeLocalRun(id: string, storage?: StorageLike) {
     target.removeItem(PHASE_FIVE_RUN_STORAGE_KEY);
     target.removeItem(PHASE_SIX_RUN_STORAGE_KEY);
     target.removeItem(PHASE_SEVEN_RUN_STORAGE_KEY);
+    target.removeItem(PHASE_NINE_RUN_STORAGE_KEY);
     return true;
   } catch {
     return false;
