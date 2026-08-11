@@ -6,13 +6,13 @@ import { SimulationError } from "../errors";
 import type { GroqProviderConfiguration } from "../environment";
 import type { StructuredGenerationInput, StructuredGenerationProvider } from "../provider";
 import { CUSTOMER_DECISION_JSON_SCHEMA, CustomerDecisionWireSchema, parseCustomerDecision } from "../schemas";
+import { PROVIDER_MAX_RETRIES, PROVIDER_TIMEOUT_MS } from "./constants";
 
 export const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
-export const GROQ_MAX_RETRIES = 0;
+export const GROQ_MAX_RETRIES = PROVIDER_MAX_RETRIES;
 export const GROQ_COURTROOM_TRANSPORT = "chat.completions.create" as const;
 export const GROQ_COURTROOM_MAX_COMPLETION_TOKENS = 4_000;
 export const GROQ_JUDGE_MAX_COMPLETION_TOKENS = 6_000;
-const PROVIDER_TIMEOUT_MS = 20_000;
 const MAX_PROVIDER_OUTPUT_CHARACTERS = 12_000;
 
 type GroqResponsesClient = {
@@ -139,7 +139,7 @@ export function mapGroqProviderError(error: unknown): SimulationError {
   if (error instanceof OpenAI.AuthenticationError) {
     return new SimulationError(
       "GROQ_AUTHENTICATION_FAILED",
-      "Groq rejected the server credentials. Check GROQ_API_KEY and try again.",
+      "The configured Groq credentials were rejected. Ask the demo owner to check deployment settings.",
       502,
       false,
       true,
@@ -263,7 +263,7 @@ export function createGroqCustomerProvider(
           maxOutputTokens: 500,
         }));
       } catch (error) {
-        if (error instanceof SimulationError && error.code === "GROQ_INVALID_RESPONSE") throw error;
+        if (error instanceof SimulationError) throw error;
         throw new SimulationError(
           "GROQ_INVALID_RESPONSE",
           "Groq returned an invalid structured action. Try this step again.",

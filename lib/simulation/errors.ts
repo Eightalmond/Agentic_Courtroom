@@ -29,13 +29,16 @@ export function mapProviderError(error: unknown): SimulationError {
   if (error instanceof OpenAI.AuthenticationError) {
     return new SimulationError(
       "PROVIDER_AUTHENTICATION",
-      "OpenAI rejected the server credentials. Check OPENAI_API_KEY and try again.",
+      "The configured OpenAI credentials were rejected. Ask the demo owner to check deployment settings.",
       502,
       false,
       true,
     );
   }
-  if (error instanceof OpenAI.RateLimitError) {
+  if (
+    error instanceof OpenAI.RateLimitError ||
+    (error instanceof OpenAI.APIError && error.code === "rate_limit_exceeded")
+  ) {
     return new SimulationError("PROVIDER_RATE_LIMIT", "The model is temporarily rate limited. Try again shortly.", 429, true, true);
   }
   if (error instanceof OpenAI.APIConnectionError) {

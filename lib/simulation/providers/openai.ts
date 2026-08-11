@@ -7,8 +7,7 @@ import { SimulationError, mapProviderError } from "../errors";
 import type { OpenAIProviderConfiguration } from "../environment";
 import type { StructuredGenerationInput, StructuredGenerationProvider } from "../provider";
 import { CustomerDecisionWireSchema, parseCustomerDecision } from "../schemas";
-
-const PROVIDER_TIMEOUT_MS = 20_000;
+import { PROVIDER_MAX_RETRIES, PROVIDER_TIMEOUT_MS } from "./constants";
 
 type OpenAIResponsesClient = {
   responses: {
@@ -24,7 +23,7 @@ export function createOpenAICustomerProvider(
     injectedClient ??
     (new OpenAI({
       apiKey: configuration.apiKey,
-      maxRetries: 0,
+      maxRetries: PROVIDER_MAX_RETRIES,
       timeout: PROVIDER_TIMEOUT_MS,
     }) as unknown as OpenAIResponsesClient);
 

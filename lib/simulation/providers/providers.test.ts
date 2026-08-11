@@ -33,6 +33,7 @@ import {
   parseGroqDecisionOutput,
 } from "./groq";
 import { createOpenAICustomerProvider } from "./openai";
+import { PROVIDER_MAX_RETRIES, PROVIDER_TIMEOUT_MS } from "./constants";
 
 const groqConfiguration = {
   provider: "groq" as const,
@@ -170,11 +171,12 @@ describe("Groq Responses provider", () => {
   it("uses a fixed official base URL with SDK retries disabled", () => {
     expect(createGroqClientOptions(groqConfiguration)).toMatchObject({
       baseURL: GROQ_BASE_URL,
-      maxRetries: GROQ_MAX_RETRIES,
-      timeout: 20_000,
+      maxRetries: PROVIDER_MAX_RETRIES,
+      timeout: PROVIDER_TIMEOUT_MS,
     });
     expect(GROQ_BASE_URL).toBe("https://api.groq.com/openai/v1");
     expect(GROQ_MAX_RETRIES).toBe(0);
+    expect(PROVIDER_TIMEOUT_MS).toBe(20_000);
   });
 
   it("makes exactly one Responses API request and returns the Zod-validated decision", async () => {
@@ -213,6 +215,19 @@ describe("Groq Responses provider", () => {
     const selected = createGroqCustomerProvider(groqConfiguration, { responses: { create } });
     await expect(selected.decide({ instructions: "instructions", input: "input" })).rejects.toMatchObject({
       code: "GROQ_INVALID_RESPONSE",
+    });
+    expect(create).toHaveBeenCalledOnce();
+  });
+
+  it("preserves safe provider failures instead of misclassifying them as invalid output", async () => {
+    const create = vi.fn().mockRejectedValue(
+      new OpenAI.AuthenticationError(401, { message: "raw provider detail" }, "raw provider response", new Headers()),
+    );
+    const selected = createGroqCustomerProvider(groqConfiguration, { responses: { create } });
+
+    await expect(selected.decide({ instructions: "instructions", input: "input" })).rejects.toMatchObject({
+      code: "GROQ_AUTHENTICATION_FAILED",
+      retryable: false,
     });
     expect(create).toHaveBeenCalledOnce();
   });
@@ -377,7 +392,7 @@ describe("Groq safe error mapping", () => {
     );
     expect(mapped.toSafeError()).toEqual({
       code: "GROQ_AUTHENTICATION_FAILED",
-      message: "Groq rejected the server credentials. Check GROQ_API_KEY and try again.",
+      message: "The configured Groq credentials were rejected. Ask the demo owner to check deployment settings.",
       retryable: false,
     });
     expect(JSON.stringify(mapped.toSafeError())).not.toContain("secret raw response");

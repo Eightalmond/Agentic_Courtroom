@@ -8,7 +8,7 @@ import {
   SimulationActionEntrySchema,
 } from "@/lib/simulation/schemas";
 
-import { EVIDENCE_BUNDLE_VERSION, MAX_CONTEXT_EVIDENCE } from "./types";
+import { EVIDENCE_BUNDLE_VERSION, MAX_CONTEXT_EVIDENCE, MAX_EVIDENCE_ITEMS } from "./types";
 
 const identifier = z.string().trim().min(1).max(200).regex(/^[a-z0-9-]+$/);
 const boundedText = (maximum: number) => z.string().trim().min(1).max(maximum);
@@ -114,7 +114,7 @@ export const EvidenceBundleSchema = z
     giveUpReason: boundedText(500).nullable(),
     completionReason: z.enum(["answer", "gave_up", "budget_exhausted"]),
     journeySummary: boundedText(800),
-    evidenceItems: z.array(EvidenceItemSchema).max(80),
+    evidenceItems: z.array(EvidenceItemSchema).max(MAX_EVIDENCE_ITEMS),
     factChecks: z.array(MechanicalFactCheckSchema).max(12),
     coverage: EvidenceCoverageSchema,
     missingRequiredEvidence: z.array(identifier).max(20),

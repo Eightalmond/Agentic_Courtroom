@@ -26,7 +26,8 @@ import {
 
 import { collectEvidenceBundle } from "./collector";
 import { taskEvaluationSpecs } from "./evaluation-specs";
-import { MAX_CONTEXT_EVIDENCE } from "./types";
+import { EvidenceBundleSchema } from "./schemas";
+import { MAX_CONTEXT_EVIDENCE, MAX_EVIDENCE_ITEMS } from "./types";
 
 const NOW = "2026-08-06T12:00:00.000Z";
 const TRIAL_SECTION = "flowpilot-cancellation-policy-cancelling-during-a-trial";
@@ -92,6 +93,21 @@ describe("evidence eligibility", () => {
     expect(collectEvidenceBundle(answered, { now: NOW }).customerOutcome).toBe("answered");
     expect(collectEvidenceBundle(gaveUp, { now: NOW }).customerOutcome).toBe("gave-up");
     expect(collectEvidenceBundle(exhausted, { now: NOW }).customerOutcome).toBe("budget-exhausted");
+  });
+
+  it("rejects an oversized evidence payload at the schema boundary", () => {
+    const bundle = collectEvidenceBundle(answerRun("I am unsure."), { now: NOW });
+    const template = bundle.evidenceItems[0]!;
+    const evidenceItems = Array.from({ length: MAX_EVIDENCE_ITEMS + 1 }, (_, index) => ({
+      ...template,
+      evidenceId: `evidence-oversized-${index}`,
+      orderingIndex: index,
+    }));
+    const result = EvidenceBundleSchema.safeParse({ ...bundle, evidenceItems });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toContainEqual(expect.objectContaining({ code: "too_big", path: ["evidenceItems"] }));
+    }
   });
 
   it("rejects ready, running, and reset-without-history runs", () => {

@@ -60,14 +60,14 @@ export function readGroqConfiguration(environment: GroqEnvironment = process.env
   if (!apiKey) {
     throw new SimulationError(
       "GROQ_API_KEY_MISSING",
-      "Add GROQ_API_KEY to the server environment before starting a Groq simulation.",
+      "This deployment has not configured its Groq API key yet.",
       503,
     );
   }
   if (!model) {
     throw new SimulationError(
       "GROQ_MODEL_MISSING",
-      "Add GROQ_MODEL to the server environment before starting a Groq simulation.",
+      "This deployment has not configured its Groq model yet.",
       503,
     );
   }
@@ -85,14 +85,14 @@ export function readOpenAIConfiguration(environment: OpenAIEnvironment = process
   if (!apiKey) {
     throw new SimulationError(
       "OPENAI_API_KEY_MISSING",
-      "Add OPENAI_API_KEY to the server environment before starting a simulation.",
+      "This deployment has not configured its OpenAI API key yet.",
       503,
     );
   }
   if (!model) {
     throw new SimulationError(
       "OPENAI_MODEL_MISSING",
-      "Add OPENAI_MODEL to the server environment before starting a simulation.",
+      "This deployment has not configured its OpenAI model yet.",
       503,
     );
   }

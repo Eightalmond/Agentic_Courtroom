@@ -93,6 +93,18 @@ describe("simulation request boundary", () => {
     await expect(runSimulationStep(request({ taskId: "unknown-task" }), provider)).rejects.toMatchObject({ code: "UNKNOWN_TASK" });
     expect(provider.decide).not.toHaveBeenCalled();
   });
+
+  it("rejects oversized action history before the provider boundary", async () => {
+    const provider = { decide: vi.fn() } satisfies CustomerDecisionProvider;
+    const oversized = {
+      ...request(),
+      currentActionCount: 11,
+      modelCallCount: 11,
+      history: history(11),
+    };
+    await expect(runSimulationStep(oversized, provider)).rejects.toMatchObject({ code: "INVALID_REQUEST" });
+    expect(provider.decide).not.toHaveBeenCalled();
+  });
 });
 
 describe("deterministic action execution", () => {

@@ -33,7 +33,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - Courtroom arguments (available now)
 - Verdict detail and compact final report (available now)
 - Product knowledge and asset management
-- Public demo experience with usage protections
+- Public demo experience with usage protections (available now)
 
 ## Verdict categories
 
@@ -54,7 +54,7 @@ The initial user is a product manager, founder, designer, or researcher at an ea
 - A judge verdict using the five defined categories
 - A run timeline and verdict visualization
 - Later MVP support for bounded product document and screenshot uploads
-- Basic public demo rate and abuse protections
+- Basic public demo rate and abuse protections (available now)
 - Deployment compatible with Vercel Hobby
 
 ## MVP exclusions
@@ -145,3 +145,17 @@ The judge is instructed to prefer direct evidence over rhetorical force, evaluat
 Browser-local persistence retains the verdict, provider label, creation time, bundle identity and fingerprint, and fingerprints for both advocate records. Rebuilding evidence or resetting clears the complete courtroom. A successful advocate regeneration clears the judge; a failed advocate or judge regeneration preserves all prior successful records. The final report appears only after a judge exists.
 
 > The judge sees both adversarial arguments but remains constrained to the original immutable evidence bundle. This allows the judge to compare reasoning quality without introducing new retrieval asymmetry, at the cost of not being able to investigate evidence gaps independently.
+
+## Public demo mode and deployment safeguards
+
+Phase 9 presents the completed courtroom as an explicitly bounded portfolio demo. FlowPilot remains the only available product, and three recommended presets select normal existing task, persona, and action-limit combinations without creating or starting a run automatically. The interface explains that FlowPilot is fictional, retrieval and evidence preparation are deterministic, LLMs select customer actions and generate courtroom reasoning, no public website is controlled, and persistence is limited to the current browser.
+
+Every provider-backed control identifies its request usage. A single step, prosecutor, defense, or judge action uses at most one external provider request. Auto-run warns that it may use one request per remaining action, asks for confirmation, runs sequentially, and never resumes after refresh. Regenerating an existing advocate or judge requires confirmation while preserving the last successful result if replacement fails.
+
+Provider-backed Route Handlers reject cross-origin, non-JSON, oversized, malformed, completed, stale, or otherwise invalid requests before provider access. Synthetic-customer history remains capped at ten actions; evidence items, source text, excerpts, fact checks, courtroom claims, findings, citations, identifiers, and all public strings have explicit schema bounds. Provider clients share a 20-second timeout and disable SDK retries and provider fallback.
+
+The public demo applies best-effort fixed-window limits of 30 customer steps and 10 combined advocate/judge generations per client per 10 minutes by default. A Vercel-supplied address is coarsened and hashed before use; raw addresses are not retained. A same-instance per-client/run guard rejects overlapping provider work. Friendly errors explain local limits, provider limits, configuration, authentication, timeouts, malformed structured output, and network failures while keeping stable codes secondary.
+
+The deployment status is intentionally static: browser-local persistence, a controlled FlowPilot knowledge base, deterministic retrieval and evidence, and completion of the courtroom MVP. The application does not expose environment contents, key status, or a public health endpoint.
+
+> The MVP uses browser-local persistence and best-effort in-memory application rate limiting to remain infrastructure-free on Vercel Hobby. This minimizes deployment cost and complexity, but it does not provide globally consistent abuse protection across serverless instances. Strong distributed rate limiting should be added only if public traffic requires it.

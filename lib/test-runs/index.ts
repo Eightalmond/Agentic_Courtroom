@@ -1,4 +1,5 @@
 export { customerPersonas, customerTasks, getCustomerPersona, getCustomerTask } from "./data";
+export { demoPresets, type DemoPreset } from "./demo-presets";
 export { createReadyRun } from "./run";
 export { generateRunId } from "./run-id";
 export {

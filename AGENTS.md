@@ -4,6 +4,8 @@ These instructions apply to the entire repository.
 
 - Read the relevant documentation in `docs/` before making changes.
 - Keep the application deployable to Vercel Hobby.
+- Preserve the public-demo request bounds, one-call provider controls, and best-effort rate limits on provider-backed routes.
+- Treat in-memory limits as instance-local safeguards, never as globally consistent authorization or abuse prevention.
 - Do not introduce a permanently running production server. Production server functionality must use Next.js capabilities compatible with Vercel.
 - Docker is for local development only.
 - Use TypeScript with strict mode enabled.

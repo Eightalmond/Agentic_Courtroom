@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { RunDetail } from "@/components/run-detail";
+import { readDemoConfiguration } from "@/lib/demo/environment";
 
 export const metadata: Metadata = {
   title: "Local test run | Trial by User",
@@ -13,5 +14,5 @@ type RunPageProps = {
 
 export default async function RunPage({ params }: RunPageProps) {
   const { id } = await params;
-  return <RunDetail runId={id} />;
+  return <RunDetail demoMode={readDemoConfiguration().demoMode} runId={id} />;
 }

@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { EvidenceWorkspace } from "@/components/evidence/evidence-workspace";
 import { CourtroomWorkspace } from "@/components/courtroom/courtroom-workspace";
 import { CourtroomClientError, requestCourtroomArgument, requestJudgeVerdict } from "@/lib/courtroom/client";
 import type { CourtroomRole } from "@/lib/courtroom/types";
+import { toDisplayError, type DisplayError } from "@/lib/demo/errors";
 import { EvidenceClientError, requestEvidenceBundle } from "@/lib/evidence/client";
 import { flowPilotProduct, getProductPage } from "@/lib/product";
 import { getSectionById, searchProductKnowledge } from "@/lib/retrieval";
 import { requestSimulationStep, SimulationClientError } from "@/lib/simulation/client";
+import { runSequentially } from "@/lib/simulation/auto-run";
 import type { SimulationActionEntry, SimulationObservation } from "@/lib/simulation/types";
 import {
   applySimulationFailure,
@@ -30,7 +32,7 @@ import {
   type TestRun,
 } from "@/lib/test-runs";
 
-type RunDetailProps = { runId: string };
+type RunDetailProps = { runId: string; demoMode: boolean };
 
 const emptySubscribe = () => () => undefined;
 
@@ -107,7 +109,7 @@ function CurrentContent({ run }: { run: TestRun }) {
   );
 }
 
-export function RunDetail({ runId }: RunDetailProps) {
+export function RunDetail({ runId, demoMode }: RunDetailProps) {
   const browserReady = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [revision, setRevision] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
@@ -117,14 +119,25 @@ export function RunDetail({ runId }: RunDetailProps) {
   const [isJudgeBusy, setIsJudgeBusy] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [evidenceError, setEvidenceError] = useState<string | null>(null);
-  const [courtroomErrors, setCourtroomErrors] = useState<Record<CourtroomRole, string | null>>({ prosecutor: null, defense: null });
-  const [judgeError, setJudgeError] = useState<string | null>(null);
+  const [courtroomErrors, setCourtroomErrors] = useState<Record<CourtroomRole, DisplayError | null>>({ prosecutor: null, defense: null });
+  const [judgeError, setJudgeError] = useState<DisplayError | null>(null);
   const inFlight = useRef(false);
   const evidenceInFlight = useRef(false);
   const courtroomInFlight = useRef(false);
   const judgeInFlight = useRef(false);
   const autoRunRequested = useRef(false);
+  const runCycle = useRef(0);
+  const mounted = useRef(true);
   void revision;
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      autoRunRequested.current = false;
+      runCycle.current += 1;
+    };
+  }, []);
 
   const run = browserReady ? readLocalRun(runId) : undefined;
   const task = run ? getCustomerTask(run.taskId) : undefined;
@@ -140,7 +153,7 @@ export function RunDetail({ runId }: RunDetailProps) {
     return true;
   }
 
-  async function takeOneStep(sourceRun: TestRun) {
+  async function takeOneStep(sourceRun: TestRun, cycle = runCycle.current) {
     if (inFlight.current || sourceRun.evidenceBundle || sourceRun.status === "completed" || sourceRun.modelCallCount >= sourceRun.maxActions) {
       return undefined;
     }
@@ -149,9 +162,11 @@ export function RunDetail({ runId }: RunDetailProps) {
     setIsBusy(true);
     try {
       const response = await requestSimulationStep(toSimulationStepRequest(sourceRun));
+      if (!mounted.current || cycle !== runCycle.current) return undefined;
       const nextRun = applySimulationStep(sourceRun, response);
       return persist(nextRun) ? nextRun : undefined;
     } catch (error) {
+      if (!mounted.current || cycle !== runCycle.current) return undefined;
       const clientError = error instanceof SimulationClientError
         ? error
         : new SimulationClientError({ code: "SIMULATION_FAILED", message: "The step failed safely. Try again.", retryable: true });
@@ -169,27 +184,27 @@ export function RunDetail({ runId }: RunDetailProps) {
       return undefined;
     } finally {
       inFlight.current = false;
-      setIsBusy(false);
+      if (mounted.current) setIsBusy(false);
     }
   }
 
   async function startAutoRun() {
-    if (!run || inFlight.current || run.status === "completed") {
+    if (!run || inFlight.current || autoRunRequested.current || run.status === "completed") {
       return;
     }
+    const remaining = Math.max(0, run.maxActions - run.modelCallCount);
+    if (!window.confirm(`Auto-run may use one LLM request per remaining customer action (up to ${remaining}). Start sequential auto-run?`)) return;
+    const cycle = runCycle.current;
     autoRunRequested.current = true;
     setIsAutoRunning(true);
-    let activeRun: TestRun | undefined = run;
-
-    while (autoRunRequested.current && activeRun.status !== "completed" && activeRun.modelCallCount < activeRun.maxActions) {
-      activeRun = await takeOneStep(activeRun);
-      if (!activeRun || activeRun.status === "failed") {
-        break;
-      }
-    }
+    await runSequentially(run, {
+      isActive: () => autoRunRequested.current && cycle === runCycle.current && mounted.current,
+      canContinue: (activeRun) => activeRun.status !== "completed" && activeRun.status !== "failed" && activeRun.modelCallCount < activeRun.maxActions,
+      takeStep: (activeRun) => takeOneStep(activeRun, cycle),
+    });
 
     autoRunRequested.current = false;
-    setIsAutoRunning(false);
+    if (mounted.current) setIsAutoRunning(false);
   }
 
   function stopAutoRun() {
@@ -198,10 +213,11 @@ export function RunDetail({ runId }: RunDetailProps) {
   }
 
   function resetRun() {
-    if (!run || inFlight.current || evidenceInFlight.current || courtroomInFlight.current || judgeInFlight.current) {
+    if (!run || evidenceInFlight.current || courtroomInFlight.current || judgeInFlight.current) {
       return;
     }
     autoRunRequested.current = false;
+    runCycle.current += 1;
     setIsAutoRunning(false);
     persist(resetSimulationRun(run));
   }
@@ -244,8 +260,8 @@ export function RunDetail({ runId }: RunDetailProps) {
       persist(applyCourtroomArgument(sourceRun, record));
     } catch (error) {
       const message = error instanceof CourtroomClientError
-        ? `${error.detail.code}: ${error.detail.message}`
-        : "COURTROOM_FAILED: The advocate failed safely. Try again.";
+        ? toDisplayError(error.detail)
+        : { code: "COURTROOM_FAILED", message: "The advocate failed safely. Try again." };
       setCourtroomErrors((current) => ({ ...current, [role]: message }));
     } finally {
       courtroomInFlight.current = false;
@@ -268,8 +284,8 @@ export function RunDetail({ runId }: RunDetailProps) {
       persist(applyJudgeVerdict(sourceRun, record));
     } catch (error) {
       const message = error instanceof CourtroomClientError
-        ? `${error.detail.code}: ${error.detail.message}`
-        : "JUDGE_FAILED: The judge failed safely. Try again.";
+        ? toDisplayError(error.detail)
+        : { code: "JUDGE_FAILED", message: "The judge failed safely. Try again." };
       setJudgeError(message);
     } finally {
       judgeInFlight.current = false;
@@ -319,6 +335,7 @@ export function RunDetail({ runId }: RunDetailProps) {
           </div>
           <h1 className="mt-6 max-w-3xl font-serif text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">{task.title}</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">“{task.question}”</p>
+          {demoMode && <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Public demo · provider-backed actions use limited external requests</p>}
         </div>
       </header>
 
@@ -415,8 +432,8 @@ export function RunDetail({ runId }: RunDetailProps) {
 
           {(run.lastError || storageError || evidenceError) && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4" role="alert">
-              <p className="text-xs font-bold uppercase tracking-[0.12em] text-red-700">{run.lastError?.code ?? "LOCAL_STORAGE_FAILURE"}</p>
-              <p className="mt-2 text-sm leading-6 text-red-900">{storageError ?? evidenceError ?? run.lastError?.message}</p>
+              <p className="text-sm leading-6 text-red-900">{storageError ?? evidenceError ?? (run.lastError ? toDisplayError(run.lastError).message : undefined)}</p>
+              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-red-700">{run.lastError?.code ?? "LOCAL_STORAGE_FAILURE"}</p>
             </div>
           )}
 
@@ -426,14 +443,16 @@ export function RunDetail({ runId }: RunDetailProps) {
                 {isBusy ? "Taking one step…" : run.status === "ready" ? "Start simulation" : run.status === "failed" ? "Retry failed step" : "Take next step"}
               </button>
               {!isAutoRunning ? (
-                <button className="w-full rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700 disabled:opacity-50" type="button" disabled={isBusy} onClick={() => void startAutoRun()}>Auto-run sequentially</button>
+                <button className="w-full rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700 disabled:opacity-50" type="button" disabled={isBusy || run.status === "failed"} onClick={() => void startAutoRun()}>Auto-run sequentially</button>
               ) : (
                 <button className="w-full rounded-xl border border-red-300 px-5 py-3 text-sm font-bold text-red-700" type="button" onClick={stopAutoRun}>Stop after current step</button>
               )}
+              <p className="text-xs leading-5 text-slate-500">One customer step uses 1 LLM request. {Math.max(0, run.maxActions - run.modelCallCount)} actions may remain.</p>
+              <p className="text-xs leading-5 text-slate-500">Auto-run stays sequential and may use one LLM request per remaining action.</p>
             </div>
           )}
 
-          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isBusy || isEvidenceBusy || isJudgeBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
+          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isEvidenceBusy || isJudgeBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
           <Link className="mt-3 block rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-bold text-slate-700" href="/tests/new">Configure another test</Link>
 
           <dl className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-xs">

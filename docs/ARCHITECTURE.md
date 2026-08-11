@@ -2,7 +2,7 @@
 
 ## Current architecture
 
-The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, evidence, independent courtroom arguments, judge verdict, and final report provide bounded interaction. Short Next.js Route Handlers provide the server-only synthetic-customer, evidence-collection, advocate, and judge boundaries. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence, courtroom schemas, citations, persistence, and provider errors are covered by Vitest.
+The current repository is a single Next.js application using the App Router, React, TypeScript in strict mode, and Tailwind CSS. The homepage and controlled FlowPilot product routes remain statically renderable. Test creation, run detail, retrieval, simulation, evidence, independent courtroom arguments, judge verdict, and final report provide bounded interaction. Short Next.js Route Handlers provide the server-only synthetic-customer, evidence-collection, advocate, and judge boundaries. Phase 9 adds visible public-demo constraints, server-only configuration, bounded request parsing, best-effort per-instance limits, duplicate-request guards, and security headers without adding persistent infrastructure. Project configuration, product-content integrity, run rules, retrieval, simulation, evidence, courtroom schemas, citations, persistence, provider errors, and demo safeguards are covered by Vitest.
 
 FlowPilot product knowledge is stored as readonly, typed TypeScript data under `lib/product/`. A deterministic lookup utility resolves page slugs. `/product` renders the complete knowledge index, and `/product/[slug]` renders each page from the same local data source. Static parameters are generated for the known slugs, related-page links are validated in tests, and unknown slugs return a product-specific not-found state.
 
@@ -86,6 +86,22 @@ Browser persistence is now `trial-by-user:runs:v5`. A judge record stores only t
 
 > The judge sees both adversarial arguments but remains constrained to the original immutable evidence bundle. This allows the judge to compare reasoning quality without introducing new retrieval asymmetry, at the cost of not being able to investigate evidence gaps independently.
 
+### Phase 9 public demo boundary
+
+`DEMO_MODE` is read only in server modules and server-rendered pages. It accepts `true` or `false`, defaults safely to `true`, and exposes only a derived boolean to interactive components. The three application-limit settings are also server-only. Provider availability and environment contents are not exposed through a health endpoint or client bundle.
+
+The simulation, advocate, and judge Route Handlers share request-boundary helpers. They enforce same-origin browser requests when an `Origin` header is present, require JSON, reject bodies over route-specific byte ceilings, and apply existing strict Zod domain validation before rate limiting or provider configuration. Simulation history is bounded by the ten-action product maximum. Evidence arrays, source text, excerpts, fact checks, identifiers, claims, findings, and citations retain explicit nested limits so a small outer body cannot expand into an unbounded provider prompt.
+
+After deterministic validation, a fixed-window in-memory limiter uses independent `simulation` and `courtroom` buckets. The courtroom bucket combines advocate and judge calls. On Vercel, `x-vercel-forwarded-for` or Vercel's overwritten `x-forwarded-for` supplies the client address; the application coarsens the network and stores only a truncated SHA-256 digest. Outside Vercel it does not trust forwarded-IP headers and falls back to a hashed host/user-agent bucket. Stores are capped and expired windows are removed opportunistically.
+
+A second in-memory set prevents overlapping provider work for the same client, run, and bucket within one warm instance. Client guards also prevent double starts and serialize auto-run. These controls reduce accidental duplication but cannot guarantee cross-tab exclusion when requests reach different serverless instances. Correctness never depends on limiter state: every stateless request still validates the complete bounded run or courtroom state.
+
+Provider clients share a centralized 20-second timeout and zero SDK retries. There is no automatic repair or provider fallback. A failed request does not replace successful browser-local state. Auto-run is a browser loop that confirms the possible remaining call count, awaits one response at a time, and cancels future iterations on completion, failure, exhaustion, stop, reset, refresh, or component unmount.
+
+Application-wide headers set `nosniff`, a strict cross-origin referrer policy, disabled camera/microphone/geolocation/browsing-topics permissions, and deny framing. A Content Security Policy is not included because an untested policy could break Next.js development or deployment behavior. No `vercel.json` is necessary.
+
+> The MVP uses browser-local persistence and best-effort in-memory application rate limiting to remain infrastructure-free on Vercel Hobby. This minimizes deployment cost and complexity, but it does not provide globally consistent abuse protection across serverless instances. Strong distributed rate limiting should be added only if public traffic requires it.
+
 > Persisting the MVP run in localStorage keeps deployment free and serverless, but the client must send a compact action history with each stateless step. Server persistence would improve integrity and cross-device access, but adds infrastructure and is deferred until it is needed.
 
 Splitting autonomous execution into short requests makes timeouts, retries, budget enforcement, and UI observation compatible with Vercel Hobby. It also avoids a background worker or permanently running server. The tradeoff is that client-held history is not authoritative; every request therefore receives strict validation and only bounded, deterministic capabilities.
@@ -98,7 +114,7 @@ There is currently:
 - no authentication;
 - no file storage or uploads;
 - configurable Groq and OpenAI structured-output integrations for the synthetic customer, courtroom advocates, and judge;
-- four stateless Route Handlers for simulation steps, evidence collection, one courtroom argument, and one judge verdict, with no separate backend.
+- four stateless Route Handlers for simulation steps, evidence collection, one courtroom argument, and one judge verdict, with no separate backend. Only the three provider-backed routes are rate-limited.
 
 There is no database or server-side run persistence. Runs, evidence, courtroom argument records, and judge verdicts use browser-specific localStorage. The core controlled-product courtroom loop is complete.
 

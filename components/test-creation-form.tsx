@@ -10,6 +10,7 @@ import {
   createReadyRun,
   customerPersonas,
   customerTasks,
+  demoPresets,
   getCustomerPersona,
   getCustomerTask,
   MAX_ACTIONS,
@@ -28,7 +29,7 @@ const actionOptions = Array.from(
   (_, index) => MIN_ACTIONS + index,
 );
 
-export function TestCreationForm() {
+export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
   const router = useRouter();
   const [selectedTaskId, setSelectedTaskId] = useState("");
   const [selectedPersonaId, setSelectedPersonaId] = useState("");
@@ -58,6 +59,14 @@ export function TestCreationForm() {
     setMaxActions(value);
     setActionLimitTouched(true);
     setErrors((current) => ({ ...current, actions: undefined, storage: undefined }));
+  }
+
+  function applyPreset(taskId: string, personaId: string, actions: number) {
+    setSelectedTaskId(taskId);
+    setSelectedPersonaId(personaId);
+    setMaxActions(actions);
+    setActionLimitTouched(true);
+    setErrors({});
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -101,6 +110,37 @@ export function TestCreationForm() {
     <form onSubmit={handleSubmit} noValidate>
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
         <div className="space-y-10">
+          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:p-7" aria-labelledby="preset-heading">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-800">{demoMode ? "Public demo presets" : "Recommended presets"}</p>
+                <h2 id="preset-heading" className="mt-2 text-2xl font-bold tracking-[-0.02em]">Start with a proven scenario</h2>
+              </div>
+              <p className="text-xs text-amber-900">Selection only · no LLM request</p>
+            </div>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {demoPresets.map((preset) => {
+                const task = getCustomerTask(preset.taskId)!;
+                const persona = getCustomerPersona(preset.personaId)!;
+                return (
+                  <article className="flex min-w-0 flex-col rounded-xl border border-amber-200 bg-white p-4" key={preset.id}>
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-700">{preset.label}</p>
+                    <h3 className="mt-2 font-bold text-slate-950">{task.title}</h3>
+                    <p className="mt-2 text-xs leading-5 text-slate-600">{preset.description}</p>
+                    <p className="mt-3 text-xs font-semibold text-slate-500">{persona.name} · {preset.maxActions} actions</p>
+                    <button
+                      className="mt-4 rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white"
+                      onClick={() => applyPreset(preset.taskId, preset.personaId, preset.maxActions)}
+                      type="button"
+                    >
+                      Try recommended demo
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
           <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7" aria-labelledby="product-heading">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
               <div>

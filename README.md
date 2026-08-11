@@ -2,7 +2,7 @@
 
 Trial by User is an agentic product-testing application. Its synthetic customer attempts one focused FlowPilot task through short, observable actions, independent prosecutor and defense agents argue from the same prepared evidence, and a neutral judge returns a cited verdict and recommendation.
 
-Phase 8 is complete, finishing the core courtroom MVP. The application includes the controlled fictional FlowPilot knowledge base, local test creation, deterministic retrieval, a browser-local simulation timeline, deterministic evidence preparation, separately generated source-cited courtroom arguments, and a final evidence-grounded judge verdict. The configured Groq or OpenAI provider handles customer decisions, advocates, and judge; evidence collection remains deterministic.
+Phase 9 is complete. The core courtroom MVP now includes public-demo safeguards for a low-cost Vercel Hobby deployment: visible demo boundaries, recommended scenarios, explicit LLM-usage notices, sequential auto-run confirmation, bounded requests, best-effort per-instance rate limits, same-instance duplicate-request protection, friendly errors, and application security headers. The configured Groq or OpenAI provider handles customer decisions, advocates, and judge; retrieval and evidence collection remain deterministic.
 
 ## Available routes
 
@@ -35,6 +35,11 @@ cp .env.example .env.local
 Add server-side values to `.env.local`:
 
 ```dotenv
+DEMO_MODE=true
+SIMULATION_RATE_LIMIT=30
+COURTROOM_RATE_LIMIT=10
+RATE_LIMIT_WINDOW_SECONDS=600
+
 LLM_PROVIDER=groq
 GROQ_API_KEY=
 GROQ_MODEL=openai/gpt-oss-20b
@@ -82,11 +87,26 @@ Tests mock all provider calls and never consume provider credits.
 1. Import the repository into Vercel and keep the detected Next.js preset.
 2. Keep the default `npm run build` command and Node.js 22 runtime.
 3. Set `LLM_PROVIDER` explicitly to `groq` or `openai` for production.
-4. Add only the selected provider's key and model variables as server-side project environment variables.
-5. Do not expose provider variables with a `NEXT_PUBLIC_` prefix.
-6. Deploy on the Hobby plan.
+4. Keep `DEMO_MODE=true` for a public portfolio deployment and set the three server-side application-limit variables.
+5. Add only the selected provider's key and model variables as server-side project environment variables.
+6. Do not expose any of these variables with a `NEXT_PUBLIC_` prefix.
+7. Deploy on the Hobby plan.
 
-The production design uses short Route Handler requests and requires no permanently running backend or Docker runtime.
+The production design uses short Node-compatible Route Handler requests and requires no permanently running backend, writable filesystem, localhost service, database, or Docker runtime. Runs remain in browser localStorage. No `vercel.json` is needed.
+
+## Public demo safeguards
+
+`DEMO_MODE` accepts `true` or `false` and safely defaults to `true` when missing or invalid. Demo mode visibly identifies FlowPilot as fictional, keeps the existing predefined tasks and personas, and does not activate unfinished capabilities. Creating or preselecting a test never invokes a provider.
+
+The three provider-backed routes use fixed-window, dependency-free in-memory limits. Defaults are 30 customer steps and 10 combined advocate/judge generations per client per 10 minutes. On Vercel, the limiter uses Vercel's platform-supplied forwarded address, coarsens it, and stores only a short hash. Without a trusted platform address it falls back to a hashed host/user-agent bucket; raw IP addresses are never persisted.
+
+Rate limiting and the per-run in-flight guard are best-effort protections within one warm server instance. They do not coordinate across Vercel instances, regions, browser tabs routed to different instances, or cold starts. They are cost guardrails, not strong distributed abuse prevention. Every endpoint still validates origin, content type, byte size, schema bounds, trusted source references, completion state, and courtroom freshness before invoking the configured provider.
+
+Provider actions are explicit. One customer step, one advocate, or one judge action makes at most one provider request. Auto-run asks for confirmation, reports the maximum remaining calls, awaits each step sequentially, and stops on completion, failure, budget exhaustion, user stop, reset, refresh, or unmount. SDK retries and provider fallback remain disabled.
+
+All application responses include `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`, and `X-Frame-Options: DENY`. A CSP is intentionally deferred until it can be tested against the deployed Next.js application.
+
+> The MVP uses browser-local persistence and best-effort in-memory application rate limiting to remain infrastructure-free on Vercel Hobby. This minimizes deployment cost and complexity, but it does not provide globally consistent abuse protection across serverless instances. Strong distributed rate limiting should be added only if public traffic requires it.
 
 ## How simulation works
 
@@ -132,6 +152,8 @@ Every judge citation must be unique within its field and resolve to the current 
 
 - The controlled FlowPilot courtroom loop is complete; uploads and arbitrary live-product testing are not available.
 - Runs remain local to one browser and can be lost when browser data is cleared.
+- In-memory demo rate limits reset on cold starts and are not shared globally across serverless instances.
+- Browser-local state and stateless functions cannot perfectly prevent simultaneous cross-tab requests routed to different instances.
 - FlowPilot is the only product, and retrieval is lexical over repository-owned content.
 - There are no uploads, database, authentication, arbitrary URLs, live website controls, browser automation, or external product actions.
 - A real simulation, advocate, or judge call requires valid credentials for the selected provider and a compatible configured model.

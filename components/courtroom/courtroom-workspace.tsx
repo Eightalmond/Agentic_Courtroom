@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import type { EvidenceBundle } from "@/lib/evidence/types";
+import type { DisplayError } from "@/lib/demo/errors";
 import { fingerprintEvidenceBundle } from "@/lib/courtroom/fingerprints";
 import type {
   CourtroomArgumentRecord,
@@ -67,7 +68,7 @@ function ArgumentCard({
   bundle: EvidenceBundle;
   busyRole: CourtroomRole | null;
   controlsDisabled: boolean;
-  error: string | null;
+  error: DisplayError | null;
   onRun(role: CourtroomRole): void;
 }) {
   const copy = roleCopy[role];
@@ -82,18 +83,26 @@ function ArgumentCard({
           <h3 className="mt-2 text-2xl font-bold text-slate-950">{copy.title}</h3>
           {!record && <p className="mt-3 text-sm leading-6 text-slate-600">{copy.description}</p>}
         </div>
-        <button
-          className={`rounded-xl px-4 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 ${copy.button}`}
-          disabled={busyRole !== null || controlsDisabled}
-          onClick={() => onRun(role)}
-          type="button"
-        >
-          {busy ? `Running ${copy.title.toLowerCase()}…` : record ? `Regenerate ${copy.title.toLowerCase()}` : `Run ${copy.title.toLowerCase()}`}
-        </button>
+        <div className="shrink-0 text-right">
+          <button
+            className={`rounded-xl px-4 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 ${copy.button}`}
+            disabled={busyRole !== null || controlsDisabled}
+            onClick={() => onRun(role)}
+            type="button"
+          >
+            {busy ? `Running ${copy.title.toLowerCase()}…` : record ? `Regenerate ${copy.title.toLowerCase()}` : `Run ${copy.title.toLowerCase()}`}
+          </button>
+          <p className="mt-2 text-xs text-slate-500">Uses 1 LLM request</p>
+        </div>
       </div>
 
       {anotherBusy && <p className="mt-4 text-xs text-slate-500">Waiting for the other advocate&apos;s single provider call to finish.</p>}
-      {error && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-900" role="alert">{error}</p>}
+      {error && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-left" role="alert">
+          <p className="text-sm text-red-900">{error.message}</p>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-red-700">{error.code}</p>
+        </div>
+      )}
 
       {record && (
         <div className="mt-6 space-y-6 border-t border-slate-100 pt-6">
@@ -291,8 +300,8 @@ export function CourtroomWorkspace({
   courtroom: CourtroomState;
   busyRole: CourtroomRole | null;
   isJudgeBusy: boolean;
-  judgeError: string | null;
-  errors: Record<CourtroomRole, string | null>;
+  judgeError: DisplayError | null;
+  errors: Record<CourtroomRole, DisplayError | null>;
   onRun(role: CourtroomRole): void;
   onRunJudge(): void;
   taskQuestion: string;
@@ -329,7 +338,12 @@ export function CourtroomWorkspace({
       <div className={`rounded-2xl border p-6 text-center ${judgeEligible ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>
         <p className="text-sm font-bold text-slate-900">{judgeAvailabilityMessage}</p>
         <p className="mt-2 text-xs text-slate-600">Running the judge uses one request from the configured LLM provider. There are no automatic retries or fallback calls.</p>
-        {judgeError && <p className="mx-auto mt-4 max-w-2xl rounded-xl border border-red-200 bg-red-50 p-3 text-left text-sm text-red-900" role="alert">{judgeError}</p>}
+        {judgeError && (
+          <div className="mx-auto mt-4 max-w-2xl rounded-xl border border-red-200 bg-red-50 p-3 text-left" role="alert">
+            <p className="text-sm text-red-900">{judgeError.message}</p>
+            <p className="mt-1 text-xs font-bold uppercase tracking-wide text-red-700">{judgeError.code}</p>
+          </div>
+        )}
         <button className="mt-4 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40" disabled={!judgeEligible || busyRole !== null || isJudgeBusy} onClick={onRunJudge} type="button">
           {isJudgeBusy ? (courtroom.judge ? "Regenerating judge…" : "Running judge…") : courtroom.judge ? "Regenerate judge" : "Run judge"}
         </button>

@@ -38,6 +38,9 @@ export const foundationChecks: readonly FoundationCheck[] = [
   { label: "Deterministic evidence collection", complete: true },
   { label: "Independent courtroom advocates", complete: true },
   { label: "Evidence-grounded judge verdict", complete: true },
+  { label: "Public demo presets and usage visibility", complete: true },
+  { label: "Best-effort provider route limits", complete: true },
+  { label: "Application security headers", complete: true },
 ];
 
 export const futureCapabilities = [

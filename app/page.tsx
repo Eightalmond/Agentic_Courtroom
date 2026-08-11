@@ -6,9 +6,11 @@ import {
   getFoundationProgress,
   workflowSteps,
 } from "@/lib/foundation";
+import { readDemoConfiguration } from "@/lib/demo/environment";
 
 export default function Home() {
   const progress = getFoundationProgress(foundationChecks);
+  const { demoMode } = readDemoConfiguration();
 
   return (
     <main className="min-h-screen overflow-hidden bg-stone-50 text-slate-950">
@@ -22,7 +24,7 @@ export default function Home() {
             <div>
               <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">
                 <span className="h-px w-7 bg-amber-300" />
-                Agentic product testing
+                {demoMode ? "Public portfolio demo" : "Agentic product testing"}
               </p>
               <h1 className="max-w-4xl font-serif text-5xl font-semibold leading-[0.98] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
                 Put the product experience on trial.
@@ -58,7 +60,7 @@ export default function Home() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-7">
               <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Available now · Phase 8</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Available now · Phase 9</p>
                   <p className="mt-2 font-semibold text-slate-100">Run the complete evidence-grounded courtroom</p>
                 </div>
                 <span className="size-2.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.8)]" />
@@ -77,6 +79,31 @@ export default function Home() {
               </ol>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white" aria-labelledby="simulated-title">
+        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:px-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Public demo boundaries</p>
+            <h2 className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]" id="simulated-title">What is simulated?</h2>
+            <p className="mt-4 text-sm leading-6 text-slate-600">FlowPilot is fictional, and every run stays inside its controlled product knowledge. This demo cannot browse or act on a live website.</p>
+          </div>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            {[
+              ["Customer surface", "A controlled FlowPilot knowledge base—not the public web or real website buttons."],
+              ["Retrieval", "Deterministic ranking over repository-owned product sections."],
+              ["LLM work", "Models choose customer actions and generate the two arguments and final verdict."],
+              ["Evidence", "Prepared deterministically from the recorded journey and trusted product sources."],
+              ["Persistence", "Runs live only in this browser and may disappear when browser data is cleared."],
+              ["Deployment", "Short stateless requests, server-side provider secrets, and no production worker."],
+            ].map(([term, description]) => (
+              <div className="rounded-xl border border-slate-200 bg-stone-50 p-4" key={term}>
+                <dt className="text-sm font-bold text-slate-950">{term}</dt>
+                <dd className="mt-2 text-xs leading-5 text-slate-600">{description}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -118,7 +145,7 @@ export default function Home() {
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-50 motion-reduce:animate-none" />
                 <span className="relative inline-flex size-3 rounded-full bg-emerald-500" />
               </span>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status · Phase 8</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status · Phase 9</p>
             </div>
             <h2 id="status-title" className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]">Core courtroom MVP complete</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
@@ -161,7 +188,7 @@ export default function Home() {
 
       <footer className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
         <p>Trial by User · Evidence before opinion.</p>
-        <p>Phase 8 · Core courtroom MVP complete</p>
+        <p>Phase 9 · Public demo hardened for Vercel Hobby</p>
       </footer>
     </main>
   );

@@ -125,15 +125,18 @@
 - The run page displays a prominent verdict, linked citations, findings, side assessments, friction, recommendation, and a compact final report.
 - Automated tests and production builds require no provider credentials.
 
-## Phase 9 — Run visualization (planned)
+## Phase 9 — MVP deployment hardening and demo safeguards (completed)
 
-**Goal:** Make the complete simulation and courtroom process easy to inspect.
+**Goal:** Prepare the completed courtroom MVP for a clear, cost-aware public portfolio deployment on Vercel Hobby.
 
 **Acceptance criteria:**
 
-- Users can follow the run as an ordered timeline.
-- Evidence, arguments, and verdict citations are visibly connected.
-- Loading, failure, partial, and completed states are accessible and responsive.
+- Public demo mode defaults safely, visibly explains the controlled FlowPilot boundary, and offers three valid recommended configurations without starting provider work.
+- Provider-backed controls disclose request usage; auto-run confirms its possible remaining calls and remains strictly sequential and cancellable.
+- Simulation and courtroom Route Handlers enforce same-origin JSON, byte ceilings, nested schema bounds, completed/stale-state rules, best-effort per-client limits, and same-instance duplicate-request guards before provider access.
+- Groq and OpenAI share a centralized bounded timeout, SDK retries and provider fallback remain disabled, and failed regeneration preserves successful browser-local records.
+- Security headers, friendly error messages, Vercel assumptions, environment variables, and the limits of browser-local persistence and in-memory rate limiting are documented.
+- Automated checks, production build, Docker configuration/build, and responsive browser smoke testing pass without provider credentials.
 
 ## Phase 10 — Document and screenshot uploads (planned)
 
@@ -145,23 +148,23 @@
 - Extracted content retains traceable source metadata.
 - Upload storage, retention, and deletion behavior are documented.
 
-## Phase 11 — Public demo protections (planned)
+## Phase 11 — Public traffic scaling (deferred)
 
-**Goal:** Make a public demonstration safe and cost-aware.
-
-**Acceptance criteria:**
-
-- Per-run limits, rate limits, and input limits are enforced server-side.
-- Abuse and error behavior fail safely without exposing secrets.
-- Usage can be observed well enough to protect free-tier limits.
-
-## Phase 12 — Deployment hardening (planned)
-
-**Goal:** Prepare the MVP for reliable Vercel Hobby deployment.
+**Goal:** Add globally consistent abuse protection only if real public traffic requires infrastructure beyond the Phase 9 portfolio safeguards.
 
 **Acceptance criteria:**
 
-- Environment variables, serverless limits, and deployment steps are documented.
-- Critical flows have automated coverage and actionable error reporting.
-- Accessibility, performance, privacy, and security checks are completed.
-- Production requires no permanently running backend process.
+- Traffic evidence demonstrates that best-effort per-instance limits are insufficient.
+- Any distributed limiter has an explicit cost, retention, privacy, and failure-mode review.
+- Stronger protection does not become authentication or broaden the product scope implicitly.
+
+## Phase 12 — Production-scale deployment review (deferred)
+
+**Goal:** Reassess infrastructure only if Trial by User moves beyond a portfolio-scale Vercel Hobby demo.
+
+**Acceptance criteria:**
+
+- Production traffic, persistence, collaboration, retention, and compliance requirements are explicitly defined.
+- Any move beyond browser-local persistence is separately designed and approved.
+- Accessibility, performance, privacy, security, and operational monitoring receive production-scale review.
+- The application remains serverless unless a separately approved requirement proves otherwise.

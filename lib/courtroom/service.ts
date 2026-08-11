@@ -31,22 +31,14 @@ export async function generateCourtroomArgument(
   value: unknown,
   dependencies: CourtroomServiceDependencies = {},
 ): Promise<CourtroomArgumentRecord> {
-  const request = CourtroomArgumentRequestSchema.safeParse(value);
-  if (!request.success) {
-    throw new CourtroomError(
-      "COURTROOM_INVALID_REQUEST",
-      "A run, courtroom role, and valid evidence bundle are required.",
-      400,
-    );
-  }
-
-  const evidenceBundle = revalidateCourtroomEvidence(request.data.evidenceBundle, request.data.runId);
+  const request = validateCourtroomArgumentRequest(value);
+  const evidenceBundle = request.evidenceBundle;
   const provider = (dependencies.createProvider ?? createSimulationProvider)();
-  const prompt = buildCourtroomPrompt(request.data.role, evidenceBundle);
+  const prompt = buildCourtroomPrompt(request.role, evidenceBundle);
   const output = await provider.generateStructured({
     useCase: "courtroom-argument",
     ...prompt,
-    schemaName: `courtroom_${request.data.role}_argument`,
+    schemaName: `courtroom_${request.role}_argument`,
     jsonSchema: COURTROOM_ARGUMENT_JSON_SCHEMA,
     zodSchema: CourtroomArgumentWireSchema,
     maxOutputTokens: 1_400,
@@ -68,7 +60,7 @@ export async function generateCourtroomArgument(
   }
   const argument = validateCourtroomArgument(
     parseCourtroomArgumentWire(wireResult.data),
-    request.data.role,
+    request.role,
     evidenceBundle,
   );
 
@@ -79,11 +71,25 @@ export async function generateCourtroomArgument(
     evidenceBundleId: evidenceBundle.bundleId,
     evidenceBundleVersion: evidenceBundle.version,
     evidenceBundleFingerprint: fingerprintEvidenceBundle(evidenceBundle),
-    role: request.data.role,
+    role: request.role,
   });
 }
 
-function validateJudgeEligibility(value: unknown) {
+export function validateCourtroomArgumentRequest(value: unknown) {
+  const request = CourtroomArgumentRequestSchema.safeParse(value);
+  if (!request.success) {
+    throw new CourtroomError(
+      "COURTROOM_INVALID_REQUEST",
+      "A run, courtroom role, and valid evidence bundle are required.",
+      400,
+    );
+  }
+
+  const evidenceBundle = revalidateCourtroomEvidence(request.data.evidenceBundle, request.data.runId);
+  return { ...request.data, evidenceBundle };
+}
+
+export function validateJudgeEligibility(value: unknown) {
   const request = JudgeVerdictRequestSchema.safeParse(value);
   if (!request.success) {
     throw new CourtroomError(

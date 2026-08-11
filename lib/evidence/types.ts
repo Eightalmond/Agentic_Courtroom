@@ -2,6 +2,7 @@ import type { Confidence, CompletionReason } from "@/lib/simulation/types";
 
 export const EVIDENCE_BUNDLE_VERSION = 1 as const;
 export const MAX_CONTEXT_EVIDENCE = 3;
+export const MAX_EVIDENCE_ITEMS = 80;
 
 export type EvidenceCategory = "journey" | "supporting" | "contradicting" | "context" | "missing";
 export type EvidenceSourceType =
