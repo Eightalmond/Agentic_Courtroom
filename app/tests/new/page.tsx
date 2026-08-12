@@ -11,12 +11,12 @@ export const metadata: Metadata = {
 export default function NewTestPage() {
   const { demoMode } = readDemoConfiguration();
   return (
-    <main className="min-h-screen bg-[#f7f7f5] font-sans text-neutral-950">
-      <header className="border-b border-neutral-200 bg-white">
+    <main className="min-h-screen bg-lab-bg font-sans text-slate-50">
+      <header className="border-b border-lab-border bg-lab-surface">
         <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16 lg:px-10">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">{demoMode ? "Controlled FlowPilot test" : "New evaluation"}</p>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-indigo-300">{demoMode ? "Controlled FlowPilot test" : "New evaluation"}</p>
           <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Configure a customer test</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-600">Choose one scenario, one customer perspective, and a bounded action budget.</p>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-lab-muted">Choose one scenario, one customer perspective, and a bounded action budget.</p>
         </div>
       </header>
 

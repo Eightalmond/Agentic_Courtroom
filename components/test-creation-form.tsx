@@ -110,27 +110,27 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
     <form onSubmit={handleSubmit} noValidate>
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="space-y-8">
-          <section className="border border-neutral-200 bg-white p-5 sm:p-6" aria-labelledby="preset-heading">
+          <section className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-labelledby="preset-heading">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">{demoMode ? "Recommended demos" : "Recommended configurations"}</p>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-indigo-300">{demoMode ? "Recommended demos" : "Recommended configurations"}</p>
                 <h2 id="preset-heading" className="mt-2 text-lg font-semibold tracking-[-0.02em]">Start with a representative test</h2>
               </div>
-              <p className="font-mono text-[0.7rem] text-neutral-500">Selection only · 0 requests</p>
+              <p className="font-mono text-[0.7rem] text-lab-subtle">Selection only · 0 requests</p>
             </div>
-            <div className="mt-5 divide-y divide-neutral-200 border-y border-neutral-200">
+            <div className="mt-5 divide-y divide-lab-border border-y border-lab-border">
               {demoPresets.map((preset) => {
                 const task = getCustomerTask(preset.taskId)!;
                 const persona = getCustomerPersona(preset.personaId)!;
                 return (
                   <article className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={preset.id}>
                     <div>
-                      <p className="text-xs font-medium text-indigo-700">{preset.label}</p>
-                      <h3 className="mt-1 text-sm font-semibold text-neutral-950">{task.title}</h3>
-                      <p className="mt-1 text-xs leading-5 text-neutral-500">{persona.name} · {preset.maxActions} actions · {preset.description}</p>
+                      <p className="text-xs font-medium text-indigo-300">{preset.label}</p>
+                      <h3 className="mt-1 text-sm font-semibold text-slate-100">{task.title}</h3>
+                      <p className="mt-1 text-xs leading-5 text-lab-muted">{persona.name} · {preset.maxActions} actions · {preset.description}</p>
                     </div>
                     <button
-                      className="justify-self-start rounded-md border border-neutral-300 px-3 py-2 text-xs font-medium text-neutral-800 hover:bg-neutral-50 sm:justify-self-auto"
+                      className="justify-self-start rounded-md border border-lab-border bg-lab-elevated px-3 py-2 text-xs font-medium text-slate-200 hover:border-indigo-400 hover:text-white sm:justify-self-auto"
                       onClick={() => applyPreset(preset.taskId, preset.personaId, preset.maxActions)}
                       type="button"
                     >
@@ -142,28 +142,28 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
             </div>
           </section>
 
-          <section className="flex flex-col justify-between gap-4 border-y border-neutral-200 py-5 sm:flex-row sm:items-center" aria-labelledby="product-heading">
+          <section className="flex flex-col justify-between gap-4 border-y border-lab-border py-5 sm:flex-row sm:items-center" aria-labelledby="product-heading">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Product surface</p>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-subtle">Product surface</p>
                 <h2 id="product-heading" className="mt-1 text-base font-semibold">{flowPilotProduct.name}</h2>
-                <p className="mt-1 max-w-2xl text-sm text-neutral-600">Controlled fictional product · ten deterministic knowledge pages</p>
+                <p className="mt-1 max-w-2xl text-sm text-lab-muted">Controlled fictional product · ten deterministic knowledge pages</p>
               </div>
             </div>
-            <Link className="shrink-0 text-sm font-medium text-indigo-700 hover:text-indigo-900" href="/product">Browse knowledge →</Link>
+            <Link className="shrink-0 text-sm font-medium text-indigo-300 hover:text-indigo-200" href="/product">Browse knowledge →</Link>
           </section>
 
-          <fieldset className="border border-neutral-200 bg-white p-5 sm:p-6" aria-describedby={errors.task ? "task-error" : undefined}>
-            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-neutral-950">1 · Scenario</legend>
-            <p className="text-sm leading-6 text-neutral-600">Choose one narrow question for the synthetic customer to investigate.</p>
-            {errors.task && <p id="task-error" role="alert" className="mt-3 text-sm font-semibold text-red-700">{errors.task}</p>}
+          <fieldset className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-describedby={errors.task ? "task-error" : undefined}>
+            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-slate-50">1 · Scenario</legend>
+            <p className="text-sm leading-6 text-lab-muted">Choose one narrow question for the synthetic customer to investigate.</p>
+            {errors.task && <p id="task-error" role="alert" className="mt-3 text-sm font-semibold text-red-400">{errors.task}</p>}
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {customerTasks.map((task) => {
                 const selected = selectedTaskId === task.id;
                 return (
                   <label
-                    className={`relative flex cursor-pointer flex-col border p-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                      selected ? "border-indigo-600 bg-indigo-50/40" : "border-neutral-200 hover:border-neutral-400"
+                    className={`relative flex cursor-pointer flex-col rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-400 focus-within:ring-offset-2 focus-within:ring-offset-lab-surface ${
+                      selected ? "border-indigo-400 bg-indigo-500/10" : "border-lab-border bg-lab-elevated/50 hover:border-slate-500"
                     }`}
                     key={task.id}
                   >
@@ -176,12 +176,12 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
                       onChange={() => selectTask(task.id)}
                     />
                     <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="font-medium text-neutral-500">{task.category}</span>
-                      <span className={`font-mono ${selected ? "text-indigo-700" : "text-neutral-400"}`}>{selected ? "Selected" : task.difficulty}</span>
+                      <span className="font-medium text-lab-muted">{task.category}</span>
+                      <span className={`font-mono ${selected ? "text-indigo-300" : "text-lab-subtle"}`}>{selected ? "✓ Selected" : task.difficulty}</span>
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-neutral-950">{task.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-600">{task.scenario}</p>
-                    <blockquote className="mt-4 border-l border-neutral-300 pl-3 text-sm leading-6 text-neutral-800">
+                    <h3 className="mt-4 text-base font-semibold text-slate-100">{task.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-lab-muted">{task.scenario}</p>
+                    <blockquote className="mt-4 border-l border-indigo-400/60 pl-3 text-sm leading-6 text-slate-300">
                       “{task.question}”
                     </blockquote>
                   </label>
@@ -190,17 +190,17 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
             </div>
           </fieldset>
 
-          <fieldset className="border border-neutral-200 bg-white p-5 sm:p-6" aria-describedby={errors.persona ? "persona-error" : undefined}>
-            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-neutral-950">2 · Persona</legend>
-            <p className="text-sm leading-6 text-neutral-600">Choose how the customer approaches the product record.</p>
-            {errors.persona && <p id="persona-error" role="alert" className="mt-3 text-sm font-semibold text-red-700">{errors.persona}</p>}
+          <fieldset className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-describedby={errors.persona ? "persona-error" : undefined}>
+            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-slate-50">2 · Persona</legend>
+            <p className="text-sm leading-6 text-lab-muted">Choose how the customer approaches the product record.</p>
+            {errors.persona && <p id="persona-error" role="alert" className="mt-3 text-sm font-semibold text-red-400">{errors.persona}</p>}
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {customerPersonas.map((persona) => {
                 const selected = selectedPersonaId === persona.id;
                 return (
                   <label
-                    className={`relative flex cursor-pointer flex-col border p-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 ${
-                      selected ? "border-indigo-600 bg-indigo-50/40" : "border-neutral-200 hover:border-neutral-400"
+                    className={`relative flex cursor-pointer flex-col rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-400 focus-within:ring-offset-2 focus-within:ring-offset-lab-surface ${
+                      selected ? "border-indigo-400 bg-indigo-500/10" : "border-lab-border bg-lab-elevated/50 hover:border-slate-500"
                     }`}
                     key={persona.id}
                   >
@@ -213,12 +213,12 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
                       onChange={() => selectPersona(persona.id)}
                     />
                     <div className="flex items-start justify-between gap-4 text-xs">
-                      <span className="font-mono text-neutral-400">{persona.visualLabel}</span>
-                      <span className={selected ? "font-mono text-indigo-700" : "font-mono text-neutral-400"}>{selected ? "Selected" : `${persona.defaultMaxActions} actions`}</span>
+                      <span className="font-mono text-lab-subtle">{persona.visualLabel}</span>
+                      <span className={selected ? "font-mono text-indigo-300" : "font-mono text-lab-subtle"}>{selected ? "✓ Selected" : `${persona.defaultMaxActions} actions`}</span>
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-neutral-950">{persona.name}</h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-600">{persona.description}</p>
-                    <ul className="mt-3 space-y-1 text-xs leading-5 text-neutral-500">
+                    <h3 className="mt-4 text-base font-semibold text-slate-100">{persona.name}</h3>
+                    <p className="mt-2 text-sm leading-6 text-lab-muted">{persona.description}</p>
+                    <ul className="mt-3 space-y-1 text-xs leading-5 text-lab-subtle">
                       {persona.traits.map((trait) => <li key={trait}>• {trait}</li>)}
                     </ul>
                   </label>
@@ -227,57 +227,57 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
             </div>
           </fieldset>
 
-          <section className="border border-neutral-200 bg-white p-5 sm:p-6" aria-labelledby="action-heading">
-            <h2 id="action-heading" className="text-lg font-semibold tracking-[-0.02em] text-neutral-950">3 · Action budget</h2>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">Set the maximum number of successful customer actions.</p>
+          <section className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-labelledby="action-heading">
+            <h2 id="action-heading" className="text-lg font-semibold tracking-[-0.02em] text-slate-50">3 · Action budget</h2>
+            <p className="mt-2 text-sm leading-6 text-lab-muted">Set the maximum number of successful customer actions.</p>
             <div className="mt-5 max-w-sm">
-              <label className="text-sm font-medium text-neutral-900" htmlFor="max-actions">Maximum actions</label>
+              <label className="text-sm font-medium text-slate-200" htmlFor="max-actions">Maximum actions</label>
               <select
                 id="max-actions"
-                className="mt-2 block w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-950"
+                className="mt-2 block w-full rounded-md border border-lab-border bg-lab-elevated px-3 py-2.5 text-sm text-slate-100"
                 value={maxActions}
                 onChange={(event) => updateActionLimit(Number(event.target.value))}
                 aria-describedby={`action-help${errors.actions ? " action-error" : ""}`}
               >
                 {actionOptions.map((value) => <option key={value} value={value}>{value} actions</option>)}
               </select>
-              <p id="action-help" className="mt-2 text-xs leading-5 text-neutral-500">
+              <p id="action-help" className="mt-2 text-xs leading-5 text-lab-subtle">
                 Persona defaults apply until you deliberately choose a value.
               </p>
-              {errors.actions && <p id="action-error" role="alert" className="mt-2 text-sm font-semibold text-red-700">{errors.actions}</p>}
+              {errors.actions && <p id="action-error" role="alert" className="mt-2 text-sm font-semibold text-red-400">{errors.actions}</p>}
             </div>
           </section>
         </div>
 
-        <aside className="border border-neutral-300 bg-white p-5 lg:sticky lg:top-6" aria-labelledby="summary-heading">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Configuration</p>
+        <aside className="rounded-lg border border-lab-border bg-lab-elevated p-5 shadow-[0_18px_60px_rgba(0,0,0,0.14)] lg:sticky lg:top-6" aria-labelledby="summary-heading">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-indigo-300">Configuration</p>
           <h2 id="summary-heading" className="mt-2 text-lg font-semibold">Review test</h2>
-          <dl className="mt-5 divide-y divide-neutral-200 border-y border-neutral-200">
+          <dl className="mt-5 divide-y divide-lab-border border-y border-lab-border">
             <div>
-              <dt className="pt-3 text-xs text-neutral-500">Product</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-neutral-950">FlowPilot</dd>
+              <dt className="pt-3 text-xs text-lab-subtle">Product</dt>
+              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">FlowPilot</dd>
             </div>
             <div>
-              <dt className="pt-3 text-xs text-neutral-500">Scenario</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-neutral-950">{selectedTask?.title ?? "Not selected"}</dd>
+              <dt className="pt-3 text-xs text-lab-subtle">Scenario</dt>
+              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">{selectedTask?.title ?? "Not selected"}</dd>
             </div>
             <div>
-              <dt className="pt-3 text-xs text-neutral-500">Persona</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-neutral-950">{selectedPersona?.name ?? "Not selected"}</dd>
+              <dt className="pt-3 text-xs text-lab-subtle">Persona</dt>
+              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">{selectedPersona?.name ?? "Not selected"}</dd>
             </div>
             <div>
-              <dt className="pt-3 text-xs text-neutral-500">Action budget</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-neutral-950">{maxActions} actions</dd>
+              <dt className="pt-3 text-xs text-lab-subtle">Action budget</dt>
+              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">{maxActions} actions</dd>
             </div>
           </dl>
-          <div className="mt-5 border-l-2 border-neutral-300 pl-3 text-xs leading-5 text-neutral-600">
+          <div className="mt-5 border-l-2 border-indigo-400/70 pl-3 text-xs leading-5 text-lab-muted">
             Creating this test saves a ready configuration in this browser. The run begins only when you explicitly start the simulation.
           </div>
-          {errors.storage && <p role="alert" className="mt-4 text-sm font-semibold leading-6 text-red-700">{errors.storage}</p>}
-          <button className="mt-6 w-full rounded-md bg-neutral-950 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800" type="submit">
+          {errors.storage && <p role="alert" className="mt-4 text-sm font-semibold leading-6 text-red-400">{errors.storage}</p>}
+          <button className="mt-6 w-full rounded-md bg-indigo-500 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-600" type="submit">
             Create test
           </button>
-          <p className="mt-3 text-center font-mono text-[0.7rem] text-neutral-400">Saved to this browser</p>
+          <p className="mt-3 text-center font-mono text-[0.7rem] text-lab-subtle">Saved to this browser</p>
         </aside>
       </div>
     </form>

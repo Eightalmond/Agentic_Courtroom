@@ -18,11 +18,11 @@ const filters: readonly { id: EvidenceFilter; label: string }[] = [
 ];
 
 const categoryStyles: Record<EvidenceCategory, string> = {
-  journey: "text-neutral-600",
-  supporting: "text-emerald-700",
-  contradicting: "text-red-700",
-  context: "text-blue-700",
-  missing: "text-amber-800",
+  journey: "text-teal-300",
+  supporting: "text-emerald-300",
+  contradicting: "text-red-300",
+  context: "text-sky-300",
+  missing: "text-amber-300",
 };
 
 function matchesFilter(item: EvidenceItem, filter: EvidenceFilter) {
@@ -48,19 +48,21 @@ export function EvidenceWorkspace({
 }) {
   const [filter, setFilter] = useState<EvidenceFilter>("all");
   const visibleEvidence = bundle.evidenceItems.filter((item) => matchesFilter(item, filter));
+  const customerSeenCount = bundle.evidenceItems.filter((item) => item.customerSaw).length;
 
   return (
     <section className="space-y-5" aria-labelledby="evidence-workspace-title">
-      <div className="border border-neutral-200 bg-white p-5 sm:p-7">
+      <div className="rounded-lg border border-teal-400/30 bg-lab-elevated p-5 shadow-[0_0_45px_rgba(20,184,166,0.05)] sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Prepared evidence</p>
-            <h2 id="evidence-workspace-title" className="mt-2 text-xl font-semibold tracking-[-0.02em]">Evidence record</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-600">{bundle.journeySummary}</p>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-teal-300">Evidence</p>
+            <h2 id="evidence-workspace-title" className="mt-2 text-xl font-semibold tracking-[-0.02em]">Research record</h2>
+            <p className="mt-2 font-mono text-[0.7rem] text-teal-200/80">{bundle.evidenceItems.length} items · {customerSeenCount} seen · {bundle.coverage.context} context · {bundle.coverage.missing} missing</p>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-lab-muted">{bundle.journeySummary}</p>
           </div>
           {onRebuild && (
             <button
-              className="rounded-md border border-neutral-300 px-3.5 py-2 text-sm font-medium text-neutral-700 disabled:opacity-50"
+              className="rounded-md border border-lab-border bg-lab-surface px-3.5 py-2 text-sm font-medium text-slate-300 hover:border-teal-400/60 hover:text-teal-200 disabled:opacity-50"
               disabled={isRebuilding}
               onClick={onRebuild}
               type="button"
@@ -70,7 +72,7 @@ export function EvidenceWorkspace({
           )}
         </div>
 
-        <dl className="mt-6 grid grid-cols-2 gap-px border border-neutral-200 bg-neutral-200 sm:grid-cols-3 lg:grid-cols-6">
+        <dl className="mt-6 grid grid-cols-2 gap-x-5 gap-y-4 border-t border-lab-border pt-5 sm:grid-cols-3 lg:grid-cols-6">
           {[
             ["Outcome", outcomeLabel(bundle)],
             ["Actions", bundle.integrity.actionsProcessed],
@@ -79,26 +81,26 @@ export function EvidenceWorkspace({
             ["Required seen", bundle.coverage.requiredEvidenceSeen],
             ["Required missing", bundle.coverage.requiredEvidenceMissing],
           ].map(([label, value]) => (
-            <div className="min-w-0 bg-white p-3" key={label}>
-              <dt className="text-[0.68rem] text-neutral-400">{label}</dt>
-              <dd className="mt-2 break-words text-sm font-medium text-neutral-900">{value}</dd>
+            <div className="min-w-0" key={label}>
+              <dt className="text-[0.68rem] text-lab-subtle">{label}</dt>
+              <dd className="mt-1 break-words text-sm font-medium text-slate-200">{value}</dd>
             </div>
           ))}
         </dl>
 
         {(bundle.customerFinalAnswer || bundle.giveUpReason) && (
-          <div className="mt-6 border-t border-neutral-200 pt-5">
-            <p className="text-xs font-medium text-neutral-400">
+          <div className="mt-6 border-t border-lab-border pt-5">
+            <p className="text-xs font-medium text-lab-subtle">
               {bundle.customerFinalAnswer ? "Final customer answer" : "Give-up reason"}
             </p>
-            <p className="mt-2 text-sm leading-6 text-neutral-700">{bundle.customerFinalAnswer ?? bundle.giveUpReason}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-300">{bundle.customerFinalAnswer ?? bundle.giveUpReason}</p>
           </div>
         )}
       </div>
 
-      <div className="border border-neutral-200 bg-white p-5 sm:p-7">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Coverage · not a verdict</p>
-        <div className="mt-5 grid grid-cols-2 gap-px border border-neutral-200 bg-neutral-200 sm:grid-cols-5">
+      <div className="px-1 py-3 sm:px-2">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-subtle">Coverage · not a verdict</p>
+        <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-5">
           {([
             ["Journey", bundle.coverage.journey],
             ["Supporting", bundle.coverage.supporting],
@@ -106,27 +108,27 @@ export function EvidenceWorkspace({
             ["Context", bundle.coverage.context],
             ["Missing", bundle.coverage.missing],
           ] as const).map(([label, count]) => (
-            <div className="bg-white p-4" key={label}>
-              <p className="font-mono text-xl text-neutral-950">{count}</p>
-              <p className="mt-1 text-xs text-neutral-500">{label}</p>
+            <div className="border-t border-lab-border pt-3" key={label}>
+              <p className="font-mono text-xl text-slate-100">{count}</p>
+              <p className="mt-1 text-xs text-lab-muted">{label}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="border border-neutral-200 bg-white p-5 sm:p-7">
+      <div className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Source-traceable bundle</p>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-teal-300">Source-traceable bundle</p>
             <h3 className="mt-2 text-xl font-semibold">Evidence list</h3>
           </div>
-          <p className="font-mono text-xs text-neutral-500">{visibleEvidence.length} shown</p>
+          <p className="font-mono text-xs text-lab-subtle">{visibleEvidence.length} shown</p>
         </div>
-        <div className="mt-5 flex flex-wrap gap-2" aria-label="Filter evidence">
+        <div className="mt-5 flex max-w-full gap-1 overflow-x-auto border-b border-lab-border" aria-label="Filter evidence">
           {filters.map((option) => (
             <button
               aria-pressed={filter === option.id}
-              className={`border-b-2 px-2 py-2 text-xs font-medium ${filter === option.id ? "border-indigo-600 text-neutral-950" : "border-transparent text-neutral-500 hover:text-neutral-900"}`}
+              className={`shrink-0 border-b-2 px-2 py-2 text-xs font-medium ${filter === option.id ? "border-teal-400 text-teal-200" : "border-transparent text-lab-muted hover:text-slate-200"}`}
               key={option.id}
               onClick={() => setFilter(option.id)}
               type="button"
@@ -135,46 +137,46 @@ export function EvidenceWorkspace({
             </button>
           ))}
         </div>
-        <ol className="mt-5 divide-y divide-neutral-200 border-y border-neutral-200">
+        <ol className="mt-5 divide-y divide-lab-border border-y border-lab-border">
           {visibleEvidence.map((item) => (
             <li className="py-5" key={item.evidenceId}>
               <div className="flex flex-wrap items-center gap-3 font-mono text-[0.7rem]">
                 <span className={`font-medium capitalize ${categoryStyles[item.category]}`}>{item.category}</span>
-                <span className="text-neutral-400">
+                <span className="text-lab-subtle">
                   {item.customerSaw ? `Customer saw${item.firstExposedByAction ? ` · Action ${item.firstExposedByAction}` : ""}` : "Customer did not see"}
                 </span>
               </div>
-              <h4 className="mt-3 text-sm font-semibold text-neutral-950">{item.pageTitle}{item.sectionTitle ? ` · ${item.sectionTitle}` : ""}</h4>
-              <p className="mt-2 text-sm leading-6 text-neutral-700">{item.excerpt}</p>
-              <p className="mt-2 text-xs leading-5 text-neutral-500">{item.relevanceReason}</p>
-              <Link className="mt-3 inline-block text-sm font-medium text-indigo-700 hover:text-indigo-900" href={`/product/${item.pageSlug}`}>
+              <h4 className="mt-3 text-sm font-semibold text-slate-100">{item.pageTitle}{item.sectionTitle ? ` · ${item.sectionTitle}` : ""}</h4>
+              <blockquote className="mt-3 border-l border-teal-400/40 pl-4 text-sm leading-6 text-slate-300">{item.excerpt}</blockquote>
+              <p className="mt-3 text-xs leading-5 text-lab-subtle">{item.relevanceReason}</p>
+              <Link className="mt-3 inline-block text-sm font-medium text-teal-300 hover:text-teal-200" href={`/product/${item.pageSlug}`}>
                 Open FlowPilot source →
               </Link>
             </li>
           ))}
         </ol>
-        {visibleEvidence.length === 0 && <p className="mt-6 bg-neutral-50 p-5 text-sm text-neutral-500">No evidence matches this filter.</p>}
+        {visibleEvidence.length === 0 && <p className="mt-6 bg-lab-elevated p-5 text-sm text-lab-muted">No evidence matches this filter.</p>}
       </div>
 
-      <div className="border border-neutral-200 bg-neutral-50 p-5 sm:p-7">
-        <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Mechanical checks</p>
-        <h3 className="mt-2 text-lg font-semibold text-neutral-950">Bounded fact checks</h3>
-        <p className="mt-2 text-sm leading-6 text-neutral-600">Deterministic preparation signals, not the final verdict.</p>
-        <div className="mt-5 divide-y divide-neutral-200 border-y border-neutral-200">
+      <div className="border-l-2 border-teal-400/40 bg-lab-surface/60 p-5 sm:p-7">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-subtle">Mechanical checks</p>
+        <h3 className="mt-2 text-lg font-semibold text-slate-100">Bounded fact checks</h3>
+        <p className="mt-2 text-sm leading-6 text-lab-muted">Deterministic preparation signals, not the final verdict.</p>
+        <div className="mt-5 divide-y divide-lab-border border-y border-lab-border">
           {bundle.factChecks.map((check) => (
             <article className="py-5" key={check.id}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h4 className="text-sm font-semibold text-neutral-950">{check.name}</h4>
-                <span className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-neutral-600">{check.result}</span>
+                <h4 className="text-sm font-semibold text-slate-100">{check.name}</h4>
+                <span className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-teal-300">{check.result}</span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-neutral-700">{check.explanation}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-300">{check.explanation}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 {check.sourceSectionIds.map((sectionId) => {
                   const source = getSectionById(sectionId);
-                  return source ? <Link className="font-medium text-indigo-700 underline decoration-indigo-200" href={`/product/${source.pageSlug}`} key={sectionId}>{source.pageTitle} · {source.sectionTitle}</Link> : null;
+                  return source ? <Link className="font-medium text-teal-300 underline decoration-teal-500/40" href={`/product/${source.pageSlug}`} key={sectionId}>{source.pageTitle} · {source.sectionTitle}</Link> : null;
                 })}
               </div>
-              <p className="mt-3 text-xs leading-5 text-neutral-500">Limitation: {check.limitation}</p>
+              <p className="mt-3 text-xs leading-5 text-lab-subtle">Limitation: {check.limitation}</p>
             </article>
           ))}
         </div>
