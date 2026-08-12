@@ -1,13 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf9;
-  --foreground: #0f172a;
+  --background: #f5f2ea;
+  --foreground: #1f2321;
+  --surface: #fbfaf6;
+  --surface-elevated: #ffffff;
+  --muted: #5f665f;
+  --subtle: #6b726b;
+  --border: #d8d4c8;
+  --border-strong: #c8c2b5;
+  --accent: #2f6b57;
+  --accent-hover: #285a49;
+  --accent-soft: #e3ece7;
+  --customer: #4f6f63;
+  --evidence: #47745b;
+  --prosecutor: #a94c30;
+  --defense: #4e6e81;
+  --judge: #8a6a3f;
+  --success: #3f7d5a;
+  --warning: #936115;
+  --error: #b84a3a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-lab-bg: var(--background);
+  --color-lab-surface: var(--surface);
+  --color-lab-elevated: var(--surface-elevated);
+  --color-lab-muted: var(--muted);
+  --color-lab-subtle: var(--subtle);
+  --color-lab-border: var(--border);
+  --color-lab-border-strong: var(--border-strong);
+  --color-lab-accent: var(--accent);
+  --color-lab-accent-hover: var(--accent-hover);
+  --color-lab-accent-soft: var(--accent-soft);
+  --color-lab-customer: var(--customer);
+  --color-lab-evidence: var(--evidence);
+  --color-lab-prosecutor: var(--prosecutor);
+  --color-lab-defense: var(--defense);
+  --color-lab-judge: var(--judge);
+  --color-lab-success: var(--success);
+  --color-lab-warning: var(--warning);
+  --color-lab-error: var(--error);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -24,7 +59,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 @layer base {
@@ -45,11 +80,11 @@ body {
 }
 
 ::selection {
-  background: #fde68a;
-  color: #0f172a;
+  background: var(--accent-soft);
+  color: var(--foreground);
 }
 
 :focus-visible {
-  outline: 3px solid #f59e0b;
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }

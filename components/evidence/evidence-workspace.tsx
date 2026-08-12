@@ -18,11 +18,11 @@ const filters: readonly { id: EvidenceFilter; label: string }[] = [
 ];
 
 const categoryStyles: Record<EvidenceCategory, string> = {
-  journey: "bg-slate-100 text-slate-700",
-  supporting: "bg-emerald-100 text-emerald-800",
-  contradicting: "bg-red-100 text-red-800",
-  context: "bg-sky-100 text-sky-800",
-  missing: "bg-amber-100 text-amber-900",
+  journey: "text-lab-evidence",
+  supporting: "text-lab-success",
+  contradicting: "text-lab-error",
+  context: "text-lab-defense",
+  missing: "text-lab-warning",
 };
 
 function matchesFilter(item: EvidenceItem, filter: EvidenceFilter) {
@@ -48,19 +48,21 @@ export function EvidenceWorkspace({
 }) {
   const [filter, setFilter] = useState<EvidenceFilter>("all");
   const visibleEvidence = bundle.evidenceItems.filter((item) => matchesFilter(item, filter));
+  const customerSeenCount = bundle.evidenceItems.filter((item) => item.customerSaw).length;
 
   return (
-    <section className="space-y-6" aria-labelledby="evidence-workspace-title">
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-white sm:p-8">
+    <section className="space-y-5" aria-labelledby="evidence-workspace-title">
+      <div className="rounded-lg border border-lab-evidence/40 bg-lab-elevated p-5 shadow-[0_1px_2px_rgba(31,35,33,0.05)] sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Phase 6 · Prepared evidence</p>
-            <h2 id="evidence-workspace-title" className="mt-3 font-serif text-3xl font-semibold">Evidence workspace</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">{bundle.journeySummary}</p>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-evidence">Evidence</p>
+            <h2 id="evidence-workspace-title" className="mt-2 text-xl font-semibold tracking-[-0.02em]">Research record</h2>
+            <p className="mt-2 font-mono text-[0.7rem] text-lab-evidence">{bundle.evidenceItems.length} items · {customerSeenCount} seen · {bundle.coverage.context} context · {bundle.coverage.missing} missing</p>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-lab-muted">{bundle.journeySummary}</p>
           </div>
           {onRebuild && (
             <button
-              className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-lab-border bg-lab-surface px-3.5 py-2 text-sm font-medium text-foreground hover:border-lab-evidence hover:bg-lab-accent-soft hover:text-lab-accent disabled:opacity-50"
               disabled={isRebuilding}
               onClick={onRebuild}
               type="button"
@@ -70,7 +72,7 @@ export function EvidenceWorkspace({
           )}
         </div>
 
-        <dl className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <dl className="mt-6 grid grid-cols-2 gap-x-5 gap-y-4 border-t border-lab-border pt-5 sm:grid-cols-3 lg:grid-cols-6">
           {[
             ["Outcome", outcomeLabel(bundle)],
             ["Actions", bundle.integrity.actionsProcessed],
@@ -79,26 +81,26 @@ export function EvidenceWorkspace({
             ["Required seen", bundle.coverage.requiredEvidenceSeen],
             ["Required missing", bundle.coverage.requiredEvidenceMissing],
           ].map(([label, value]) => (
-            <div className="min-w-0 rounded-xl bg-white/[0.07] p-3" key={label}>
-              <dt className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-slate-400">{label}</dt>
-              <dd className="mt-2 break-words text-sm font-bold text-white">{value}</dd>
+            <div className="min-w-0" key={label}>
+              <dt className="text-[0.68rem] text-lab-subtle">{label}</dt>
+              <dd className="mt-1 break-words text-sm font-medium text-foreground">{value}</dd>
             </div>
           ))}
         </dl>
 
         {(bundle.customerFinalAnswer || bundle.giveUpReason) && (
-          <div className="mt-6 border-t border-white/10 pt-5">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+          <div className="mt-6 border-t border-lab-border pt-5">
+            <p className="text-xs font-medium text-lab-subtle">
               {bundle.customerFinalAnswer ? "Final customer answer" : "Give-up reason"}
             </p>
-            <p className="mt-2 text-sm leading-6 text-slate-200">{bundle.customerFinalAnswer ?? bundle.giveUpReason}</p>
+            <p className="mt-2 text-sm leading-6 text-lab-muted">{bundle.customerFinalAnswer ?? bundle.giveUpReason}</p>
           </div>
         )}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Evidence coverage · No verdict</p>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
+      <div className="px-1 py-3 sm:px-2">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-subtle">Coverage · not a verdict</p>
+        <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-5">
           {([
             ["Journey", bundle.coverage.journey],
             ["Supporting", bundle.coverage.supporting],
@@ -106,27 +108,27 @@ export function EvidenceWorkspace({
             ["Context", bundle.coverage.context],
             ["Missing", bundle.coverage.missing],
           ] as const).map(([label, count]) => (
-            <div className="rounded-xl border border-slate-200 p-4" key={label}>
-              <p className="text-2xl font-bold text-slate-950">{count}</p>
-              <p className="mt-1 text-xs font-semibold text-slate-500">{label}</p>
+            <div className="border-t border-lab-border pt-3" key={label}>
+              <p className="font-mono text-xl text-foreground">{count}</p>
+              <p className="mt-1 text-xs text-lab-muted">{label}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+      <div className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Source-traceable bundle</p>
-            <h3 className="mt-2 text-2xl font-bold">Evidence list</h3>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-evidence">Source-traceable bundle</p>
+            <h3 className="mt-2 text-xl font-semibold">Evidence list</h3>
           </div>
-          <p className="text-sm font-semibold text-slate-500">{visibleEvidence.length} shown</p>
+          <p className="font-mono text-xs text-lab-subtle">{visibleEvidence.length} shown</p>
         </div>
-        <div className="mt-5 flex flex-wrap gap-2" aria-label="Filter evidence">
+        <div className="mt-5 flex max-w-full gap-1 overflow-x-auto border-b border-lab-border" aria-label="Filter evidence">
           {filters.map((option) => (
             <button
               aria-pressed={filter === option.id}
-              className={`rounded-full px-3 py-2 text-xs font-bold ${filter === option.id ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-600"}`}
+              className={`shrink-0 border-b-2 px-2 py-2 text-xs font-medium ${filter === option.id ? "border-lab-evidence text-lab-accent" : "border-transparent text-lab-muted hover:text-foreground"}`}
               key={option.id}
               onClick={() => setFilter(option.id)}
               type="button"
@@ -135,46 +137,46 @@ export function EvidenceWorkspace({
             </button>
           ))}
         </div>
-        <ol className="mt-6 space-y-4">
+        <ol className="mt-5 divide-y divide-lab-border border-y border-lab-border">
           {visibleEvidence.map((item) => (
-            <li className="rounded-2xl border border-slate-200 p-5" key={item.evidenceId}>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className={`rounded-full px-2.5 py-1 text-xs font-bold capitalize ${categoryStyles[item.category]}`}>{item.category}</span>
-                <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500">
+            <li className="py-5" key={item.evidenceId}>
+              <div className="flex flex-wrap items-center gap-3 font-mono text-[0.7rem]">
+                <span className={`font-medium capitalize ${categoryStyles[item.category]}`}>{item.category}</span>
+                <span className="text-lab-subtle">
                   {item.customerSaw ? `Customer saw${item.firstExposedByAction ? ` · Action ${item.firstExposedByAction}` : ""}` : "Customer did not see"}
                 </span>
               </div>
-              <h4 className="mt-3 font-bold text-slate-950">{item.pageTitle}{item.sectionTitle ? ` · ${item.sectionTitle}` : ""}</h4>
-              <p className="mt-3 text-sm leading-6 text-slate-700">{item.excerpt}</p>
-              <p className="mt-3 text-xs leading-5 text-slate-500">{item.relevanceReason}</p>
-              <Link className="mt-4 inline-block text-sm font-bold text-amber-800 hover:text-amber-950" href={`/product/${item.pageSlug}`}>
+              <h4 className="mt-3 text-sm font-semibold text-foreground">{item.pageTitle}{item.sectionTitle ? ` · ${item.sectionTitle}` : ""}</h4>
+              <blockquote className="mt-3 border-l border-lab-evidence pl-4 text-sm leading-6 text-lab-muted">{item.excerpt}</blockquote>
+              <p className="mt-3 text-xs leading-5 text-lab-subtle">{item.relevanceReason}</p>
+              <Link className="mt-3 inline-block text-sm font-medium text-lab-accent hover:text-lab-accent-hover" href={`/product/${item.pageSlug}`}>
                 Open FlowPilot source →
               </Link>
             </li>
           ))}
         </ol>
-        {visibleEvidence.length === 0 && <p className="mt-6 rounded-xl bg-slate-50 p-5 text-sm text-slate-500">No evidence matches this filter.</p>}
+        {visibleEvidence.length === 0 && <p className="mt-6 bg-lab-elevated p-5 text-sm text-lab-muted">No evidence matches this filter.</p>}
       </div>
 
-      <div className="rounded-2xl border border-sky-200 bg-sky-50 p-6 sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-800">Mechanical evidence check</p>
-        <h3 className="mt-2 text-2xl font-bold text-slate-950">Bounded fact checks</h3>
-        <p className="mt-3 text-sm leading-6 text-slate-700">These checks prepare evidence for the courtroom. They are deterministic rules, not the final verdict.</p>
-        <div className="mt-5 space-y-4">
+      <div className="border-l-2 border-lab-evidence bg-lab-surface/60 p-5 sm:p-7">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-subtle">Mechanical checks</p>
+        <h3 className="mt-2 text-lg font-semibold text-foreground">Bounded fact checks</h3>
+        <p className="mt-2 text-sm leading-6 text-lab-muted">Deterministic preparation signals, not the final verdict.</p>
+        <div className="mt-5 divide-y divide-lab-border border-y border-lab-border">
           {bundle.factChecks.map((check) => (
-            <article className="rounded-xl border border-sky-200 bg-white p-5" key={check.id}>
+            <article className="py-5" key={check.id}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h4 className="font-bold text-slate-950">{check.name}</h4>
-                <span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] text-sky-900">{check.result}</span>
+                <h4 className="text-sm font-semibold text-foreground">{check.name}</h4>
+                <span className="font-mono text-[0.7rem] uppercase tracking-[0.08em] text-lab-evidence">{check.result}</span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-700">{check.explanation}</p>
+              <p className="mt-3 text-sm leading-6 text-lab-muted">{check.explanation}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 {check.sourceSectionIds.map((sectionId) => {
                   const source = getSectionById(sectionId);
-                  return source ? <Link className="font-bold text-sky-800 underline decoration-sky-300" href={`/product/${source.pageSlug}`} key={sectionId}>{source.pageTitle} · {source.sectionTitle}</Link> : null;
+                  return source ? <Link className="font-medium text-lab-accent underline decoration-lab-evidence/40" href={`/product/${source.pageSlug}`} key={sectionId}>{source.pageTitle} · {source.sectionTitle}</Link> : null;
                 })}
               </div>
-              <p className="mt-3 text-xs leading-5 text-slate-500">Limitation: {check.limitation}</p>
+              <p className="mt-3 text-xs leading-5 text-lab-subtle">Limitation: {check.limitation}</p>
             </article>
           ))}
         </div>

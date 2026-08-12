@@ -59,25 +59,25 @@ function observationSummary(observation: SimulationObservation) {
 
 function ActionTimeline({ actions }: { actions: readonly SimulationActionEntry[] }) {
   if (actions.length === 0) {
-    return <p className="rounded-xl border border-dashed border-slate-300 px-5 py-8 text-center text-sm text-slate-500">No customer actions yet.</p>;
+    return <p className="rounded-md border border-dashed border-lab-border px-5 py-8 text-center text-sm text-lab-muted">No customer actions yet.</p>;
   }
 
   return (
-    <ol className="space-y-4">
+    <ol className="border-y border-lab-border">
       {actions.map((action) => (
-        <li className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-3" key={action.id}>
-          <span className={`grid size-9 place-items-center rounded-full font-mono text-xs font-bold ${action.success ? "bg-slate-950 text-amber-300" : "bg-red-100 text-red-700"}`}>
-            {action.number}
+        <li className="grid grid-cols-[2.5rem_minmax(0,1fr)] border-b border-lab-border py-5 last:border-b-0" key={action.id}>
+          <span className={`pt-0.5 font-mono text-xs ${action.success ? "text-lab-subtle" : "text-lab-warning"}`}>
+            {String(action.number).padStart(2, "0")}
           </span>
-          <article className={`rounded-2xl border bg-white p-5 ${action.success ? "border-slate-200" : "border-red-200"}`}>
+          <article className={`border-l-2 pl-4 ${action.success ? "border-lab-customer" : "border-lab-warning bg-lab-warning/[0.06] py-2 pr-2"}`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs font-bold text-slate-700">{action.type}</span>
-              <time className="text-xs text-slate-400">{formatDateTime(action.timestamp)}</time>
+              <span className={`font-mono text-xs font-medium ${action.success ? "text-lab-customer" : "text-lab-warning"}`}>{action.type}</span>
+              <time className="font-mono text-[0.7rem] text-lab-subtle">{formatDateTime(action.timestamp)}</time>
             </div>
-            <p className="mt-3 text-sm font-semibold leading-6 text-slate-900">{action.explanation}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{observationSummary(action.observation)}</p>
+            <p className="mt-2 text-sm font-medium leading-6 text-foreground">{action.explanation}</p>
+            <p className="mt-1 text-sm leading-6 text-lab-muted">{observationSummary(action.observation)}</p>
             {action.observation.kind === "search" && action.observation.results.length > 0 && (
-              <ul className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
+              <ul className="mt-3 space-y-1 border-l border-lab-border pl-3 text-xs leading-5 text-lab-subtle">
                 {action.observation.results.map((result) => <li key={result.sectionId}>{result.pageTitle} · {result.sectionTitle}</li>)}
               </ul>
             )}
@@ -93,18 +93,18 @@ function CurrentContent({ run }: { run: TestRun }) {
   const page = getProductPage(section?.pageSlug ?? run.currentPageSlug ?? "");
 
   if (!page) {
-    return <p className="rounded-xl border border-dashed border-slate-300 px-5 py-8 text-center text-sm text-slate-500">The customer has not opened product content yet.</p>;
+    return <p className="rounded-md border border-dashed border-lab-border px-5 py-8 text-center text-sm text-lab-muted">The customer has not opened product content yet.</p>;
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">{section ? "Current section" : "Current page"}</p>
-      <h3 className="mt-2 text-lg font-bold text-slate-950">{page.title}{section ? ` / ${section.sectionTitle}` : ""}</h3>
-      <p className="mt-3 text-sm leading-6 text-slate-600">{section?.sectionBody ?? page.summary}</p>
+    <div className="rounded-r-md border-l-2 border-lab-customer bg-lab-accent-soft/60 p-5">
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-customer">{section ? "Current section" : "Current page"}</p>
+      <h3 className="mt-2 text-base font-semibold text-foreground">{page.title}{section ? ` / ${section.sectionTitle}` : ""}</h3>
+      <p className="mt-3 text-sm leading-6 text-lab-muted">{section?.sectionBody ?? page.summary}</p>
       {section && page.callouts?.map((callout) => (
-        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" key={callout.title}><strong>{callout.title}:</strong> {callout.content}</p>
+        <p className="mt-3 border-t border-lab-border pt-3 text-xs leading-5 text-lab-muted" key={callout.title}><strong>{callout.title}:</strong> {callout.content}</p>
       ))}
-      <Link className="mt-4 inline-block text-sm font-bold text-amber-800 hover:text-amber-950" href={`/product/${page.slug}`}>View source page →</Link>
+      <Link className="mt-4 inline-block text-sm font-medium text-lab-accent hover:text-lab-accent-hover" href={`/product/${page.slug}`}>View source page →</Link>
     </div>
   );
 }
@@ -295,11 +295,11 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
 
   if (!browserReady) {
     return (
-      <main className="grid min-h-[calc(100vh-73px)] place-items-center bg-stone-50 px-6 py-20" aria-live="polite">
-        <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-8 text-center">
-          <span className="mx-auto block size-3 animate-pulse rounded-full bg-amber-400 motion-reduce:animate-none" />
-          <h1 className="mt-5 text-xl font-bold text-slate-900">Loading local run…</h1>
-          <p className="mt-2 text-sm text-slate-500">Checking this browser for the saved configuration.</p>
+      <main className="grid min-h-[calc(100vh-73px)] place-items-center bg-lab-bg px-6 py-20" aria-live="polite">
+        <div className="w-full max-w-lg rounded-lg border border-lab-border bg-lab-surface p-8 text-center">
+          <span className="mx-auto block size-2 animate-pulse rounded-full bg-lab-customer motion-reduce:animate-none" />
+          <h1 className="mt-5 text-xl font-semibold text-foreground">Loading local run…</h1>
+          <p className="mt-2 text-sm text-lab-muted">Checking this browser for the saved configuration.</p>
         </div>
       </main>
     );
@@ -307,14 +307,14 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
 
   if (!run || !task || !persona) {
     return (
-      <main className="grid min-h-[calc(100vh-73px)] place-items-center bg-stone-50 px-6 py-20 text-slate-950">
-        <div className="max-w-xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg shadow-slate-900/5 sm:p-10">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-700">Local run</p>
-          <h1 className="mt-4 font-serif text-4xl font-semibold tracking-[-0.035em]">Run not found</h1>
-          <p className="mt-5 leading-7 text-slate-600">Test runs are stored only in the browser where they were created. This run may belong to another browser, or its browser data may have been cleared.</p>
+      <main className="grid min-h-[calc(100vh-73px)] place-items-center bg-lab-bg px-6 py-20 text-foreground">
+        <div className="max-w-xl rounded-lg border border-lab-border bg-lab-surface p-8 text-center sm:p-10">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-accent">Local run</p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-[-0.035em]">Run not found</h1>
+          <p className="mt-5 leading-7 text-lab-muted">Test runs are stored only in the browser where they were created. This run may belong to another browser, or its browser data may have been cleared.</p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link className="rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white" href="/tests/new">Create a new test</Link>
-            <Link className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700" href="/">Return home</Link>
+            <Link className="rounded-md bg-lab-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-lab-accent-hover" href="/tests/new">Create a new test</Link>
+            <Link className="rounded-md border border-lab-border bg-lab-elevated px-4 py-2.5 text-sm font-medium text-foreground hover:border-lab-border-strong" href="/">Return home</Link>
           </div>
         </div>
       </main>
@@ -326,142 +326,173 @@ export function RunDetail({ runId, demoMode }: RunDetailProps) {
   const isComplete = run.status === "completed";
 
   return (
-    <main className="min-h-screen bg-stone-50 text-slate-950">
-      <header className="border-b border-slate-800 bg-slate-950 text-white">
-        <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-12 lg:px-10">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="break-all font-mono text-xs text-slate-400">{run.id}</p>
-            <span className={`rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-[0.14em] ${run.status === "failed" ? "border-red-300/30 bg-red-300/10 text-red-200" : "border-emerald-300/30 bg-emerald-300/10 text-emerald-200"}`}>{run.status}</span>
+    <main className="min-h-screen bg-lab-bg font-sans text-foreground">
+      <header className="border-b border-lab-border bg-lab-surface">
+        <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-8 sm:pt-10 lg:px-10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-mono text-[0.7rem] uppercase tracking-[0.12em] text-lab-customer">Evaluation run</p>
+            <p className={`flex items-center gap-2 text-xs font-medium capitalize ${run.status === "failed" ? "text-lab-error" : run.status === "completed" ? "text-lab-success" : "text-lab-customer"}`}>
+              <span className={`size-1.5 rounded-full ${run.status === "failed" ? "bg-lab-error" : run.status === "completed" ? "bg-lab-success" : "bg-lab-customer"}`} aria-hidden="true" />
+              {run.status}
+            </p>
           </div>
-          <h1 className="mt-6 max-w-3xl font-serif text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">{task.title}</h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-300">“{task.question}”</p>
-          {demoMode && <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Public demo · provider-backed actions use limited external requests</p>}
+          <h1 className="mt-5 max-w-4xl text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">{task.title}</h1>
+          <p className="mt-3 max-w-3xl text-base leading-7 text-lab-muted">“{task.question}”</p>
+          <dl className="mt-7 grid gap-4 border-t border-lab-border py-5 text-xs sm:grid-cols-5">
+            <div><dt className="text-lab-subtle">Product</dt><dd className="mt-1 font-medium text-foreground">{flowPilotProduct.name}</dd></div>
+            <div><dt className="text-lab-subtle">Persona</dt><dd className="mt-1 font-medium text-foreground">{persona.name}</dd></div>
+            <div><dt className="text-lab-subtle">Actions</dt><dd className="mt-1 font-mono text-foreground">{run.currentActionCount} / {run.maxActions}</dd></div>
+            <div><dt className="text-lab-subtle">Provider attempts</dt><dd className="mt-1 font-mono text-foreground">{run.modelCallCount}</dd></div>
+            <div><dt className="text-lab-subtle">Run</dt><dd className="mt-1 break-all font-mono text-lab-muted">{run.id}</dd></div>
+          </dl>
+          <nav className="-mx-5 overflow-x-auto border-t border-lab-border px-5 sm:-mx-8 sm:px-8 lg:-mx-10 lg:px-10" aria-label="Run sections">
+            <ul className="flex min-w-max gap-6 text-sm text-lab-muted">
+              {["Journey", "Evidence", "Courtroom", "Report"].map((label) => (
+                <li key={label}><a className="block border-b-2 border-transparent py-3 hover:border-lab-accent hover:text-lab-accent" href={`#${label.toLowerCase()}`}>{label}</a></li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-10">
+      <div className="mx-auto grid max-w-7xl gap-8 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_19rem] lg:px-10">
         <div className="min-w-0 space-y-8">
-          {isComplete && (
-            <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 sm:p-8" aria-labelledby="outcome-title">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">Customer outcome · No verdict</p>
-              <h2 id="outcome-title" className="mt-3 text-2xl font-bold text-slate-950">
-                {run.completionReason === "answer" ? "The customer reached an answer" : run.completionReason === "gave_up" ? "The customer gave up" : "Action budget exhausted"}
-              </h2>
-              {run.finalAnswer && <p className="mt-4 text-lg leading-8 text-slate-800">{run.finalAnswer}</p>}
-              {run.finalConfidence && <p className="mt-3 text-sm font-bold capitalize text-emerald-900">Confidence: {run.finalConfidence}</p>}
-              {run.giveUpReason && <p className="mt-4 leading-7 text-slate-700">{run.giveUpReason}</p>}
-              {run.completionReason === "budget_exhausted" && <p className="mt-4 leading-7 text-slate-700">The customer did not answer or give up before the configured limit. No answer was fabricated.</p>}
-            </section>
-          )}
-
-          {isComplete && !run.evidenceBundle && (
-            <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:p-8" aria-labelledby="prepare-evidence-title">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-800">Deterministic evidence preparation</p>
-              <h2 id="prepare-evidence-title" className="mt-3 text-2xl font-bold text-slate-950">Prepare the customer journey for review</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700">Collect customer-seen sources, bounded context, missing required evidence, and mechanical fact checks. This makes no courtroom judgment and uses no LLM call.</p>
-              {evidenceError && <p className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900" role="alert">{evidenceError}</p>}
-              <button className="mt-5 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={isEvidenceBusy} onClick={() => void prepareEvidence(run)} type="button">
-                {isEvidenceBusy ? "Preparing evidence…" : "Prepare evidence"}
-              </button>
-            </section>
-          )}
-
-          {run.evidenceBundle && (
-            <EvidenceWorkspace bundle={run.evidenceBundle} isRebuilding={isEvidenceBusy} onRebuild={() => void prepareEvidence(run)} />
-          )}
-
-          {run.evidenceBundle && (
-            <CourtroomWorkspace
-              bundle={run.evidenceBundle}
-              busyRole={busyCourtroomRole}
-              courtroom={run.courtroom}
-              isJudgeBusy={isJudgeBusy}
-              judgeError={judgeError}
-              errors={courtroomErrors}
-              onRun={(role) => void runCourtroomRole(run, role)}
-              onRunJudge={() => void runJudge(run)}
-              taskQuestion={task.question}
-              personaName={persona.name}
-              customerConclusion={run.finalAnswer ?? run.giveUpReason ?? "No final answer was provided."}
-              actionsUsed={run.currentActionCount}
-              maxActions={run.maxActions}
-            />
-          )}
-
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="journey-title">
-            <div className="flex flex-wrap items-end justify-between gap-4">
+          <section id="journey" className="scroll-mt-6 rounded-lg border border-lab-border bg-lab-surface p-5 shadow-[0_1px_2px_rgba(31,35,33,0.05)] sm:p-7" aria-labelledby="journey-title">
+            <div className="flex flex-wrap items-end justify-between gap-5">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Synthetic customer</p>
-                <h2 id="journey-title" className="mt-2 text-2xl font-bold">Customer journey</h2>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-customer">Synthetic customer</p>
+                <h2 id="journey-title" className="mt-2 text-xl font-semibold tracking-[-0.02em]">Journey</h2>
               </div>
-              <p className="text-sm font-semibold text-slate-500">{run.currentActionCount}/{run.maxActions} customer actions · {run.modelCallCount} provider requests attempted</p>
+              <dl className="flex gap-6 text-right text-xs">
+                <div><dt className="text-lab-subtle">Successful actions</dt><dd className="mt-1 font-mono text-foreground">{run.currentActionCount}/{run.maxActions}</dd></div>
+                <div><dt className="text-lab-subtle">Request attempts</dt><dd className="mt-1 font-mono text-foreground">{run.modelCallCount}</dd></div>
+              </dl>
             </div>
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100" aria-label={`${usedPercent}% of customer action budget used`} role="progressbar" aria-valuemin={0} aria-valuemax={run.maxActions} aria-valuenow={run.currentActionCount}>
-              <div className="h-full rounded-full bg-amber-400 transition-all" style={{ width: `${usedPercent}%` }} />
+            <div className="mt-5 h-px bg-lab-border" aria-label={`${usedPercent}% of customer action budget used`} role="progressbar" aria-valuemin={0} aria-valuemax={run.maxActions} aria-valuenow={run.currentActionCount}>
+              <div className="h-px bg-lab-customer" style={{ width: `${usedPercent}%` }} />
             </div>
-            <div className="mt-7"><ActionTimeline actions={run.actions} /></div>
+
+            {isComplete && (
+              <div className="mt-6 border-l-2 border-lab-success bg-lab-success/[0.06] p-4" aria-labelledby="outcome-title">
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-lab-success">Customer outcome · not a verdict</p>
+                <h3 id="outcome-title" className="mt-2 text-base font-semibold">
+                  {run.completionReason === "answer" ? "Customer reached an answer" : run.completionReason === "gave_up" ? "Customer gave up" : "Action budget exhausted"}
+                </h3>
+                {run.finalAnswer && <p className="mt-3 text-sm leading-6 text-foreground">{run.finalAnswer}</p>}
+                {run.finalConfidence && <p className="mt-2 text-xs font-medium capitalize text-lab-success">Confidence: {run.finalConfidence}</p>}
+                {run.giveUpReason && <p className="mt-3 text-sm leading-6 text-lab-muted">{run.giveUpReason}</p>}
+                {run.completionReason === "budget_exhausted" && <p className="mt-3 text-sm leading-6 text-lab-muted">The customer did not answer or give up before the configured limit. No answer was fabricated.</p>}
+              </div>
+            )}
+
+            <div className="mt-6"><ActionTimeline actions={run.actions} /></div>
+
+            <div className="mt-8 border-t border-lab-border pt-6" aria-labelledby="content-title">
+              <div className="flex items-baseline justify-between gap-4">
+                <h3 id="content-title" className="text-sm font-semibold">Current product content</h3>
+                <span className="font-mono text-[0.7rem] text-lab-subtle">Deterministic tool</span>
+              </div>
+              <div className="mt-4"><CurrentContent run={run} /></div>
+            </div>
+
+            {run.actions.length === 0 && (
+              <div className="mt-8 border-t border-lab-border pt-6" aria-labelledby="sources-title">
+                <p className="font-mono text-[0.7rem] text-lab-subtle">Preview · not customer actions</p>
+                <h3 id="sources-title" className="mt-2 text-sm font-semibold">Retrieval suggestions</h3>
+                <ol className="mt-4 divide-y divide-lab-border border-y border-lab-border">
+                  {retrievalSuggestions.map((result) => (
+                    <li className="py-4" key={result.sectionId}>
+                      <p className="font-mono text-[0.7rem] text-lab-customer">Rank {result.rank}</p>
+                      <p className="mt-1 text-sm font-medium">{result.pageTitle} · {result.sectionTitle}</p>
+                      <p className="mt-2 text-sm leading-6 text-lab-muted">{result.excerpt}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="content-title">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Deterministic product tool</p>
-            <h2 id="content-title" className="mt-2 text-2xl font-bold">Current content</h2>
-            <div className="mt-6"><CurrentContent run={run} /></div>
+          <section id="evidence" className="scroll-mt-6" aria-label="Evidence">
+            {isComplete && !run.evidenceBundle && (
+              <div className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-7" aria-labelledby="prepare-evidence-title">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-evidence">Evidence</p>
+                <h2 id="prepare-evidence-title" className="mt-2 text-xl font-semibold tracking-[-0.02em]">Prepare the journey for review</h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-lab-muted">Collect customer-seen sources, bounded context, missing evidence, and mechanical checks. This is deterministic and uses no LLM request.</p>
+                {evidenceError && <p className="mt-4 border border-lab-error/40 bg-lab-error/10 p-4 text-sm text-lab-error" role="alert">{evidenceError}</p>}
+                <button className="mt-5 rounded-md bg-lab-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-lab-accent-hover disabled:opacity-50" disabled={isEvidenceBusy} onClick={() => void prepareEvidence(run)} type="button">
+                  {isEvidenceBusy ? "Preparing evidence…" : "Prepare evidence"}
+                </button>
+              </div>
+            )}
+            {!isComplete && <div className="border-l-2 border-lab-evidence bg-lab-surface p-5 text-sm text-lab-muted sm:p-7"><span className="font-medium text-lab-evidence">Evidence</span> becomes available when the customer journey is complete.</div>}
+            {run.evidenceBundle && <EvidenceWorkspace bundle={run.evidenceBundle} isRebuilding={isEvidenceBusy} onRebuild={() => void prepareEvidence(run)} />}
           </section>
 
-          {run.actions.length === 0 && (
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="sources-title">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Preview · Not customer actions</p>
-              <h2 id="sources-title" className="mt-2 text-2xl font-bold">Retrieval suggestions</h2>
-              <ol className="mt-5 space-y-3">
-                {retrievalSuggestions.map((result) => (
-                  <li className="rounded-xl border border-slate-200 p-4" key={result.sectionId}>
-                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-amber-700">Rank {result.rank}</p>
-                    <p className="mt-1 font-bold">{result.pageTitle} · {result.sectionTitle}</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{result.excerpt}</p>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          )}
+          <section id="courtroom" className="scroll-mt-6" aria-label="Courtroom">
+            {run.evidenceBundle ? (
+              <CourtroomWorkspace
+                bundle={run.evidenceBundle}
+                busyRole={busyCourtroomRole}
+                courtroom={run.courtroom}
+                isJudgeBusy={isJudgeBusy}
+                judgeError={judgeError}
+                errors={courtroomErrors}
+                onRun={(role) => void runCourtroomRole(run, role)}
+                onRunJudge={() => void runJudge(run)}
+                taskQuestion={task.question}
+                personaName={persona.name}
+                customerConclusion={run.finalAnswer ?? run.giveUpReason ?? "No final answer was provided."}
+                actionsUsed={run.currentActionCount}
+                maxActions={run.maxActions}
+              />
+            ) : (
+              <div className="border-l-2 border-lab-judge bg-lab-surface p-5 text-sm text-lab-muted sm:p-7"><span className="font-medium text-lab-judge">Courtroom</span> becomes available after evidence is prepared.</div>
+            )}
+          </section>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5 lg:sticky lg:top-6" aria-labelledby="controls-heading">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">Run controls</p>
-          <h2 id="controls-heading" className="mt-2 text-xl font-bold">{persona.name}</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{persona.description}</p>
+        <aside className="h-fit rounded-lg border border-lab-border-strong bg-lab-elevated p-5 shadow-[0_1px_2px_rgba(31,35,33,0.06)] lg:sticky lg:top-6" aria-labelledby="controls-heading">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-customer">Run context</p>
+          <h2 id="controls-heading" className="mt-2 text-lg font-semibold">{persona.name}</h2>
+          <p className="mt-2 text-sm leading-6 text-lab-muted">{persona.description}</p>
+          {demoMode && <p className="mt-3 font-mono text-[0.7rem] leading-5 text-lab-subtle">Controlled demo · bounded provider usage</p>}
+
+          <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-y border-lab-border py-4 text-xs">
+            <div><dt className="text-lab-subtle">Actions</dt><dd className="mt-1 font-mono text-foreground">{run.currentActionCount} / {run.maxActions}</dd></div>
+            <div><dt className="text-lab-subtle">Attempts</dt><dd className="mt-1 font-mono text-foreground">{run.modelCallCount}</dd></div>
+            <div><dt className="text-lab-subtle">Status</dt><dd className="mt-1 capitalize text-foreground">{run.status}</dd></div>
+            <div><dt className="text-lab-subtle">Persistence</dt><dd className="mt-1 text-foreground">This browser</dd></div>
+          </dl>
 
           {(run.lastError || storageError || evidenceError) && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4" role="alert">
-              <p className="text-sm leading-6 text-red-900">{storageError ?? evidenceError ?? (run.lastError ? toDisplayError(run.lastError).message : undefined)}</p>
-              {run.lastError?.retryAfterSeconds && <p className="mt-2 text-xs font-semibold text-red-800">Retry in approximately {run.lastError.retryAfterSeconds} seconds.</p>}
-              <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-red-700">{run.lastError?.code ?? "LOCAL_STORAGE_FAILURE"}</p>
+            <div className="mt-5 border-l-2 border-lab-error bg-lab-error/[0.07] p-4" role="alert">
+              <p className="text-sm leading-6 text-lab-error">{storageError ?? evidenceError ?? (run.lastError ? toDisplayError(run.lastError).message : undefined)}</p>
+              {run.lastError?.retryAfterSeconds && <p className="mt-2 text-xs font-medium text-lab-error">Retry in approximately {run.lastError.retryAfterSeconds} seconds.</p>}
+              <p className="mt-2 font-mono text-[0.7rem] text-lab-error">{run.lastError?.code ?? "LOCAL_STORAGE_FAILURE"}</p>
             </div>
           )}
 
           {!isComplete && (
-            <div className="mt-6 space-y-3">
-              <button className="w-full rounded-xl bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50" type="button" disabled={isBusy || isAutoRunning} onClick={() => void takeOneStep(run)}>
+            <div className="mt-5 space-y-3">
+              <button className="w-full rounded-md bg-lab-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-lab-accent-hover disabled:opacity-50" type="button" disabled={isBusy || isAutoRunning} onClick={() => void takeOneStep(run)}>
                 {isBusy ? "Taking one step…" : run.status === "ready" ? "Start simulation" : run.status === "failed" ? "Retry failed step" : "Take next step"}
               </button>
+              <p className="text-center font-mono text-[0.7rem] text-lab-subtle">1 LLM request</p>
               {!isAutoRunning ? (
-                <button className="w-full rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700 disabled:opacity-50" type="button" disabled={isBusy || run.status === "failed"} onClick={() => void startAutoRun()}>Auto-run sequentially</button>
+                <button className="w-full rounded-md border border-lab-border bg-lab-surface px-4 py-2.5 text-sm font-medium text-foreground hover:border-lab-border-strong hover:bg-lab-accent-soft hover:text-lab-accent disabled:opacity-50" type="button" disabled={isBusy || run.status === "failed"} onClick={() => void startAutoRun()}>Auto-run sequentially</button>
               ) : (
-                <button className="w-full rounded-xl border border-red-300 px-5 py-3 text-sm font-bold text-red-700" type="button" onClick={stopAutoRun}>Stop after current step</button>
+                <button className="w-full rounded-md border border-lab-error/50 bg-lab-error/10 px-4 py-2.5 text-sm font-medium text-lab-error" type="button" onClick={stopAutoRun}>Stop after current step</button>
               )}
-              <p className="text-xs leading-5 text-slate-500">One successful customer step uses 1 LLM request. {Math.max(0, run.maxActions - run.currentActionCount)} customer actions remain.</p>
-              <p className="text-xs leading-5 text-slate-500">Auto-run stays sequential and may use one LLM request per remaining action.</p>
+              <p className="text-xs leading-5 text-lab-muted">{Math.max(0, run.maxActions - run.currentActionCount)} successful actions remain. Auto-run stays sequential and may use one request per action.</p>
             </div>
           )}
 
-          <button className="mt-3 w-full rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-600 disabled:opacity-50" type="button" disabled={isEvidenceBusy || isJudgeBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
-          <Link className="mt-3 block rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-bold text-slate-700" href="/tests/new">Configure another test</Link>
+          <div className="mt-5 space-y-1 border-t border-lab-border pt-4">
+            <button className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-lab-muted hover:bg-lab-error/[0.06] hover:text-lab-error disabled:opacity-50" type="button" disabled={isEvidenceBusy || isJudgeBusy || busyCourtroomRole !== null || (run.actions.length === 0 && !run.lastError)} onClick={resetRun}>Reset simulation</button>
+            <Link className="block rounded-md px-3 py-2 text-sm font-medium text-lab-muted hover:bg-lab-surface hover:text-foreground" href="/tests/new">Configure another test</Link>
+          </div>
 
-          <dl className="mt-6 space-y-3 border-t border-slate-100 pt-5 text-xs">
-            <div className="flex justify-between gap-3"><dt className="text-slate-400">Product</dt><dd className="font-bold text-slate-700">{flowPilotProduct.name}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-slate-400">Created</dt><dd className="text-right font-bold text-slate-700">{formatDateTime(run.createdAt)}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-slate-400">Persistence</dt><dd className="font-bold text-slate-700">This browser</dd></div>
-          </dl>
-          <p className="mt-5 text-xs leading-5 text-slate-400">Provider requests are attempted sequentially. Failed attempts stop the run without consuming a customer action.</p>
+          <p className="mt-5 border-t border-lab-border pt-4 text-xs leading-5 text-lab-subtle">Created {formatDateTime(run.createdAt)}. Failed provider attempts stop the run without consuming a customer action.</p>
         </aside>
       </div>
     </main>
