@@ -1,27 +1,23 @@
 import Link from "next/link";
 
 const navigation = [
-  { href: "/", label: "Home" },
+  { href: "/tests/new", label: "New test" },
   { href: "/product", label: "Demo product" },
-  { href: "/tests/new", label: "Create test" },
   { href: "/retrieval", label: "Retrieval" },
 ] as const;
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-white/10 bg-slate-950 text-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4 sm:px-8 lg:px-10">
-        <Link className="flex min-w-0 items-center gap-3 rounded-lg" href="/" aria-label="Trial by User home">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-amber-300/30 bg-amber-300/10 font-serif text-lg font-bold text-amber-300">
-            T
-          </span>
-          <span className="hidden text-sm font-semibold tracking-[0.08em] sm:inline">TRIAL BY USER</span>
+    <header className="border-b border-neutral-200 bg-white text-neutral-950">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-10">
+        <Link className="min-w-0 rounded-sm text-sm font-semibold tracking-[-0.01em]" href="/" aria-label="Trial by User home">
+          Trial by User
         </Link>
         <nav aria-label="Primary navigation">
-          <ul className="flex items-center gap-0 text-xs text-slate-300 sm:gap-2 sm:text-sm">
+          <ul className="flex items-center gap-0 text-xs text-neutral-600 sm:gap-1 sm:text-sm">
             {navigation.map((item) => (
               <li key={item.href}>
-                <Link className="block rounded-lg px-3 py-2 font-medium transition-colors hover:bg-white/10 hover:text-white" href={item.href}>
+                <Link className="block rounded-md px-2.5 py-2 font-medium transition-colors hover:bg-neutral-100 hover:text-neutral-950 sm:px-3" href={item.href}>
                   {item.label}
                 </Link>
               </li>

@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import {
   foundationChecks,
-  futureCapabilities,
   getFoundationProgress,
   workflowSteps,
 } from "@/lib/foundation";
@@ -13,182 +12,107 @@ export default function Home() {
   const { demoMode } = readDemoConfiguration();
 
   return (
-    <main className="min-h-screen overflow-hidden bg-stone-50 text-slate-950">
-      <section className="relative isolate border-b border-slate-200/80 bg-slate-950 text-white">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 opacity-80 [background-image:radial-gradient(circle_at_15%_20%,rgba(244,180,74,0.16),transparent_28%),radial-gradient(circle_at_85%_10%,rgba(56,189,248,0.10),transparent_25%)]"
-        />
-        <div className="mx-auto max-w-7xl px-6 pb-20 pt-20 sm:px-8 sm:pb-24 lg:px-10 lg:pt-28">
-          <div id="top" className="grid gap-14 pb-2 lg:grid-cols-[1.08fr_0.92fr] lg:items-end">
-            <div>
-              <p className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">
-                <span className="h-px w-7 bg-amber-300" />
-                {demoMode ? "Public portfolio demo" : "Agentic product testing"}
-              </p>
-              <h1 className="max-w-4xl font-serif text-5xl font-semibold leading-[0.98] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-                Put the product experience on trial.
-              </h1>
-              <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl">
-                Synthetic customers test your product. AI agents argue whether the experience worked.
-              </p>
-              <div className="mt-9 flex flex-wrap items-center gap-3">
-                <Link
-                  className="rounded-xl bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 shadow-[0_12px_40px_rgba(244,180,74,0.16)] transition-colors hover:bg-amber-200"
-                  href="/tests/new"
-                >
-                  Create a test
-                </Link>
-                <Link
-                  className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:border-white/35 hover:bg-white/10"
-                  href="/product"
-                >
-                  Browse FlowPilot demo
-                </Link>
-                <Link
-                  className="rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:border-white/35 hover:bg-white/10"
-                  href="/retrieval"
-                >
-                  Test retrieval
-                </Link>
-                <span id="create-test-note" className="w-full text-sm text-slate-400">
-                  Synthetic customer, evidence preparation, both advocates, and the final judge verdict are available now.
-                </span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur sm:p-7">
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">Available now · Phase 9</p>
-                  <p className="mt-2 font-semibold text-slate-100">Run the complete evidence-grounded courtroom</p>
-                </div>
-                <span className="size-2.5 shrink-0 rounded-full bg-amber-300 shadow-[0_0_18px_rgba(253,230,138,0.8)]" />
-              </div>
-              <ol className="mt-5 space-y-4" aria-label="Available synthetic customer features">
-                {["Synthetic customer and evidence", "Source-cited opposing arguments", "Neutral verdict and recommendation"].map(
-                  (stage, index) => (
-                    <li className="flex items-center gap-4" key={stage}>
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-white/8 font-mono text-xs text-amber-200">
-                        0{index + 1}
-                      </span>
-                      <span className="text-sm text-slate-300">{stage}</span>
-                    </li>
-                  ),
-                )}
-              </ol>
-            </div>
+    <main className="min-h-screen bg-[#f7f7f5] font-sans text-neutral-950">
+      <section className="border-b border-neutral-200 bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28 lg:px-10 lg:py-32">
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">
+            {demoMode ? "Controlled product evaluation" : "Agentic product evaluation"}
+          </p>
+          <h1 className="mt-6 max-w-5xl text-4xl font-semibold leading-[1.05] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+            Synthetic customers test your product. Adversarial agents judge the experience.
+          </h1>
+          <p className="mt-7 max-w-2xl text-base leading-7 text-neutral-600 sm:text-lg">
+            Run a focused customer task, preserve the evidence, and turn opposing assessments into a cited product recommendation.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link className="rounded-md bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-neutral-800" href="/tests/new">
+              Create a test
+            </Link>
+            <Link className="rounded-md border border-neutral-300 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50" href="/product">
+              Explore demo product
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-white" aria-labelledby="simulated-title">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 py-14 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:px-10">
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10" aria-labelledby="workflow-title">
+        <div className="flex flex-col justify-between gap-4 border-b border-neutral-300 pb-6 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Public demo boundaries</p>
-            <h2 className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]" id="simulated-title">What is simulated?</h2>
-            <p className="mt-4 text-sm leading-6 text-slate-600">FlowPilot is fictional, and every run stays inside its controlled product knowledge. This demo cannot browse or act on a live website.</p>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Workflow</p>
+            <h2 id="workflow-title" className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">One task. One traceable decision.</h2>
           </div>
-          <dl className="grid gap-3 sm:grid-cols-2">
+          <p className="max-w-md text-sm leading-6 text-neutral-600">From controlled product context to an evidence-grounded verdict.</p>
+        </div>
+        <ol className="grid border-b border-neutral-200 sm:grid-cols-2 lg:grid-cols-4">
+          {workflowSteps.map((step) => (
+            <li className="border-neutral-200 py-6 sm:odd:border-r sm:odd:pr-6 sm:even:pl-6 lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0" key={step.number}>
+              <span className="font-mono text-xs text-neutral-400">{step.number}</span>
+              <h3 className="mt-5 text-sm font-semibold text-neutral-950">{step.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-neutral-600">{step.description}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="border-y border-neutral-200 bg-white" aria-labelledby="how-title">
+        <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10">
+          <div className="max-w-xl">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">How it works</p>
+            <h2 id="how-title" className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">Evaluation, not spectacle.</h2>
+          </div>
+          <div className="mt-10 grid gap-px overflow-hidden border border-neutral-200 bg-neutral-200 lg:grid-cols-3">
             {[
-              ["Customer surface", "A controlled FlowPilot knowledge base—not the public web or real website buttons."],
-              ["Retrieval", "Deterministic ranking over repository-owned product sections."],
-              ["LLM work", "Models choose customer actions and generate the two arguments and final verdict."],
-              ["Evidence", "Prepared deterministically from the recorded journey and trusted product sources."],
-              ["Persistence", "Runs live only in this browser and may disappear when browser data is cleared."],
-              ["Deployment", "Short stateless requests, server-side provider secrets, and no production worker."],
-            ].map(([term, description]) => (
-              <div className="rounded-xl border border-slate-200 bg-stone-50 p-4" key={term}>
-                <dt className="text-sm font-bold text-slate-950">{term}</dt>
-                <dd className="mt-2 text-xs leading-5 text-slate-600">{description}</dd>
-              </div>
+              ["Observe", "A synthetic customer searches and reads only the controlled product knowledge needed for one narrow task."],
+              ["Contest", "Prosecutor and defense independently interpret the same immutable, source-traceable evidence."],
+              ["Decide", "A neutral judge weighs both cases and returns a cited verdict, friction point, and recommended change."],
+            ].map(([title, description], index) => (
+              <article className="bg-white p-6 sm:p-8" key={title}>
+                <p className="font-mono text-xs text-neutral-400">0{index + 1}</p>
+                <h3 className="mt-8 text-lg font-semibold">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-neutral-600">{description}</p>
+              </article>
             ))}
-          </dl>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-20 sm:px-8 sm:py-24 lg:px-10" aria-labelledby="workflow-title">
-        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+      <section className="mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[0.7fr_1.3fr] lg:px-10" aria-labelledby="boundaries-title">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">Demo boundaries</p>
+          <h2 id="boundaries-title" className="mt-3 text-2xl font-semibold tracking-[-0.025em]">A controlled environment.</h2>
+          <p className="mt-4 text-sm leading-6 text-neutral-600">FlowPilot is fictional. The system cannot browse or act on live websites, and runs stay in this browser.</p>
+        </div>
+        <dl className="grid gap-x-10 gap-y-6 sm:grid-cols-2">
+          {[
+            ["Product surface", "Repository-owned FlowPilot documentation only."],
+            ["Retrieval and evidence", "Deterministic and reproducible."],
+            ["Model work", "Customer decisions, arguments, and verdict only."],
+            ["Persistence", "Local to this browser; no account or database."],
+          ].map(([term, description]) => (
+            <div className="border-t border-neutral-300 pt-4" key={term}>
+              <dt className="text-sm font-medium text-neutral-950">{term}</dt>
+              <dd className="mt-2 text-sm leading-6 text-neutral-600">{description}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="border-t border-neutral-200 bg-white" aria-labelledby="status-title">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-5 py-10 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">How it will work</p>
-            <h2 id="workflow-title" className="mt-4 max-w-md font-serif text-3xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-4xl">
-              A rigorous journey from product context to verdict.
-            </h2>
-            <p className="mt-5 max-w-md leading-7 text-slate-600">
-              Trial by User will turn product knowledge into a focused customer simulation, preserve what happened, and let opposing agents make an evidence-grounded case.
+            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">
+              <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" /> MVP status
             </p>
+            <h2 id="status-title" className="mt-2 text-lg font-semibold">Evaluation loop ready</h2>
+            <p className="mt-1 text-sm text-neutral-600">Customer journey, evidence, advocates, judge, and final report are available.</p>
           </div>
-
-          <ol className="grid gap-4 sm:grid-cols-2">
-            {workflowSteps.map((step) => (
-              <li
-                key={step.number}
-                className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-transform duration-300 hover:-translate-y-1"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-semibold tracking-[0.12em] text-amber-700">STEP {step.number}</span>
-                  <span className="h-px w-8 bg-slate-200 transition-all duration-300 group-hover:w-12 group-hover:bg-amber-400" />
-                </div>
-                <h3 className="mt-8 text-lg font-bold tracking-[-0.01em] text-slate-900">{step.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{step.description}</p>
-              </li>
-            ))}
-          </ol>
+          <p className="font-mono text-xs text-neutral-500">{progress.completed}/{progress.total} checks passing</p>
         </div>
       </section>
 
-      <section className="border-y border-slate-200 bg-white" aria-labelledby="status-title">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 sm:px-8 lg:grid-cols-[0.65fr_1.35fr] lg:items-center lg:px-10">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="relative flex size-3">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-50 motion-reduce:animate-none" />
-                <span className="relative inline-flex size-3 rounded-full bg-emerald-500" />
-              </span>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">MVP status · Phase 9</p>
-            </div>
-            <h2 id="status-title" className="mt-3 font-serif text-3xl font-semibold tracking-[-0.03em]">Core courtroom MVP complete</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">
-              A customer can test controlled FlowPilot knowledge, prepare evidence, run both advocates, and receive a cited final verdict with one practical product recommendation. Uploads and live website testing remain future work.
-            </p>
-          </div>
-
-          <div>
-            <div className="flex items-end justify-between gap-4">
-              <p className="text-sm font-semibold text-slate-700">Available now</p>
-              <p className="font-mono text-sm text-slate-500">
-                {progress.completed}/{progress.total} complete
-              </p>
-            </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100" aria-label={`${progress.percentage}% of foundation checks complete`}>
-              <div className="h-full rounded-full bg-emerald-500" style={{ width: `${progress.percentage}%` }} />
-            </div>
-            <ul className="mt-5 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-              {foundationChecks.map((check) => (
-                <li className="flex items-center gap-2" key={check.label}>
-                  <span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700">✓</span>
-                  {check.label}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-7 border-t border-slate-200 pt-5">
-              <p className="text-sm font-semibold text-slate-700">Coming later</p>
-              <ul className="mt-3 grid gap-2 text-sm text-slate-500 sm:grid-cols-2">
-                {futureCapabilities.map((capability) => (
-                  <li className="flex items-center gap-2" key={capability}>
-                    <span aria-hidden="true" className="size-1.5 rounded-full bg-slate-300" />
-                    {capability}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className="mx-auto flex max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
+      <footer className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-8 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
         <p>Trial by User · Evidence before opinion.</p>
-        <p>Phase 9 · Public demo hardened for Vercel Hobby</p>
+        <p>Controlled public demo</p>
       </footer>
     </main>
   );

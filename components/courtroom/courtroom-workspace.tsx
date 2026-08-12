@@ -19,14 +19,14 @@ const roleCopy = {
     title: "Prosecutor",
     description: "Builds the strongest evidence-grounded case that the product experience failed or caused material friction.",
     accent: "text-red-700",
-    button: "bg-red-700 text-white hover:bg-red-800",
+    button: "border border-red-300 text-red-800 hover:bg-red-50",
   },
   defense: {
     eyebrow: "Case for success",
     title: "Defense",
     description: "Builds the strongest evidence-grounded case that the experience worked or remained reasonably usable.",
-    accent: "text-emerald-700",
-    button: "bg-emerald-700 text-white hover:bg-emerald-800",
+    accent: "text-blue-700",
+    button: "border border-blue-300 text-blue-800 hover:bg-blue-50",
   },
 } as const;
 
@@ -39,13 +39,13 @@ function EvidenceCitations({ ids, bundle }: { ids: readonly string[]; bundle: Ev
         return (
           <li className="min-w-0 max-w-full" key={id}>
             <Link
-              className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-amber-300"
+              className="inline-flex min-w-0 max-w-full items-center gap-1.5 border-b border-neutral-300 py-1 text-xs text-neutral-600 hover:border-indigo-500 hover:text-neutral-950"
               href={`/product/${item.pageSlug}`}
               title={id}
             >
-              <span className={`size-1.5 shrink-0 rounded-full ${item.customerSaw ? "bg-emerald-500" : "bg-slate-300"}`} />
+              <span className={`size-1.5 shrink-0 rounded-full ${item.customerSaw ? "bg-emerald-500" : "bg-neutral-300"}`} />
               <span className="truncate">{item.pageTitle}{item.sectionTitle ? ` · ${item.sectionTitle}` : ""}</span>
-              <span className="shrink-0 text-slate-400">{item.customerSaw ? "seen" : "not seen"}</span>
+              <span className="shrink-0 text-neutral-400">{item.customerSaw ? "seen" : "not seen"}</span>
             </Link>
           </li>
         );
@@ -76,27 +76,27 @@ function ArgumentCard({
   const anotherBusy = busyRole !== null && !busy;
 
   return (
-    <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+    <article className={`min-w-0 border bg-white p-5 sm:p-6 ${role === "prosecutor" ? "border-red-200" : "border-blue-200"}`}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-lg">
-          <p className={`text-xs font-bold uppercase tracking-[0.18em] ${copy.accent}`}>{copy.eyebrow}</p>
-          <h3 className="mt-2 text-2xl font-bold text-slate-950">{copy.title}</h3>
-          {!record && <p className="mt-3 text-sm leading-6 text-slate-600">{copy.description}</p>}
+          <p className={`text-xs font-medium uppercase tracking-[0.14em] ${copy.accent}`}>{copy.eyebrow}</p>
+          <h3 className="mt-2 text-xl font-semibold text-neutral-950">{copy.title}</h3>
+          {!record && <p className="mt-3 text-sm leading-6 text-neutral-600">{copy.description}</p>}
         </div>
         <div className="shrink-0 text-right">
           <button
-            className={`rounded-xl px-4 py-2.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50 ${copy.button}`}
+            className={`rounded-md px-3.5 py-2 text-sm font-medium disabled:opacity-50 ${copy.button}`}
             disabled={busyRole !== null || controlsDisabled}
             onClick={() => onRun(role)}
             type="button"
           >
             {busy ? `Running ${copy.title.toLowerCase()}…` : record ? `Regenerate ${copy.title.toLowerCase()}` : `Run ${copy.title.toLowerCase()}`}
           </button>
-          <p className="mt-2 text-xs text-slate-500">Uses 1 LLM request</p>
+          <p className="mt-2 font-mono text-[0.7rem] text-neutral-500">1 LLM request</p>
         </div>
       </div>
 
-      {anotherBusy && <p className="mt-4 text-xs text-slate-500">Waiting for the other advocate&apos;s single provider call to finish.</p>}
+      {anotherBusy && <p className="mt-4 text-xs text-neutral-500">Waiting for the other advocate&apos;s single provider call to finish.</p>}
       {error && (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-left" role="alert">
           <p className="text-sm text-red-900">{error.message}</p>
@@ -105,20 +105,20 @@ function ArgumentCard({
       )}
 
       {record && (
-        <div className="mt-6 space-y-6 border-t border-slate-100 pt-6">
+        <div className="mt-6 space-y-6 border-t border-neutral-200 pt-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Thesis</p>
-            <p className="mt-2 text-base font-semibold leading-7 text-slate-900">{record.argument.thesis}</p>
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-neutral-400">Thesis</p>
+            <p className="mt-2 text-base font-medium leading-7 text-neutral-900">{record.argument.thesis}</p>
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Key claims</p>
-            <ol className="mt-3 space-y-4">
+            <p className="text-xs font-medium uppercase tracking-[0.12em] text-neutral-400">Key claims</p>
+            <ol className="mt-3 divide-y divide-neutral-200 border-y border-neutral-200">
               {record.argument.keyClaims.map((claim) => (
-                <li className="rounded-xl border border-slate-200 p-4" key={claim.id}>
+                <li className="py-4" key={claim.id}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <p className="text-sm font-semibold leading-6 text-slate-800">{claim.claim}</p>
-                    <span className="rounded-full bg-slate-100 px-2 py-1 text-[0.68rem] font-bold uppercase tracking-wide text-slate-600">{claim.strength}</span>
+                    <p className="text-sm font-medium leading-6 text-neutral-800">{claim.claim}</p>
+                    <span className="font-mono text-[0.68rem] uppercase tracking-wide text-neutral-500">{claim.strength}</span>
                   </div>
                   <EvidenceCitations bundle={bundle} ids={claim.evidenceIds} />
                 </li>
@@ -126,19 +126,19 @@ function ArgumentCard({
             </ol>
           </div>
 
-          <div className="rounded-xl bg-amber-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-800">Strongest point</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-slate-900">{record.argument.strongestPoint.claim}</p>
+          <div className={`border-l-2 p-4 ${role === "prosecutor" ? "border-red-400 bg-red-50/60" : "border-blue-400 bg-blue-50/60"}`}>
+            <p className={`text-xs font-medium uppercase tracking-[0.12em] ${copy.accent}`}>Strongest point</p>
+            <p className="mt-2 text-sm font-medium leading-6 text-neutral-900">{record.argument.strongestPoint.claim}</p>
             <EvidenceCitations bundle={bundle} ids={record.argument.strongestPoint.evidenceIds} />
           </div>
 
           {record.argument.acknowledges.length > 0 && (
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Acknowledges</p>
-              <ul className="mt-3 space-y-3">
+              <p className="text-xs font-medium uppercase tracking-[0.12em] text-neutral-400">Acknowledges</p>
+              <ul className="mt-3 divide-y divide-neutral-200 border-y border-neutral-200">
                 {record.argument.acknowledges.map((point, index) => (
-                  <li className="rounded-xl bg-slate-50 p-4" key={`${index}-${point.claim}`}>
-                    <p className="text-sm leading-6 text-slate-700">{point.claim}</p>
+                  <li className="py-4" key={`${index}-${point.claim}`}>
+                    <p className="text-sm leading-6 text-neutral-700">{point.claim}</p>
                     <EvidenceCitations bundle={bundle} ids={point.evidenceIds} />
                   </li>
                 ))}
@@ -146,13 +146,13 @@ function ArgumentCard({
             </div>
           )}
 
-          <div className="border-t border-slate-100 pt-5">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Requested direction · advocacy, not verdict</p>
-            <p className="mt-2 font-mono text-sm font-bold text-slate-800">{record.argument.requestedVerdictDirection.replaceAll("_", " ")}</p>
-            <p className="mt-3 text-sm leading-6 text-slate-700">{record.argument.closingStatement}</p>
+          <div className="border-t border-neutral-200 pt-5">
+            <p className="text-xs font-medium text-neutral-400">Requested direction · advocacy, not verdict</p>
+            <p className="mt-2 font-mono text-sm text-neutral-800">{record.argument.requestedVerdictDirection.replaceAll("_", " ")}</p>
+            <p className="mt-3 text-sm leading-6 text-neutral-700">{record.argument.closingStatement}</p>
           </div>
 
-          <p className="text-xs text-slate-400">Generated {new Date(record.createdAt).toLocaleString()} · {record.provider} · bundle v{record.evidenceBundleVersion}</p>
+          <p className="font-mono text-[0.7rem] text-neutral-400">Generated {new Date(record.createdAt).toLocaleString()} · {record.provider} · bundle v{record.evidenceBundleVersion}</p>
         </div>
       )}
     </article>
@@ -163,34 +163,34 @@ function JudgeResult({ record, bundle }: { record: JudgeVerdictRecord; bundle: E
   const result = record.verdict;
   return (
     <div className="space-y-5">
-      <article className="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-white p-6 shadow-lg shadow-amber-900/5 sm:p-8">
+      <article className="border border-neutral-300 bg-white p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-800">Final judge verdict</p>
-            <h3 className="mt-3 font-serif text-4xl font-semibold text-slate-950">{VERDICT_LABELS[result.verdict]}</h3>
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Final judge verdict</p>
+            <h3 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-neutral-950 sm:text-4xl">{VERDICT_LABELS[result.verdict]}</h3>
           </div>
-          <span className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold capitalize text-slate-700">{result.confidence} confidence</span>
+          <span className="font-mono text-xs capitalize text-neutral-500">{result.confidence} confidence</span>
         </div>
-        <p className="mt-5 max-w-4xl text-base leading-7 text-slate-700">{result.summary}</p>
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white/80 p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Customer answer assessment · {result.customerOutcomeAssessment.answerStatus.replaceAll("_", " ")}</p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{result.customerOutcomeAssessment.explanation}</p>
+        <p className="mt-5 max-w-4xl text-base leading-7 text-neutral-700">{result.summary}</p>
+        <div className="mt-6 border-l-2 border-indigo-500 bg-neutral-50 p-4">
+          <p className="text-xs font-medium text-neutral-500">Customer answer · {result.customerOutcomeAssessment.answerStatus.replaceAll("_", " ")}</p>
+          <p className="mt-2 text-sm leading-6 text-neutral-700">{result.customerOutcomeAssessment.explanation}</p>
           <EvidenceCitations bundle={bundle} ids={result.customerOutcomeAssessment.evidenceIds} />
         </div>
-        <p className="mt-5 text-xs text-slate-500">Generated {new Date(record.createdAt).toLocaleString()} · {record.provider} · bundle v{record.evidenceBundleVersion}</p>
+        <p className="mt-5 font-mono text-[0.7rem] text-neutral-400">Generated {new Date(record.createdAt).toLocaleString()} · {record.provider} · bundle v{record.evidenceBundleVersion}</p>
       </article>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8" aria-labelledby="judge-findings-title">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700">Evidence-grounded findings</p>
-        <h3 className="mt-2 text-2xl font-bold text-slate-950" id="judge-findings-title">Findings</h3>
-        <ol className="mt-5 grid gap-4 md:grid-cols-2">
+      <section className="border border-neutral-200 bg-white p-6 sm:p-8" aria-labelledby="judge-findings-title">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Evidence-grounded findings</p>
+        <h3 className="mt-2 text-xl font-semibold text-neutral-950" id="judge-findings-title">Findings</h3>
+        <ol className="mt-5 divide-y divide-neutral-200 border-y border-neutral-200">
           {result.findings.map((finding, index) => (
-            <li className="rounded-xl border border-slate-200 p-4" key={`${index}-${finding.title}`}>
+            <li className="py-4" key={`${index}-${finding.title}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <h4 className="font-bold text-slate-900">{finding.title}</h4>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-[0.68rem] font-bold uppercase tracking-wide text-slate-600">{finding.weight}</span>
+                <h4 className="font-medium text-neutral-900">{finding.title}</h4>
+                <span className="font-mono text-[0.68rem] uppercase tracking-wide text-neutral-500">{finding.weight}</span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-700">{finding.finding}</p>
+              <p className="mt-2 text-sm leading-6 text-neutral-700">{finding.finding}</p>
               <EvidenceCitations bundle={bundle} ids={finding.evidenceIds} />
             </li>
           ))}
@@ -201,13 +201,13 @@ function JudgeResult({ record, bundle }: { record: JudgeVerdictRecord; bundle: E
         {(["prosecutor", "defense"] as const).map((role) => {
           const assessment = role === "prosecutor" ? result.prosecutorAssessment : result.defenseAssessment;
           return (
-            <article className="rounded-2xl border border-slate-200 bg-white p-6" key={role}>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{role} assessment</p>
-              <h3 className="mt-4 font-bold text-slate-950">Strongest supported point</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-700">{assessment.strongestSupportedPoint}</p>
+            <article className={`border bg-white p-6 ${role === "prosecutor" ? "border-red-200" : "border-blue-200"}`} key={role}>
+              <p className={`text-xs font-medium uppercase tracking-[0.14em] ${role === "prosecutor" ? "text-red-700" : "text-blue-700"}`}>{role} assessment</p>
+              <h3 className="mt-4 font-semibold text-neutral-950">Strongest supported point</h3>
+              <p className="mt-2 text-sm leading-6 text-neutral-700">{assessment.strongestSupportedPoint}</p>
               <EvidenceCitations bundle={bundle} ids={assessment.evidenceIds} />
-              <h3 className="mt-5 border-t border-slate-100 pt-5 font-bold text-slate-950">Weakness or overreach</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-700">{assessment.overreachOrWeakness}</p>
+              <h3 className="mt-5 border-t border-neutral-200 pt-5 font-semibold text-neutral-950">Weakness or overreach</h3>
+              <p className="mt-2 text-sm leading-6 text-neutral-700">{assessment.overreachOrWeakness}</p>
             </article>
           );
         })}
@@ -215,18 +215,18 @@ function JudgeResult({ record, bundle }: { record: JudgeVerdictRecord; bundle: E
 
       <section className="grid gap-5 lg:grid-cols-2">
         {result.primaryFriction && (
-          <article className="rounded-2xl border border-red-200 bg-red-50 p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-700">Primary friction</p>
-            <h3 className="mt-3 text-xl font-bold text-slate-950">{result.primaryFriction.title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{result.primaryFriction.explanation}</p>
+          <article className="border border-red-200 bg-red-50/50 p-6">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-red-700">Primary friction</p>
+            <h3 className="mt-3 text-lg font-semibold text-neutral-950">{result.primaryFriction.title}</h3>
+            <p className="mt-2 text-sm leading-6 text-neutral-700">{result.primaryFriction.explanation}</p>
             <EvidenceCitations bundle={bundle} ids={result.primaryFriction.evidenceIds} />
           </article>
         )}
-        <article className={`rounded-2xl border border-emerald-200 bg-emerald-50 p-6 ${result.primaryFriction ? "" : "lg:col-span-2"}`}>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">Recommended product change</p>
-          <h3 className="mt-3 text-xl font-bold text-slate-950">{result.recommendation.title}</h3>
-          <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">{result.recommendation.action}</p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">{result.recommendation.rationale}</p>
+        <article className={`border border-emerald-200 bg-emerald-50/50 p-6 ${result.primaryFriction ? "" : "lg:col-span-2"}`}>
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-emerald-800">Recommended product change</p>
+          <h3 className="mt-3 text-lg font-semibold text-neutral-950">{result.recommendation.title}</h3>
+          <p className="mt-2 text-sm font-medium leading-6 text-neutral-800">{result.recommendation.action}</p>
+          <p className="mt-2 text-sm leading-6 text-neutral-700">{result.recommendation.rationale}</p>
           <EvidenceCitations bundle={bundle} ids={result.recommendation.evidenceIds} />
         </article>
       </section>
@@ -266,14 +266,14 @@ function FinalReport({
     ["Recommended product change", judge.verdict.recommendation.action],
   ] as const;
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-white sm:p-8" aria-labelledby="final-report-title">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Complete courtroom report</p>
-      <h2 className="mt-3 font-serif text-3xl font-semibold" id="final-report-title">Final report</h2>
-      <dl className="mt-6 grid gap-px overflow-hidden rounded-xl bg-white/10 sm:grid-cols-2">
+    <section id="report" className="scroll-mt-6 border border-neutral-300 bg-white p-6 sm:p-8" aria-labelledby="final-report-title">
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Evaluation record</p>
+      <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-neutral-950" id="final-report-title">Final report</h2>
+      <dl className="mt-6 grid gap-px border border-neutral-200 bg-neutral-200 sm:grid-cols-2">
         {reportRows.map(([label, value]) => (
-          <div className="bg-slate-900 p-4" key={label}>
-            <dt className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{label}</dt>
-            <dd className="mt-2 text-sm leading-6 text-slate-200">{value}</dd>
+          <div className="bg-white p-4" key={label}>
+            <dt className="text-xs text-neutral-400">{label}</dt>
+            <dd className="mt-2 text-sm leading-6 text-neutral-700">{value}</dd>
           </div>
         ))}
       </dl>
@@ -324,10 +324,10 @@ export function CourtroomWorkspace({
 
   return (
     <section className="space-y-5" aria-labelledby="courtroom-title">
-      <div className="rounded-2xl border border-slate-800 bg-slate-950 p-6 text-white sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">Phase 8 · Complete courtroom</p>
-        <h2 className="mt-3 font-serif text-3xl font-semibold" id="courtroom-title">Arguments and final verdict</h2>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Each advocate receives the same immutable evidence. Once both sides are current, the neutral judge compares them in one provider call without retrieving new evidence.</p>
+      <div className="border border-neutral-200 bg-white p-5 sm:p-7">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-neutral-500">Adversarial review</p>
+        <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-neutral-950" id="courtroom-title">Courtroom</h2>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">Both advocates receive the same immutable evidence. The judge compares their cases without retrieving new material.</p>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-2">
@@ -335,16 +335,16 @@ export function CourtroomWorkspace({
         <ArgumentCard bundle={bundle} busyRole={busyRole} controlsDisabled={isJudgeBusy} error={errors.defense} onRun={onRun} record={courtroom.defense} role="defense" />
       </div>
 
-      <div className={`rounded-2xl border p-6 text-center ${judgeEligible ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>
-        <p className="text-sm font-bold text-slate-900">{judgeAvailabilityMessage}</p>
-        <p className="mt-2 text-xs text-slate-600">Running the judge uses one request from the configured LLM provider. There are no automatic retries or fallback calls.</p>
+      <div className={`border p-6 text-center ${judgeEligible ? "border-indigo-300 bg-indigo-50/40" : "border-neutral-200 bg-white"}`}>
+        <p className="text-sm font-medium text-neutral-900">{judgeAvailabilityMessage}</p>
+        <p className="mt-2 text-xs text-neutral-600">One LLM request · no automatic retry or fallback.</p>
         {judgeError && (
           <div className="mx-auto mt-4 max-w-2xl rounded-xl border border-red-200 bg-red-50 p-3 text-left" role="alert">
             <p className="text-sm text-red-900">{judgeError.message}</p>
             <p className="mt-1 text-xs font-bold uppercase tracking-wide text-red-700">{judgeError.code}</p>
           </div>
         )}
-        <button className="mt-4 rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40" disabled={!judgeEligible || busyRole !== null || isJudgeBusy} onClick={onRunJudge} type="button">
+        <button className="mt-4 rounded-md bg-neutral-950 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-40" disabled={!judgeEligible || busyRole !== null || isJudgeBusy} onClick={onRunJudge} type="button">
           {isJudgeBusy ? (courtroom.judge ? "Regenerating judge…" : "Running judge…") : courtroom.judge ? "Regenerate judge" : "Run judge"}
         </button>
       </div>
