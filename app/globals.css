@@ -1,14 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b1020;
-  --foreground: #f8fafc;
-  --surface: #111827;
-  --surface-elevated: #151c2e;
-  --muted: #94a3b8;
-  --subtle: #64748b;
-  --border: #27324a;
-  --accent: #6366f1;
+  --background: #f5f2ea;
+  --foreground: #1f2321;
+  --surface: #fbfaf6;
+  --surface-elevated: #ffffff;
+  --muted: #5f665f;
+  --subtle: #6b726b;
+  --border: #d8d4c8;
+  --border-strong: #c8c2b5;
+  --accent: #2f6b57;
+  --accent-hover: #285a49;
+  --accent-soft: #e3ece7;
+  --customer: #4f6f63;
+  --evidence: #47745b;
+  --prosecutor: #a94c30;
+  --defense: #4e6e81;
+  --judge: #8a6a3f;
+  --success: #3f7d5a;
+  --warning: #936115;
+  --error: #b84a3a;
 }
 
 @theme inline {
@@ -20,7 +31,18 @@
   --color-lab-muted: var(--muted);
   --color-lab-subtle: var(--subtle);
   --color-lab-border: var(--border);
+  --color-lab-border-strong: var(--border-strong);
   --color-lab-accent: var(--accent);
+  --color-lab-accent-hover: var(--accent-hover);
+  --color-lab-accent-soft: var(--accent-soft);
+  --color-lab-customer: var(--customer);
+  --color-lab-evidence: var(--evidence);
+  --color-lab-prosecutor: var(--prosecutor);
+  --color-lab-defense: var(--defense);
+  --color-lab-judge: var(--judge);
+  --color-lab-success: var(--success);
+  --color-lab-warning: var(--warning);
+  --color-lab-error: var(--error);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -58,8 +80,8 @@ body {
 }
 
 ::selection {
-  background: #4f46e5;
-  color: #f8fafc;
+  background: var(--accent-soft);
+  color: var(--foreground);
 }
 
 :focus-visible {

@@ -113,7 +113,7 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
           <section className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-labelledby="preset-heading">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-indigo-300">{demoMode ? "Recommended demos" : "Recommended configurations"}</p>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-accent">{demoMode ? "Recommended demos" : "Recommended configurations"}</p>
                 <h2 id="preset-heading" className="mt-2 text-lg font-semibold tracking-[-0.02em]">Start with a representative test</h2>
               </div>
               <p className="font-mono text-[0.7rem] text-lab-subtle">Selection only · 0 requests</p>
@@ -125,12 +125,12 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
                 return (
                   <article className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={preset.id}>
                     <div>
-                      <p className="text-xs font-medium text-indigo-300">{preset.label}</p>
-                      <h3 className="mt-1 text-sm font-semibold text-slate-100">{task.title}</h3>
+                      <p className="text-xs font-medium text-lab-accent">{preset.label}</p>
+                      <h3 className="mt-1 text-sm font-semibold text-foreground">{task.title}</h3>
                       <p className="mt-1 text-xs leading-5 text-lab-muted">{persona.name} · {preset.maxActions} actions · {preset.description}</p>
                     </div>
                     <button
-                      className="justify-self-start rounded-md border border-lab-border bg-lab-elevated px-3 py-2 text-xs font-medium text-slate-200 hover:border-indigo-400 hover:text-white sm:justify-self-auto"
+                      className="justify-self-start rounded-md border border-lab-border bg-lab-elevated px-3 py-2 text-xs font-medium text-foreground hover:border-lab-border-strong hover:bg-lab-accent-soft hover:text-lab-accent sm:justify-self-auto"
                       onClick={() => applyPreset(preset.taskId, preset.personaId, preset.maxActions)}
                       type="button"
                     >
@@ -150,20 +150,20 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
                 <p className="mt-1 max-w-2xl text-sm text-lab-muted">Controlled fictional product · ten deterministic knowledge pages</p>
               </div>
             </div>
-            <Link className="shrink-0 text-sm font-medium text-indigo-300 hover:text-indigo-200" href="/product">Browse knowledge →</Link>
+            <Link className="shrink-0 text-sm font-medium text-lab-accent hover:text-lab-accent-hover" href="/product">Browse knowledge →</Link>
           </section>
 
           <fieldset className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-describedby={errors.task ? "task-error" : undefined}>
-            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-slate-50">1 · Scenario</legend>
+            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-foreground">1 · Scenario</legend>
             <p className="text-sm leading-6 text-lab-muted">Choose one narrow question for the synthetic customer to investigate.</p>
-            {errors.task && <p id="task-error" role="alert" className="mt-3 text-sm font-semibold text-red-400">{errors.task}</p>}
+            {errors.task && <p id="task-error" role="alert" className="mt-3 text-sm font-semibold text-lab-error">{errors.task}</p>}
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {customerTasks.map((task) => {
                 const selected = selectedTaskId === task.id;
                 return (
                   <label
-                    className={`relative flex cursor-pointer flex-col rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-400 focus-within:ring-offset-2 focus-within:ring-offset-lab-surface ${
-                      selected ? "border-indigo-400 bg-indigo-500/10" : "border-lab-border bg-lab-elevated/50 hover:border-slate-500"
+                    className={`relative flex cursor-pointer flex-col rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-lab-accent focus-within:ring-offset-2 focus-within:ring-offset-lab-surface ${
+                      selected ? "border-lab-accent bg-lab-accent-soft shadow-[0_1px_2px_rgba(31,35,33,0.06)]" : "border-lab-border bg-lab-elevated/50 hover:border-lab-border-strong"
                     }`}
                     key={task.id}
                   >
@@ -177,11 +177,11 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
                     />
                     <div className="flex items-center justify-between gap-3 text-xs">
                       <span className="font-medium text-lab-muted">{task.category}</span>
-                      <span className={`font-mono ${selected ? "text-indigo-300" : "text-lab-subtle"}`}>{selected ? "✓ Selected" : task.difficulty}</span>
+                      <span className={`font-mono ${selected ? "text-lab-accent" : "text-lab-subtle"}`}>{selected ? "✓ Selected" : task.difficulty}</span>
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-slate-100">{task.title}</h3>
+                    <h3 className="mt-4 text-base font-semibold text-foreground">{task.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-lab-muted">{task.scenario}</p>
-                    <blockquote className="mt-4 border-l border-indigo-400/60 pl-3 text-sm leading-6 text-slate-300">
+                    <blockquote className="mt-4 border-l border-lab-customer pl-3 text-sm leading-6 text-lab-muted">
                       “{task.question}”
                     </blockquote>
                   </label>
@@ -191,16 +191,16 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
           </fieldset>
 
           <fieldset className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-describedby={errors.persona ? "persona-error" : undefined}>
-            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-slate-50">2 · Persona</legend>
+            <legend className="px-2 text-lg font-semibold tracking-[-0.02em] text-foreground">2 · Persona</legend>
             <p className="text-sm leading-6 text-lab-muted">Choose how the customer approaches the product record.</p>
-            {errors.persona && <p id="persona-error" role="alert" className="mt-3 text-sm font-semibold text-red-400">{errors.persona}</p>}
+            {errors.persona && <p id="persona-error" role="alert" className="mt-3 text-sm font-semibold text-lab-error">{errors.persona}</p>}
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {customerPersonas.map((persona) => {
                 const selected = selectedPersonaId === persona.id;
                 return (
                   <label
-                    className={`relative flex cursor-pointer flex-col rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-indigo-400 focus-within:ring-offset-2 focus-within:ring-offset-lab-surface ${
-                      selected ? "border-indigo-400 bg-indigo-500/10" : "border-lab-border bg-lab-elevated/50 hover:border-slate-500"
+                    className={`relative flex cursor-pointer flex-col rounded-md border p-4 transition-colors focus-within:ring-2 focus-within:ring-lab-accent focus-within:ring-offset-2 focus-within:ring-offset-lab-surface ${
+                      selected ? "border-lab-accent bg-lab-accent-soft shadow-[0_1px_2px_rgba(31,35,33,0.06)]" : "border-lab-border bg-lab-elevated/50 hover:border-lab-border-strong"
                     }`}
                     key={persona.id}
                   >
@@ -214,9 +214,9 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
                     />
                     <div className="flex items-start justify-between gap-4 text-xs">
                       <span className="font-mono text-lab-subtle">{persona.visualLabel}</span>
-                      <span className={selected ? "font-mono text-indigo-300" : "font-mono text-lab-subtle"}>{selected ? "✓ Selected" : `${persona.defaultMaxActions} actions`}</span>
+                      <span className={selected ? "font-mono text-lab-accent" : "font-mono text-lab-subtle"}>{selected ? "✓ Selected" : `${persona.defaultMaxActions} actions`}</span>
                     </div>
-                    <h3 className="mt-4 text-base font-semibold text-slate-100">{persona.name}</h3>
+                    <h3 className="mt-4 text-base font-semibold text-foreground">{persona.name}</h3>
                     <p className="mt-2 text-sm leading-6 text-lab-muted">{persona.description}</p>
                     <ul className="mt-3 space-y-1 text-xs leading-5 text-lab-subtle">
                       {persona.traits.map((trait) => <li key={trait}>• {trait}</li>)}
@@ -228,13 +228,13 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
           </fieldset>
 
           <section className="rounded-lg border border-lab-border bg-lab-surface p-5 sm:p-6" aria-labelledby="action-heading">
-            <h2 id="action-heading" className="text-lg font-semibold tracking-[-0.02em] text-slate-50">3 · Action budget</h2>
+            <h2 id="action-heading" className="text-lg font-semibold tracking-[-0.02em] text-foreground">3 · Action budget</h2>
             <p className="mt-2 text-sm leading-6 text-lab-muted">Set the maximum number of successful customer actions.</p>
             <div className="mt-5 max-w-sm">
-              <label className="text-sm font-medium text-slate-200" htmlFor="max-actions">Maximum actions</label>
+              <label className="text-sm font-medium text-foreground" htmlFor="max-actions">Maximum actions</label>
               <select
                 id="max-actions"
-                className="mt-2 block w-full rounded-md border border-lab-border bg-lab-elevated px-3 py-2.5 text-sm text-slate-100"
+                className="mt-2 block w-full rounded-md border border-lab-border bg-lab-elevated px-3 py-2.5 text-sm text-foreground"
                 value={maxActions}
                 onChange={(event) => updateActionLimit(Number(event.target.value))}
                 aria-describedby={`action-help${errors.actions ? " action-error" : ""}`}
@@ -244,37 +244,37 @@ export function TestCreationForm({ demoMode }: { demoMode: boolean }) {
               <p id="action-help" className="mt-2 text-xs leading-5 text-lab-subtle">
                 Persona defaults apply until you deliberately choose a value.
               </p>
-              {errors.actions && <p id="action-error" role="alert" className="mt-2 text-sm font-semibold text-red-400">{errors.actions}</p>}
+              {errors.actions && <p id="action-error" role="alert" className="mt-2 text-sm font-semibold text-lab-error">{errors.actions}</p>}
             </div>
           </section>
         </div>
 
-        <aside className="rounded-lg border border-lab-border bg-lab-elevated p-5 shadow-[0_18px_60px_rgba(0,0,0,0.14)] lg:sticky lg:top-6" aria-labelledby="summary-heading">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-indigo-300">Configuration</p>
+        <aside className="rounded-lg border border-lab-border-strong bg-lab-elevated p-5 shadow-[0_1px_2px_rgba(31,35,33,0.06)] lg:sticky lg:top-6" aria-labelledby="summary-heading">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-lab-accent">Configuration</p>
           <h2 id="summary-heading" className="mt-2 text-lg font-semibold">Review test</h2>
           <dl className="mt-5 divide-y divide-lab-border border-y border-lab-border">
             <div>
               <dt className="pt-3 text-xs text-lab-subtle">Product</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">FlowPilot</dd>
+              <dd className="pb-3 pt-1 text-sm font-medium text-foreground">FlowPilot</dd>
             </div>
             <div>
               <dt className="pt-3 text-xs text-lab-subtle">Scenario</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">{selectedTask?.title ?? "Not selected"}</dd>
+              <dd className="pb-3 pt-1 text-sm font-medium text-foreground">{selectedTask?.title ?? "Not selected"}</dd>
             </div>
             <div>
               <dt className="pt-3 text-xs text-lab-subtle">Persona</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">{selectedPersona?.name ?? "Not selected"}</dd>
+              <dd className="pb-3 pt-1 text-sm font-medium text-foreground">{selectedPersona?.name ?? "Not selected"}</dd>
             </div>
             <div>
               <dt className="pt-3 text-xs text-lab-subtle">Action budget</dt>
-              <dd className="pb-3 pt-1 text-sm font-medium text-slate-100">{maxActions} actions</dd>
+              <dd className="pb-3 pt-1 text-sm font-medium text-foreground">{maxActions} actions</dd>
             </div>
           </dl>
-          <div className="mt-5 border-l-2 border-indigo-400/70 pl-3 text-xs leading-5 text-lab-muted">
+          <div className="mt-5 border-l-2 border-lab-customer pl-3 text-xs leading-5 text-lab-muted">
             Creating this test saves a ready configuration in this browser. The run begins only when you explicitly start the simulation.
           </div>
-          {errors.storage && <p role="alert" className="mt-4 text-sm font-semibold leading-6 text-red-400">{errors.storage}</p>}
-          <button className="mt-6 w-full rounded-md bg-indigo-500 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-600" type="submit">
+          {errors.storage && <p role="alert" className="mt-4 text-sm font-semibold leading-6 text-lab-error">{errors.storage}</p>}
+          <button className="mt-6 w-full rounded-md bg-lab-accent px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-lab-accent-hover" type="submit">
             Create test
           </button>
           <p className="mt-3 text-center font-mono text-[0.7rem] text-lab-subtle">Saved to this browser</p>
