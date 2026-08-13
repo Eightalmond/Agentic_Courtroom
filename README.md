@@ -4,6 +4,12 @@ Trial by User is an agentic product-testing application. Its synthetic customer 
 
 Phase 9 is complete. The core courtroom MVP now includes public-demo safeguards for a low-cost Vercel Hobby deployment: visible demo boundaries, recommended scenarios, explicit LLM-usage notices, sequential auto-run confirmation, bounded requests, best-effort per-instance rate limits, same-instance duplicate-request protection, friendly errors, and application security headers. The configured Groq or OpenAI provider handles customer decisions, advocates, and judge; retrieval and evidence collection remain deterministic.
 
+# Architecture
+
+<img width="1280" height="664" alt="Screenshot 2026-08-11 at 6 08 17 PM" src="https://github.com/user-attachments/assets/6be18a88-70d6-47e3-a682-4b4b64e0c364" />
+
+
+
 ## Available routes
 
 - `/` — dashboard and current MVP status
