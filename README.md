@@ -102,3 +102,5 @@ npm run build
 - Lexical retrieval is intentionally simpler than embedding-based semantic retrieval.
 
 Detailed design and implementation notes remain in [the product specification](docs/PRODUCT_SPEC.md), [architecture documentation](docs/ARCHITECTURE.md), and [implementation plan](docs/IMPLEMENTATION_PLAN.md).
+
+Evaluation setup, metrics, and live-run safeguards are documented in [the evaluation guide](docs/EVALUATION.md).

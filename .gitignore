@@ -13,6 +13,12 @@
 # testing
 /coverage
 
+# generated evaluation outputs (the deterministic latest report is tracked)
+/reports/evaluation/*.json
+/reports/evaluation/*.md
+!/reports/evaluation/latest.json
+!/reports/evaluation/latest.md
+
 # next.js
 /.next/
 /out/

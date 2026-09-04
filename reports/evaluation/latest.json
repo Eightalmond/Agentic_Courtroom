@@ -1,0 +1,1221 @@
+{
+  "evaluationVersion": "1.0.0",
+  "timestamp": "2026-09-04T06:09:36.861Z",
+  "gitCommitSha": "1972abce9c1146b50c517944f82231de81262fcf",
+  "mode": "deterministic",
+  "provider": "fixture",
+  "model": "none",
+  "benchmarkVersion": "flowpilot-v1",
+  "taskCount": 6,
+  "trialsPerTask": 1,
+  "deterministicMetrics": {
+    "retrieval": {
+      "caseCount": 6,
+      "recallAt1": 0.6666666666666666,
+      "recallAt3": 0.9166666666666666,
+      "recallAt5": 1,
+      "meanReciprocalRank": 0.9166666666666666,
+      "requiredSectionCoverageAt5": 1,
+      "cases": [
+        {
+          "benchmarkId": "flowpilot-trial-cancellation",
+          "taskId": "trial-cancellation",
+          "query": "Can I cancel the Pro free trial before it ends without being charged?",
+          "expectedSectionIds": [
+            "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial",
+            "flowpilot-cancellation-policy-cancelling-during-a-trial"
+          ],
+          "topResults": [
+            {
+              "sectionId": "flowpilot-free-trial-and-billing-starting-the-pro-trial",
+              "rank": 1,
+              "score": 158,
+              "source": "Free trial and billing / Starting the Pro trial"
+            },
+            {
+              "sectionId": "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial",
+              "rank": 2,
+              "score": 146,
+              "source": "Free trial and billing / Automatic billing after the trial"
+            },
+            {
+              "sectionId": "flowpilot-cancellation-policy-cancelling-during-a-trial",
+              "rank": 3,
+              "score": 67,
+              "source": "Cancellation policy / Cancelling during a trial"
+            },
+            {
+              "sectionId": "flowpilot-cancellation-policy-cancelling-a-paid-subscription",
+              "rank": 4,
+              "score": 54,
+              "source": "Cancellation policy / Cancelling a paid subscription"
+            },
+            {
+              "sectionId": "flowpilot-pricing-pro-29-per-user-per-month",
+              "rank": 5,
+              "score": 51,
+              "source": "Pricing / Pro — $29 per user per month"
+            }
+          ],
+          "firstRelevantRank": 2,
+          "recallAt1": 0,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "requiredSectionCoverageAt5": 1,
+          "passed": true
+        },
+        {
+          "benchmarkId": "flowpilot-api-allowance",
+          "taskId": "api-allowance",
+          "query": "Does the Pro plan include API access, and how many API requests can I make?",
+          "expectedSectionIds": [
+            "flowpilot-api-access-plan-availability",
+            "flowpilot-api-rate-limits-monthly-request-allowances"
+          ],
+          "topResults": [
+            {
+              "sectionId": "flowpilot-api-access-plan-availability",
+              "rank": 1,
+              "score": 99,
+              "source": "API access / Plan availability"
+            },
+            {
+              "sectionId": "flowpilot-api-rate-limits-monthly-request-allowances",
+              "rank": 2,
+              "score": 94,
+              "source": "API rate limits / Monthly request allowances"
+            },
+            {
+              "sectionId": "flowpilot-api-access-using-the-api",
+              "rank": 3,
+              "score": 76,
+              "source": "API access / Using the API"
+            },
+            {
+              "sectionId": "flowpilot-api-rate-limits-short-term-limits",
+              "rank": 4,
+              "score": 64,
+              "source": "API rate limits / Short-term limits"
+            },
+            {
+              "sectionId": "flowpilot-pricing-pro-29-per-user-per-month",
+              "rank": 5,
+              "score": 53,
+              "source": "Pricing / Pro — $29 per user per month"
+            }
+          ],
+          "firstRelevantRank": 1,
+          "recallAt1": 0.5,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "requiredSectionCoverageAt5": 1,
+          "passed": true
+        },
+        {
+          "benchmarkId": "flowpilot-refund-after-renewal",
+          "taskId": "refund-after-renewal",
+          "query": "I forgot to cancel before renewal. Will cancelling now automatically refund the charge?",
+          "expectedSectionIds": [
+            "flowpilot-cancellation-policy-cancelling-a-paid-subscription",
+            "flowpilot-refund-policy-general-policy"
+          ],
+          "topResults": [
+            {
+              "sectionId": "flowpilot-refund-policy-general-policy",
+              "rank": 1,
+              "score": 102,
+              "source": "Refund policy / General policy"
+            },
+            {
+              "sectionId": "flowpilot-refund-policy-duplicate-charges-and-billing-errors",
+              "rank": 2,
+              "score": 101,
+              "source": "Refund policy / Duplicate charges and billing errors"
+            },
+            {
+              "sectionId": "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial",
+              "rank": 3,
+              "score": 82,
+              "source": "Free trial and billing / Automatic billing after the trial"
+            },
+            {
+              "sectionId": "flowpilot-cancellation-policy-cancelling-a-paid-subscription",
+              "rank": 4,
+              "score": 67,
+              "source": "Cancellation policy / Cancelling a paid subscription"
+            },
+            {
+              "sectionId": "flowpilot-cancellation-policy-cancelling-during-a-trial",
+              "rank": 5,
+              "score": 65,
+              "source": "Cancellation policy / Cancelling during a trial"
+            }
+          ],
+          "firstRelevantRank": 1,
+          "recallAt1": 0.5,
+          "recallAt3": 0.5,
+          "recallAt5": 1,
+          "requiredSectionCoverageAt5": 1,
+          "passed": true
+        },
+        {
+          "benchmarkId": "flowpilot-hipaa-suitability",
+          "taskId": "hipaa-suitability",
+          "query": "Can my healthcare team use FlowPilot for protected health information?",
+          "expectedSectionIds": [
+            "flowpilot-security-and-privacy-identity-and-compliance"
+          ],
+          "topResults": [
+            {
+              "sectionId": "flowpilot-security-and-privacy-identity-and-compliance",
+              "rank": 1,
+              "score": 74,
+              "source": "Security and privacy / Identity and compliance"
+            },
+            {
+              "sectionId": "flowpilot-security-and-privacy-data-protection",
+              "rank": 2,
+              "score": 55,
+              "source": "Security and privacy / Data protection"
+            },
+            {
+              "sectionId": "flowpilot-product-overview-what-flowpilot-does",
+              "rank": 3,
+              "score": 21,
+              "source": "Product overview / What FlowPilot does"
+            },
+            {
+              "sectionId": "flowpilot-refund-policy-duplicate-charges-and-billing-errors",
+              "rank": 4,
+              "score": 17,
+              "source": "Refund policy / Duplicate charges and billing errors"
+            },
+            {
+              "sectionId": "flowpilot-team-permissions-custom-roles-on-business",
+              "rank": 5,
+              "score": 16,
+              "source": "Team permissions / Custom roles on Business"
+            }
+          ],
+          "firstRelevantRank": 1,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "requiredSectionCoverageAt5": 1,
+          "passed": true
+        },
+        {
+          "benchmarkId": "flowpilot-viewer-permissions",
+          "taskId": "viewer-permissions",
+          "query": "Can I invite someone who can view workflows but cannot edit them?",
+          "expectedSectionIds": [
+            "flowpilot-team-permissions-standard-roles"
+          ],
+          "topResults": [
+            {
+              "sectionId": "flowpilot-team-permissions-standard-roles",
+              "rank": 1,
+              "score": 34,
+              "source": "Team permissions / Standard roles"
+            },
+            {
+              "sectionId": "flowpilot-product-overview-how-workspaces-are-organized",
+              "rank": 2,
+              "score": 33,
+              "source": "Product overview / How workspaces are organized"
+            },
+            {
+              "sectionId": "flowpilot-product-overview-what-flowpilot-does",
+              "rank": 3,
+              "score": 9,
+              "source": "Product overview / What FlowPilot does"
+            },
+            {
+              "sectionId": "flowpilot-api-access-plan-availability",
+              "rank": 4,
+              "score": 5,
+              "source": "API access / Plan availability"
+            },
+            {
+              "sectionId": "flowpilot-api-access-using-the-api",
+              "rank": 5,
+              "score": 5,
+              "source": "API access / Using the API"
+            }
+          ],
+          "firstRelevantRank": 1,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "requiredSectionCoverageAt5": 1,
+          "passed": true
+        },
+        {
+          "benchmarkId": "flowpilot-audit-log-export",
+          "taskId": "audit-log-export",
+          "query": "Can I export a complete audit log on the Pro plan?",
+          "expectedSectionIds": [
+            "flowpilot-data-export-audit-log-export"
+          ],
+          "topResults": [
+            {
+              "sectionId": "flowpilot-data-export-audit-log-export",
+              "rank": 1,
+              "score": 147,
+              "source": "Data export / Audit-log export"
+            },
+            {
+              "sectionId": "flowpilot-data-export-workflow-csv-export",
+              "rank": 2,
+              "score": 107,
+              "source": "Data export / Workflow CSV export"
+            },
+            {
+              "sectionId": "flowpilot-pricing-business-59-per-user-per-month",
+              "rank": 3,
+              "score": 47,
+              "source": "Pricing / Business — $59 per user per month"
+            },
+            {
+              "sectionId": "flowpilot-free-trial-and-billing-starting-the-pro-trial",
+              "rank": 4,
+              "score": 44,
+              "source": "Free trial and billing / Starting the Pro trial"
+            },
+            {
+              "sectionId": "flowpilot-api-access-plan-availability",
+              "rank": 5,
+              "score": 36,
+              "source": "API access / Plan availability"
+            }
+          ],
+          "firstRelevantRank": 1,
+          "recallAt1": 1,
+          "recallAt3": 1,
+          "recallAt5": 1,
+          "requiredSectionCoverageAt5": 1,
+          "passed": true
+        }
+      ]
+    },
+    "customer": {
+      "runCount": 6,
+      "completionRate": 1,
+      "correctness": {
+        "fully-supported": 6,
+        "unsupported": 0,
+        "contradicted": 0,
+        "not-assessable": 0
+      },
+      "fullySupportedRate": 1,
+      "groundingFailureRate": 0,
+      "actionEfficiency": 0.6124999999999999,
+      "medianSuccessfulActions": 4,
+      "redundantActionRate": 0,
+      "requiredEvidenceCoverage": 1,
+      "cases": [
+        {
+          "runId": "run-eval-trial-cancellation-a",
+          "benchmarkId": "flowpilot-trial-cancellation",
+          "taskId": "trial-cancellation",
+          "personaId": "impatient-first-time-customer",
+          "provider": "fixture",
+          "model": "pre-recorded-decisions-v1",
+          "maxActions": 4,
+          "successfulCustomerActions": 4,
+          "modelRequestAttempts": 4,
+          "providerFailures": 0,
+          "searches": 1,
+          "pagesOpened": 0,
+          "sectionsInspected": 2,
+          "repeatedSearches": 0,
+          "repeatedPageOpenings": 0,
+          "repeatedSectionInspections": 0,
+          "redundantActionRate": 0,
+          "finalAnswer": "Yes. Cancelling during the trial, before day 14, prevents the first charge. Access remains until the trial ends.",
+          "finalConfidence": "high",
+          "gaveUp": false,
+          "budgetExhausted": false,
+          "invalidToolDecisions": 0,
+          "completionStatus": "answer",
+          "correctness": "fully-supported",
+          "requiredEvidenceCoverage": 1,
+          "groundingFailure": false,
+          "actions": [
+            {
+              "id": "action-run-eval-trial-cancellation-a-1",
+              "number": 1,
+              "type": "SEARCH",
+              "explanation": "Look for the trial cancellation terms.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "query": "Pro trial cancellation charge access"
+              },
+              "observation": {
+                "kind": "search",
+                "query": "Pro trial cancellation charge access",
+                "results": [
+                  {
+                    "sectionId": "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial",
+                    "pageSlug": "free-trial-and-billing",
+                    "pageTitle": "Free trial and billing",
+                    "sectionTitle": "Automatic billing after the trial",
+                    "excerpt": "FlowPilot automatically charges the saved payment card for Pro when the 14-day trial ends unless the subscription is cancelled first. The first paid billing period begins immediately after the trial. Cancelling during…"
+                  },
+                  {
+                    "sectionId": "flowpilot-free-trial-and-billing-starting-the-pro-trial",
+                    "pageSlug": "free-trial-and-billing",
+                    "pageTitle": "Free trial and billing",
+                    "sectionTitle": "Starting the Pro trial",
+                    "excerpt": "The Pro plan includes a 14-day free trial. A payment card is required to begin, but the card is not charged when the trial starts. The trial begins as soon as the workspace confirms its plan and card details. Trial…"
+                  },
+                  {
+                    "sectionId": "flowpilot-cancellation-policy-cancelling-during-a-trial",
+                    "pageSlug": "cancellation-policy",
+                    "pageTitle": "Cancellation policy",
+                    "sectionTitle": "Cancelling during a trial",
+                    "excerpt": "Cancelling a Pro trial before day 14 prevents the first charge. The workspace keeps Pro trial access until the trial's scheduled end date."
+                  }
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-trial-cancellation-a-2",
+              "number": 2,
+              "type": "INSPECT_SECTION",
+              "explanation": "Read the automatic billing details.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial",
+                "pageSlug": "free-trial-and-billing",
+                "pageTitle": "Free trial and billing",
+                "sectionTitle": "Automatic billing after the trial",
+                "content": "FlowPilot automatically charges the saved payment card for Pro when the 14-day trial ends unless the subscription is cancelled first. The first paid billing period begins immediately after the trial. Cancelling during the trial prevents the first charge. Trial features remain available until the original end of the 14-day trial period, even after cancellation.",
+                "callouts": [
+                  "The trial converts automatically: Cancel before the end of day 14 to prevent the first Pro subscription charge."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-trial-cancellation-a-3",
+              "number": 3,
+              "type": "INSPECT_SECTION",
+              "explanation": "Confirm what cancellation changes during the trial.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-cancellation-policy-cancelling-during-a-trial"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-cancellation-policy-cancelling-during-a-trial",
+                "pageSlug": "cancellation-policy",
+                "pageTitle": "Cancellation policy",
+                "sectionTitle": "Cancelling during a trial",
+                "content": "Cancelling a Pro trial before day 14 prevents the first charge. The workspace keeps Pro trial access until the trial's scheduled end date.",
+                "callouts": [
+                  "Cancellation does not delete the workspace: Deleting a workspace is a separate action in workspace settings. Export any needed data before deletion, because deletion removes workspace content rather than only ending billing."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-trial-cancellation-a-4",
+              "number": 4,
+              "type": "ANSWER",
+              "explanation": "The required timing and access details are available.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "answer": "Yes. Cancelling during the trial, before day 14, prevents the first charge. Access remains until the trial ends.",
+                "confidence": "high"
+              },
+              "observation": {
+                "kind": "answer",
+                "answer": "Yes. Cancelling during the trial, before day 14, prevents the first charge. Access remains until the trial ends.",
+                "confidence": "high"
+              },
+              "success": true
+            }
+          ]
+        },
+        {
+          "runId": "run-eval-api-allowance-a",
+          "benchmarkId": "flowpilot-api-allowance",
+          "taskId": "api-allowance",
+          "personaId": "careful-researcher",
+          "provider": "fixture",
+          "model": "pre-recorded-decisions-v1",
+          "maxActions": 9,
+          "successfulCustomerActions": 5,
+          "modelRequestAttempts": 5,
+          "providerFailures": 0,
+          "searches": 1,
+          "pagesOpened": 0,
+          "sectionsInspected": 3,
+          "repeatedSearches": 0,
+          "repeatedPageOpenings": 0,
+          "repeatedSectionInspections": 0,
+          "redundantActionRate": 0,
+          "finalAnswer": "Pro includes API access with 10,000 requests per month. Short-term rate limits also apply, including 60 requests per minute.",
+          "finalConfidence": "high",
+          "gaveUp": false,
+          "budgetExhausted": false,
+          "invalidToolDecisions": 0,
+          "completionStatus": "answer",
+          "correctness": "fully-supported",
+          "requiredEvidenceCoverage": 1,
+          "groundingFailure": false,
+          "actions": [
+            {
+              "id": "action-run-eval-api-allowance-a-1",
+              "number": 1,
+              "type": "SEARCH",
+              "explanation": "Find API plan and allowance details.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "query": "Pro API access monthly requests rate limits"
+              },
+              "observation": {
+                "kind": "search",
+                "query": "Pro API access monthly requests rate limits",
+                "results": [
+                  {
+                    "sectionId": "flowpilot-api-rate-limits-monthly-request-allowances",
+                    "pageSlug": "api-rate-limits",
+                    "pageTitle": "API rate limits",
+                    "sectionTitle": "Monthly request allowances",
+                    "excerpt": "Pro workspaces can make up to 10,000 API requests per month. Business workspaces can make up to 100,000 API requests per month. Starter has no API allowance because API access is unavailable on that plan. Monthly…"
+                  },
+                  {
+                    "sectionId": "flowpilot-api-rate-limits-short-term-limits",
+                    "pageSlug": "api-rate-limits",
+                    "pageTitle": "API rate limits",
+                    "sectionTitle": "Short-term limits",
+                    "excerpt": "Short-term rate limits also apply to protect service stability: Pro permits 60 requests per minute, and Business permits 300 requests per minute. Requests above these limits receive a rate-limit response and can be…"
+                  },
+                  {
+                    "sectionId": "flowpilot-api-access-using-the-api",
+                    "pageSlug": "api-access",
+                    "pageTitle": "API access",
+                    "sectionTitle": "Using the API",
+                    "excerpt": "The FlowPilot API can read workflow definitions, inspect run status, and start eligible workflows. API usage counts toward both a monthly plan allowance and short-term rate limits."
+                  }
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-api-allowance-a-2",
+              "number": 2,
+              "type": "INSPECT_SECTION",
+              "explanation": "Confirm which plan includes the API.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-api-access-plan-availability"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-api-access-plan-availability",
+                "pageSlug": "api-access",
+                "pageTitle": "API access",
+                "sectionTitle": "Plan availability",
+                "content": "API access is available on Pro and Business. Starter does not include API access, so Starter workspaces cannot create or use API tokens. Workspace Admins can create tokens from developer settings. Tokens inherit access to their workspace and should be stored like passwords.",
+                "callouts": []
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-api-allowance-a-3",
+              "number": 3,
+              "type": "INSPECT_SECTION",
+              "explanation": "Read the monthly allowance.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-api-rate-limits-monthly-request-allowances"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-api-rate-limits-monthly-request-allowances",
+                "pageSlug": "api-rate-limits",
+                "pageTitle": "API rate limits",
+                "sectionTitle": "Monthly request allowances",
+                "content": "Pro workspaces can make up to 10,000 API requests per month. Business workspaces can make up to 100,000 API requests per month. Starter has no API allowance because API access is unavailable on that plan. Monthly allowances reset at the beginning of the workspace's billing period. Unused requests do not carry forward.",
+                "callouts": [
+                  "Two limits apply: Requests must remain within both the monthly allowance and the plan's per-minute limit."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-api-allowance-a-4",
+              "number": 4,
+              "type": "INSPECT_SECTION",
+              "explanation": "Check the short-term qualification.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-api-rate-limits-short-term-limits"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-api-rate-limits-short-term-limits",
+                "pageSlug": "api-rate-limits",
+                "pageTitle": "API rate limits",
+                "sectionTitle": "Short-term limits",
+                "content": "Short-term rate limits also apply to protect service stability: Pro permits 60 requests per minute, and Business permits 300 requests per minute. Requests above these limits receive a rate-limit response and can be retried after the indicated interval. A workspace can reach a short-term limit even when it has requests remaining in its monthly allowance.",
+                "callouts": [
+                  "Two limits apply: Requests must remain within both the monthly allowance and the plan's per-minute limit."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-api-allowance-a-5",
+              "number": 5,
+              "type": "ANSWER",
+              "explanation": "Both the plan and two limit types are clear.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "answer": "Pro includes API access with 10,000 requests per month. Short-term rate limits also apply, including 60 requests per minute.",
+                "confidence": "high"
+              },
+              "observation": {
+                "kind": "answer",
+                "answer": "Pro includes API access with 10,000 requests per month. Short-term rate limits also apply, including 60 requests per minute.",
+                "confidence": "high"
+              },
+              "success": true
+            }
+          ]
+        },
+        {
+          "runId": "run-eval-refund-after-renewal-a",
+          "benchmarkId": "flowpilot-refund-after-renewal",
+          "taskId": "refund-after-renewal",
+          "personaId": "existing-frustrated-customer",
+          "provider": "fixture",
+          "model": "pre-recorded-decisions-v1",
+          "maxActions": 5,
+          "successfulCustomerActions": 4,
+          "modelRequestAttempts": 4,
+          "providerFailures": 0,
+          "searches": 1,
+          "pagesOpened": 0,
+          "sectionsInspected": 2,
+          "repeatedSearches": 0,
+          "repeatedPageOpenings": 0,
+          "repeatedSectionInspections": 0,
+          "redundantActionRate": 0,
+          "finalAnswer": "No. Cancelling now does not automatically create a refund and stops a future renewal, but does not reverse a charge.",
+          "finalConfidence": "high",
+          "gaveUp": false,
+          "budgetExhausted": false,
+          "invalidToolDecisions": 0,
+          "completionStatus": "answer",
+          "correctness": "fully-supported",
+          "requiredEvidenceCoverage": 1,
+          "groundingFailure": false,
+          "actions": [
+            {
+              "id": "action-run-eval-refund-after-renewal-a-1",
+              "number": 1,
+              "type": "SEARCH",
+              "explanation": "Find what cancellation does after renewal.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "query": "cancel after renewal automatic refund"
+              },
+              "observation": {
+                "kind": "search",
+                "query": "cancel after renewal automatic refund",
+                "results": [
+                  {
+                    "sectionId": "flowpilot-refund-policy-general-policy",
+                    "pageSlug": "refund-policy",
+                    "pageTitle": "Refund policy",
+                    "sectionTitle": "General policy",
+                    "excerpt": "Subscription charges are generally non-refundable. Cancelling after a renewal does not automatically create a refund, because cancellation applies at the end of the active billing period."
+                  },
+                  {
+                    "sectionId": "flowpilot-free-trial-and-billing-automatic-billing-after-the-trial",
+                    "pageSlug": "free-trial-and-billing",
+                    "pageTitle": "Free trial and billing",
+                    "sectionTitle": "Automatic billing after the trial",
+                    "excerpt": "FlowPilot automatically charges the saved payment card for Pro when the 14-day trial ends unless the subscription is cancelled first. The first paid billing period begins immediately after the trial. Cancelling during…"
+                  },
+                  {
+                    "sectionId": "flowpilot-refund-policy-duplicate-charges-and-billing-errors",
+                    "pageSlug": "refund-policy",
+                    "pageTitle": "Refund policy",
+                    "sectionTitle": "Duplicate charges and billing errors",
+                    "excerpt": "FlowPilot may refund a confirmed duplicate charge. Customers who believe a charge resulted from another billing error should contact support within seven days of the charge so the billing team can investigate.…"
+                  }
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-refund-after-renewal-a-2",
+              "number": 2,
+              "type": "INSPECT_SECTION",
+              "explanation": "Read paid-subscription cancellation behavior.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-cancellation-policy-cancelling-a-paid-subscription"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-cancellation-policy-cancelling-a-paid-subscription",
+                "pageSlug": "cancellation-policy",
+                "pageTitle": "Cancellation policy",
+                "sectionTitle": "Cancelling a paid subscription",
+                "content": "Paid Starter, Pro, and Business subscriptions can be cancelled at any time. Cancellation takes effect at the end of the current billing period, and the workspace remains accessible on its paid plan until that date. A cancellation stops the next scheduled renewal. It does not reverse a charge that has already been processed.",
+                "callouts": [
+                  "Cancellation does not delete the workspace: Deleting a workspace is a separate action in workspace settings. Export any needed data before deletion, because deletion removes workspace content rather than only ending billing."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-refund-after-renewal-a-3",
+              "number": 3,
+              "type": "INSPECT_SECTION",
+              "explanation": "Confirm the general refund policy.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-refund-policy-general-policy"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-refund-policy-general-policy",
+                "pageSlug": "refund-policy",
+                "pageTitle": "Refund policy",
+                "sectionTitle": "General policy",
+                "content": "Subscription charges are generally non-refundable. Cancelling after a renewal does not automatically create a refund, because cancellation applies at the end of the active billing period.",
+                "callouts": [
+                  "Cancellation and refunds are separate: Stopping a future renewal does not automatically refund the current subscription period."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-refund-after-renewal-a-4",
+              "number": 4,
+              "type": "ANSWER",
+              "explanation": "Cancellation and refund effects can now be separated.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "answer": "No. Cancelling now does not automatically create a refund and stops a future renewal, but does not reverse a charge.",
+                "confidence": "high"
+              },
+              "observation": {
+                "kind": "answer",
+                "answer": "No. Cancelling now does not automatically create a refund and stops a future renewal, but does not reverse a charge.",
+                "confidence": "high"
+              },
+              "success": true
+            }
+          ]
+        },
+        {
+          "runId": "run-eval-hipaa-suitability-a",
+          "benchmarkId": "flowpilot-hipaa-suitability",
+          "taskId": "hipaa-suitability",
+          "personaId": "non-technical-small-business-owner",
+          "provider": "fixture",
+          "model": "pre-recorded-decisions-v1",
+          "maxActions": 6,
+          "successfulCustomerActions": 3,
+          "modelRequestAttempts": 3,
+          "providerFailures": 0,
+          "searches": 1,
+          "pagesOpened": 0,
+          "sectionsInspected": 1,
+          "repeatedSearches": 0,
+          "repeatedPageOpenings": 0,
+          "repeatedSectionInspections": 0,
+          "redundantActionRate": 0,
+          "finalAnswer": "No. FlowPilot is not HIPAA compliant and should not be used to store protected health information.",
+          "finalConfidence": "high",
+          "gaveUp": false,
+          "budgetExhausted": false,
+          "invalidToolDecisions": 0,
+          "completionStatus": "answer",
+          "correctness": "fully-supported",
+          "requiredEvidenceCoverage": 1,
+          "groundingFailure": false,
+          "actions": [
+            {
+              "id": "action-run-eval-hipaa-suitability-a-1",
+              "number": 1,
+              "type": "SEARCH",
+              "explanation": "Find the compliance boundary.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "query": "HIPAA protected health information"
+              },
+              "observation": {
+                "kind": "search",
+                "query": "HIPAA protected health information",
+                "results": [
+                  {
+                    "sectionId": "flowpilot-security-and-privacy-identity-and-compliance",
+                    "pageSlug": "security-and-privacy",
+                    "pageTitle": "Security and privacy",
+                    "sectionTitle": "Identity and compliance",
+                    "excerpt": "…their individual FlowPilot credentials. FlowPilot does not claim to be HIPAA compliant and should not be used to store protected health information. Teams with regulated-data requirements should evaluate those…"
+                  },
+                  {
+                    "sectionId": "flowpilot-security-and-privacy-data-protection",
+                    "pageSlug": "security-and-privacy",
+                    "pageTitle": "Security and privacy",
+                    "sectionTitle": "Data protection",
+                    "excerpt": "FlowPilot encrypts data in transit and at rest. Access to production systems is restricted to authorized personnel and logged for security review. Customers remain responsible for configuring workspace roles…"
+                  }
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-hipaa-suitability-a-2",
+              "number": 2,
+              "type": "INSPECT_SECTION",
+              "explanation": "Read the identity and compliance statement.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-security-and-privacy-identity-and-compliance"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-security-and-privacy-identity-and-compliance",
+                "pageSlug": "security-and-privacy",
+                "pageTitle": "Security and privacy",
+                "sectionTitle": "Identity and compliance",
+                "content": "Single sign-on is available only on Business. Starter and Pro users sign in with their individual FlowPilot credentials. FlowPilot does not claim to be HIPAA compliant and should not be used to store protected health information. Teams with regulated-data requirements should evaluate those requirements before using the service.",
+                "callouts": [
+                  "Not HIPAA compliant: FlowPilot does not claim HIPAA compliance. Do not store protected health information in FlowPilot."
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-hipaa-suitability-a-3",
+              "number": 3,
+              "type": "ANSWER",
+              "explanation": "The compliance limitation is explicit.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "answer": "No. FlowPilot is not HIPAA compliant and should not be used to store protected health information.",
+                "confidence": "high"
+              },
+              "observation": {
+                "kind": "answer",
+                "answer": "No. FlowPilot is not HIPAA compliant and should not be used to store protected health information.",
+                "confidence": "high"
+              },
+              "success": true
+            }
+          ]
+        },
+        {
+          "runId": "run-eval-viewer-permissions-a",
+          "benchmarkId": "flowpilot-viewer-permissions",
+          "taskId": "viewer-permissions",
+          "personaId": "skeptical-buyer",
+          "provider": "fixture",
+          "model": "pre-recorded-decisions-v1",
+          "maxActions": 8,
+          "successfulCustomerActions": 3,
+          "modelRequestAttempts": 3,
+          "providerFailures": 0,
+          "searches": 1,
+          "pagesOpened": 0,
+          "sectionsInspected": 1,
+          "repeatedSearches": 0,
+          "repeatedPageOpenings": 0,
+          "repeatedSectionInspections": 0,
+          "redundantActionRate": 0,
+          "finalAnswer": "Yes. The Viewer role is available on Pro and Business and is read only, so the viewer cannot edit.",
+          "finalConfidence": "high",
+          "gaveUp": false,
+          "budgetExhausted": false,
+          "invalidToolDecisions": 0,
+          "completionStatus": "answer",
+          "correctness": "fully-supported",
+          "requiredEvidenceCoverage": 1,
+          "groundingFailure": false,
+          "actions": [
+            {
+              "id": "action-run-eval-viewer-permissions-a-1",
+              "number": 1,
+              "type": "SEARCH",
+              "explanation": "Find read-only role availability.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "query": "viewer read only cannot edit plans"
+              },
+              "observation": {
+                "kind": "search",
+                "query": "viewer read only cannot edit plans",
+                "results": [
+                  {
+                    "sectionId": "flowpilot-team-permissions-standard-roles",
+                    "pageSlug": "team-permissions",
+                    "pageTitle": "Team permissions",
+                    "sectionTitle": "Standard roles",
+                    "excerpt": "…workspace settings, billing, and workflows, while Members can create and edit workflows without controlling billing. Pro and Business also include a Viewer role. Viewers can inspect shared workflows and run history but…"
+                  },
+                  {
+                    "sectionId": "flowpilot-pricing-pro-29-per-user-per-month",
+                    "pageSlug": "pricing",
+                    "pageTitle": "Pricing",
+                    "sectionTitle": "Pro — $29 per user per month",
+                    "excerpt": "Pro includes a 14-day free trial and adds developer access and more flexible participation. Everything in Starter API access included Admin, Member, and Viewer roles"
+                  },
+                  {
+                    "sectionId": "flowpilot-team-permissions-custom-roles-on-business",
+                    "pageSlug": "team-permissions",
+                    "pageTitle": "Team permissions",
+                    "sectionTitle": "Custom roles on Business",
+                    "excerpt": "Business includes custom roles. An Admin can combine individual permissions to create roles for responsibilities such as workflow review, incident response, or reporting. Custom roles do not replace the built-in Admin…"
+                  }
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-viewer-permissions-a-2",
+              "number": 2,
+              "type": "INSPECT_SECTION",
+              "explanation": "Read the standard role definitions.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-team-permissions-standard-roles"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-team-permissions-standard-roles",
+                "pageSlug": "team-permissions",
+                "pageTitle": "Team permissions",
+                "sectionTitle": "Standard roles",
+                "content": "Starter provides two roles: Admin and Member. Admins manage workspace settings, billing, and workflows, while Members can create and edit workflows without controlling billing. Pro and Business also include a Viewer role. Viewers can inspect shared workflows and run history but cannot edit workflows or settings.",
+                "callouts": []
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-viewer-permissions-a-3",
+              "number": 3,
+              "type": "ANSWER",
+              "explanation": "The role and eligible plans are explicit.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "answer": "Yes. The Viewer role is available on Pro and Business and is read only, so the viewer cannot edit.",
+                "confidence": "high"
+              },
+              "observation": {
+                "kind": "answer",
+                "answer": "Yes. The Viewer role is available on Pro and Business and is read only, so the viewer cannot edit.",
+                "confidence": "high"
+              },
+              "success": true
+            }
+          ]
+        },
+        {
+          "runId": "run-eval-audit-log-export-a",
+          "benchmarkId": "flowpilot-audit-log-export",
+          "taskId": "audit-log-export",
+          "personaId": "careful-researcher",
+          "provider": "fixture",
+          "model": "pre-recorded-decisions-v1",
+          "maxActions": 9,
+          "successfulCustomerActions": 4,
+          "modelRequestAttempts": 4,
+          "providerFailures": 0,
+          "searches": 1,
+          "pagesOpened": 0,
+          "sectionsInspected": 2,
+          "repeatedSearches": 0,
+          "repeatedPageOpenings": 0,
+          "repeatedSectionInspections": 0,
+          "redundantActionRate": 0,
+          "finalAnswer": "No. A complete audit-log export is available only on Business, not on Pro.",
+          "finalConfidence": "high",
+          "gaveUp": false,
+          "budgetExhausted": false,
+          "invalidToolDecisions": 0,
+          "completionStatus": "answer",
+          "correctness": "fully-supported",
+          "requiredEvidenceCoverage": 1,
+          "groundingFailure": false,
+          "actions": [
+            {
+              "id": "action-run-eval-audit-log-export-a-1",
+              "number": 1,
+              "type": "SEARCH",
+              "explanation": "Distinguish audit-log export from workflow export.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "query": "complete audit log export Pro Business"
+              },
+              "observation": {
+                "kind": "search",
+                "query": "complete audit log export Pro Business",
+                "results": [
+                  {
+                    "sectionId": "flowpilot-data-export-audit-log-export",
+                    "pageSlug": "data-export",
+                    "pageTitle": "Data export",
+                    "sectionTitle": "Audit-log export",
+                    "excerpt": "Full audit-log export is available only on Business. It includes workspace security and administration events in addition to workflow activity. Starter and Pro retain viewable workflow history but do not provide the…"
+                  },
+                  {
+                    "sectionId": "flowpilot-data-export-workflow-csv-export",
+                    "pageSlug": "data-export",
+                    "pageTitle": "Data export",
+                    "sectionTitle": "Workflow CSV export",
+                    "excerpt": "All plans can export workflow data as CSV. The export includes workflow names, current status, recent run outcomes, and the selected date range. Admins and Members can create workflow CSV exports. Viewers on Pro and…"
+                  },
+                  {
+                    "sectionId": "flowpilot-pricing-business-59-per-user-per-month",
+                    "pageSlug": "pricing",
+                    "pageTitle": "Pricing",
+                    "sectionTitle": "Business — $59 per user per month",
+                    "excerpt": "Business is designed for teams that need stronger governance, identity controls, and higher-capacity developer access. Everything in Pro Custom roles and single sign-on Full audit-log export Higher API allowance"
+                  }
+                ]
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-audit-log-export-a-2",
+              "number": 2,
+              "type": "INSPECT_SECTION",
+              "explanation": "Read the complete audit-log export rule.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-data-export-audit-log-export"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-data-export-audit-log-export",
+                "pageSlug": "data-export",
+                "pageTitle": "Data export",
+                "sectionTitle": "Audit-log export",
+                "content": "Full audit-log export is available only on Business. It includes workspace security and administration events in addition to workflow activity. Starter and Pro retain viewable workflow history but do not provide the complete audit log as an export file.",
+                "callouts": []
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-audit-log-export-a-3",
+              "number": 3,
+              "type": "INSPECT_SECTION",
+              "explanation": "Check the nearby workflow CSV distinction.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "sectionId": "flowpilot-data-export-workflow-csv-export"
+              },
+              "observation": {
+                "kind": "section",
+                "sectionId": "flowpilot-data-export-workflow-csv-export",
+                "pageSlug": "data-export",
+                "pageTitle": "Data export",
+                "sectionTitle": "Workflow CSV export",
+                "content": "All plans can export workflow data as CSV. The export includes workflow names, current status, recent run outcomes, and the selected date range. Admins and Members can create workflow CSV exports. Viewers on Pro and Business can download exports that an authorized teammate has shared with them.",
+                "callouts": []
+              },
+              "success": true
+            },
+            {
+              "id": "action-run-eval-audit-log-export-a-4",
+              "number": 4,
+              "type": "ANSWER",
+              "explanation": "The plan boundary is explicit.",
+              "timestamp": "2026-01-01T00:00:00.000Z",
+              "input": {
+                "answer": "No. A complete audit-log export is available only on Business, not on Pro.",
+                "confidence": "high"
+              },
+              "observation": {
+                "kind": "answer",
+                "answer": "No. A complete audit-log export is available only on Business, not on Pro.",
+                "confidence": "high"
+              },
+              "success": true
+            }
+          ]
+        }
+      ]
+    },
+    "evidence": {
+      "caseCount": 6,
+      "sourceIntegrity": 1,
+      "requiredRepresentationCoverage": 1,
+      "seenUnseenCorrectness": 1,
+      "deduplicationIntegrity": 1,
+      "deterministicConsistency": 1,
+      "cases": [
+        {
+          "runId": "run-eval-trial-cancellation-a",
+          "taskId": "trial-cancellation",
+          "sourceIntegrity": 1,
+          "requiredRepresentationCoverage": 1,
+          "seenUnseenCorrectness": 1,
+          "deduplicationIntegrity": 1,
+          "deterministicConsistency": 1
+        },
+        {
+          "runId": "run-eval-api-allowance-a",
+          "taskId": "api-allowance",
+          "sourceIntegrity": 1,
+          "requiredRepresentationCoverage": 1,
+          "seenUnseenCorrectness": 1,
+          "deduplicationIntegrity": 1,
+          "deterministicConsistency": 1
+        },
+        {
+          "runId": "run-eval-refund-after-renewal-a",
+          "taskId": "refund-after-renewal",
+          "sourceIntegrity": 1,
+          "requiredRepresentationCoverage": 1,
+          "seenUnseenCorrectness": 1,
+          "deduplicationIntegrity": 1,
+          "deterministicConsistency": 1
+        },
+        {
+          "runId": "run-eval-hipaa-suitability-a",
+          "taskId": "hipaa-suitability",
+          "sourceIntegrity": 1,
+          "requiredRepresentationCoverage": 1,
+          "seenUnseenCorrectness": 1,
+          "deduplicationIntegrity": 1,
+          "deterministicConsistency": 1
+        },
+        {
+          "runId": "run-eval-viewer-permissions-a",
+          "taskId": "viewer-permissions",
+          "sourceIntegrity": 1,
+          "requiredRepresentationCoverage": 1,
+          "seenUnseenCorrectness": 1,
+          "deduplicationIntegrity": 1,
+          "deterministicConsistency": 1
+        },
+        {
+          "runId": "run-eval-audit-log-export-a",
+          "taskId": "audit-log-export",
+          "sourceIntegrity": 1,
+          "requiredRepresentationCoverage": 1,
+          "seenUnseenCorrectness": 1,
+          "deduplicationIntegrity": 1,
+          "deterministicConsistency": 1
+        }
+      ]
+    },
+    "courtroom": {
+      "caseCount": 10,
+      "citationValidity": 1,
+      "claimCitationCoverage": 1,
+      "seenUnseenIntegrity": 1,
+      "sharedEvidenceIntegrity": 1,
+      "structuredOutputSuccessRate": null,
+      "cases": [
+        {
+          "fixtureId": "court-pass-trial",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-pass-hipaa",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-friction-api",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-friction-viewer",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-misleading-refund",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-misleading-audit",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-blocked-trial",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-blocked-api-budget",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-insufficient-hipaa",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        },
+        {
+          "fixtureId": "court-insufficient-viewer",
+          "citationValidity": 1,
+          "claimCitationCoverage": 1,
+          "seenUnseenIntegrity": 1,
+          "sharedEvidenceIntegrity": 1
+        }
+      ]
+    }
+  },
+  "liveModelMetrics": null,
+  "aggregateMetrics": {
+    "retrievalRecallAt3": 0.9166666666666666,
+    "retrievalMrr": 0.9166666666666666,
+    "deterministicCustomerCompletion": 1,
+    "deterministicEvidenceIntegrity": 1,
+    "deterministicCitationValidity": 1,
+    "liveCustomerCompletion": null,
+    "liveJudgeVerdictAccuracy": null,
+    "livePipelineCompletion": null,
+    "liveGroundedPipelineSuccess": null,
+    "providerFailureRate": null
+  },
+  "limitations": [
+    "The benchmark is small, controlled, and uses the fictional FlowPilot product.",
+    "Mechanical answer grading is bounded to trusted phrase and negation rules; it is not full semantic grading.",
+    "Live model behavior is nondeterministic, so repeated trials may differ.",
+    "Free-tier provider limits and transient provider failures may affect live runs.",
+    "These metrics do not prove real-world product usability or replace research with real customers."
+  ]
+}
